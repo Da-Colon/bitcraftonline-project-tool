@@ -27,7 +27,9 @@ const Document = withEmotionCache(
       tags.forEach((tag) => {
         (emotionCache.sheet as any)._insertTag(tag);
       });
-      clientStyleData?.cache.sheet.container = document.head;
+      if (clientStyleData?.cache.sheet) {
+        clientStyleData.cache.sheet.container = document.head;
+      }
     }, []);
 
     return (
