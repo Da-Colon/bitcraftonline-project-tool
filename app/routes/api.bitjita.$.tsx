@@ -1,8 +1,7 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { bitjitaClient } from "~/services/bitjita.server";
-import { rateLimit } from "~/services/rate-limit.server";
-import { cache } from "~/services/cache.server";
+import { rateLimit } from "../services/rate-limit.server";
+import { cache } from "../services/cache.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const ip = request.headers.get("x-forwarded-for") || 
