@@ -1,21 +1,11 @@
 import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "../types/recipes";
-import { loadAndParseBitCraftData } from "./bitcraft-data-loader";
+import { parseItem, parseRecipe, parseExtractionRecipe } from "./bitcraft-parser";
+import type { BitCraftItem, BitCraftRecipe } from "../types/bitcraft-data";
 
-// Cache for BitCraft data to avoid reloading on every instance
-let bitCraftDataCache: { items: Item[]; recipes: Recipe[] } | null = null;
-
-function loadBitCraftData(): { items: Item[]; recipes: Recipe[] } {
-  if (!bitCraftDataCache) {
-    try {
-      bitCraftDataCache = loadAndParseBitCraftData();
-      console.log(`Loaded ${bitCraftDataCache.items.length} items and ${bitCraftDataCache.recipes.length} recipes from BitCraft data`);
-    } catch (error) {
-      console.error('Failed to load BitCraft data, falling back to empty data:', error);
-      bitCraftDataCache = { items: [], recipes: [] };
-    }
-  }
-  return bitCraftDataCache;
-}
+// Import BitCraft JSON data directly from GameData submodule
+import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" };
+import recipesJson from "../../GameData/BitCraft_GameData/server/region/crafting_recipe_desc.json" assert { type: "json" };
+import extractionRecipesJson from "../../GameData/BitCraft_GameData/server/region/extraction_recipe_desc.json" assert { type: "json" };
 
 export class RecipeCalculator {
   private items: Map<string, Item>;
@@ -28,15 +18,22 @@ export class RecipeCalculator {
   }
 
   private loadData() {
-    const { items, recipes } = loadBitCraftData();
+    // Parse BitCraft items directly from GameData
+    const parsedItems = (itemsJson as any[]).map((item: any) => parseItem(item));
+    
+    // Parse BitCraft recipes directly from GameData
+    const parsedCraftingRecipes = (recipesJson as any[]).map((recipe: any) => parseRecipe(recipe)).filter((recipe): recipe is Recipe => recipe !== null);
+    const parsedExtractionRecipes = (extractionRecipesJson as any[]).map((recipe: any) => parseExtractionRecipe(recipe)).filter((recipe): recipe is Recipe => recipe !== null);
+    
+    const allRecipes = [...parsedCraftingRecipes, ...parsedExtractionRecipes];
     
     // Load items
-    for (const item of items) {
+    for (const item of parsedItems) {
       this.items.set(item.id, item);
     }
 
     // Load recipes
-    for (const recipe of recipes) {
+    for (const recipe of allRecipes) {
       this.recipes.set(recipe.outputItemId, recipe);
     }
   }
