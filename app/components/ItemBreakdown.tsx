@@ -12,8 +12,8 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useState } from "react";
-import type { Item, Recipe } from "../types/recipes";
-import { RecipeCalculator } from "../services/recipe-calculator";
+import type { Item, Recipe } from "~/types/recipes";
+import { RecipeCalculator } from "~/services/recipe-calculator";
 
 interface ItemBreakdownProps {
   itemId: string;

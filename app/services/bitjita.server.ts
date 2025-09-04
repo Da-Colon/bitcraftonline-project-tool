@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { getEnv } from "~/utils/env.server";
 
-const BITJITA_BASE = process.env.BITJITA_BASE_URL || "https://bitjita.com";
+const { BITJITA_BASE_URL: BITJITA_BASE } = getEnv();
 
 export const PlayerSchema = z.object({
   id: z.string(),

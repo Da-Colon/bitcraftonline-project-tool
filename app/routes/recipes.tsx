@@ -31,9 +31,10 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect, useMemo } from "react";
 import { DeleteIcon, AddIcon } from "@chakra-ui/icons";
-import type { Item, ProjectItem } from "../types/recipes";
-import { RecipeCalculator } from "../services/recipe-calculator";
-import { RecipeTree } from "../components/ItemBreakdown";
+import type { Item, ProjectItem } from "~/types/recipes";
+import { RecipeCalculator } from "~/services/recipe-calculator";
+import { RecipeTree } from "~/components/ItemBreakdown";
+import { RECIPE_PROJECTS_KEY } from "~/constants/storage";
 
 export default function Recipes() {
   const [calculator] = useState(() => new RecipeCalculator());
@@ -111,9 +112,9 @@ export default function Recipes() {
       updatedAt: new Date(),
     };
 
-    const savedProjects = JSON.parse(localStorage.getItem("recipeProjects") || "[]");
+    const savedProjects = JSON.parse(localStorage.getItem(RECIPE_PROJECTS_KEY) || "[]");
     savedProjects.push(project);
-    localStorage.setItem("recipeProjects", JSON.stringify(savedProjects));
+    localStorage.setItem(RECIPE_PROJECTS_KEY, JSON.stringify(savedProjects));
 
     toast({
       title: "Project saved",

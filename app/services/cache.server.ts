@@ -1,8 +1,8 @@
 import Redis from "ioredis";
+import { getEnv } from "~/utils/env.server";
 
-const redis = process.env.REDIS_URL 
-  ? new Redis(process.env.REDIS_URL)
-  : null;
+const env = getEnv();
+const redis = env.REDIS_URL ? new Redis(env.REDIS_URL) : null;
 
 export const cache = {
   async get<T = any>(key: string): Promise<T | null> {

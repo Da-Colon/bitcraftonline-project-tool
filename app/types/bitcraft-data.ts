@@ -10,7 +10,7 @@ export interface BitCraftItem {
   icon_asset_name: string; // Icon path
   tier: number;         // Item tier
   tag: string;          // Category/tag
-  rarity: [number, any]; // Rarity information
+  rarity: unknown; // Rarity information (shape varies)
 }
 
 // Recipe types from BitCraft_GameData/server/region/crafting_recipe_desc.json

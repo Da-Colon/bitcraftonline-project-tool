@@ -1,6 +1,6 @@
-import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "../types/recipes";
-import { parseItem, parseRecipe, parseExtractionRecipe } from "./bitcraft-parser";
-import type { BitCraftItem, BitCraftRecipe } from "../types/bitcraft-data";
+import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "~/types/recipes";
+import { parseItem, parseRecipe, parseExtractionRecipe } from "~/services/bitcraft-parser";
+import type { BitCraftItem, BitCraftRecipe, BitCraftExtractionRecipe } from "~/types/bitcraft-data";
 
 // Import BitCraft JSON data directly from GameData submodule
 import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" };
@@ -19,11 +19,15 @@ export class RecipeCalculator {
 
   private loadData() {
     // Parse BitCraft items directly from GameData
-    const parsedItems = (itemsJson as any[]).map((item: any) => parseItem(item));
+    const parsedItems = (itemsJson as unknown as BitCraftItem[]).map(parseItem);
     
     // Parse BitCraft recipes directly from GameData
-    const parsedCraftingRecipes = (recipesJson as any[]).map((recipe: any) => parseRecipe(recipe)).filter((recipe): recipe is Recipe => recipe !== null);
-    const parsedExtractionRecipes = (extractionRecipesJson as any[]).map((recipe: any) => parseExtractionRecipe(recipe)).filter((recipe): recipe is Recipe => recipe !== null);
+    const parsedCraftingRecipes = (recipesJson as unknown as BitCraftRecipe[])
+      .map((recipe) => parseRecipe(recipe))
+      .filter((recipe): recipe is Recipe => recipe !== null);
+    const parsedExtractionRecipes = (extractionRecipesJson as unknown as BitCraftExtractionRecipe[])
+      .map((recipe) => parseExtractionRecipe(recipe))
+      .filter((recipe): recipe is Recipe => recipe !== null);
     
     const allRecipes = [...parsedCraftingRecipes, ...parsedExtractionRecipes];
     
@@ -86,8 +90,14 @@ export class RecipeCalculator {
     quantity: number,
     rawMaterials: Map<string, number>,
     intermediates: Map<string, number>,
-    totalItems: Map<string, number>
+    totalItems: Map<string, number>,
+    stack: Set<string> = new Set()
   ): void {
+    if (stack.has(itemId)) {
+      console.warn(`Cycle detected in recipes for item: ${itemId}`);
+      return;
+    }
+    stack.add(itemId);
     const item = this.getItem(itemId);
     if (!item) return;
 
@@ -119,9 +129,11 @@ export class RecipeCalculator {
         requiredQuantity,
         rawMaterials,
         intermediates,
-        totalItems
+        totalItems,
+        stack
       );
     });
+    stack.delete(itemId);
   }
 
   getItemsByCategory(): Map<string, Item[]> {
