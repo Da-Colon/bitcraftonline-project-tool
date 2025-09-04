@@ -1,47 +1,21 @@
 import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "../types/recipes";
+import { loadAndParseBitCraftData } from "./bitcraft-data-loader";
 
-// Import JSON data directly for Remix compatibility
-const recipesData = {
-  "items": [
-    { "id": "wood", "name": "Wood", "tier": 0, "category": "Raw Material", "stackSize": 100 },
-    { "id": "stone", "name": "Stone", "tier": 0, "category": "Raw Material", "stackSize": 100 },
-    { "id": "iron_ore", "name": "Iron Ore", "tier": 0, "category": "Raw Material", "stackSize": 100 },
-    { "id": "coal", "name": "Coal", "tier": 0, "category": "Raw Material", "stackSize": 100 },
-    { "id": "copper_ore", "name": "Copper Ore", "tier": 0, "category": "Raw Material", "stackSize": 100 },
-    { "id": "planks", "name": "Planks", "tier": 1, "category": "Building Material", "stackSize": 50 },
-    { "id": "iron_ingot", "name": "Iron Ingot", "tier": 1, "category": "Metal", "stackSize": 50 },
-    { "id": "copper_ingot", "name": "Copper Ingot", "tier": 1, "category": "Metal", "stackSize": 50 },
-    { "id": "nails", "name": "Nails", "tier": 1, "category": "Component", "stackSize": 200 },
-    { "id": "hammer", "name": "Hammer", "tier": 1, "category": "Tool", "stackSize": 1 },
-    { "id": "pickaxe", "name": "Pickaxe", "tier": 1, "category": "Tool", "stackSize": 1 },
-    { "id": "furnace", "name": "Furnace", "tier": 2, "category": "Building", "stackSize": 1 },
-    { "id": "anvil", "name": "Anvil", "tier": 2, "category": "Building", "stackSize": 1 },
-    { "id": "workbench", "name": "Workbench", "tier": 1, "category": "Building", "stackSize": 1 },
-    { "id": "chest", "name": "Chest", "tier": 1, "category": "Storage", "stackSize": 1 },
-    { "id": "steel_ingot", "name": "Steel Ingot", "tier": 2, "category": "Metal", "stackSize": 50 },
-    { "id": "steel_hammer", "name": "Steel Hammer", "tier": 2, "category": "Tool", "stackSize": 1 },
-    { "id": "steel_pickaxe", "name": "Steel Pickaxe", "tier": 2, "category": "Tool", "stackSize": 1 },
-    { "id": "advanced_workbench", "name": "Advanced Workbench", "tier": 2, "category": "Building", "stackSize": 1 },
-    { "id": "gear", "name": "Gear", "tier": 2, "category": "Component", "stackSize": 20 }
-  ],
-  "recipes": [
-    { "id": "recipe_planks", "outputItemId": "planks", "inputs": [{ "itemId": "wood", "quantity": 2 }], "outputQuantity": 4 },
-    { "id": "recipe_iron_ingot", "outputItemId": "iron_ingot", "inputs": [{ "itemId": "iron_ore", "quantity": 1 }, { "itemId": "coal", "quantity": 1 }], "outputQuantity": 1 },
-    { "id": "recipe_copper_ingot", "outputItemId": "copper_ingot", "inputs": [{ "itemId": "copper_ore", "quantity": 1 }, { "itemId": "coal", "quantity": 1 }], "outputQuantity": 1 },
-    { "id": "recipe_nails", "outputItemId": "nails", "inputs": [{ "itemId": "iron_ingot", "quantity": 1 }], "outputQuantity": 10 },
-    { "id": "recipe_hammer", "outputItemId": "hammer", "inputs": [{ "itemId": "iron_ingot", "quantity": 2 }, { "itemId": "planks", "quantity": 1 }], "outputQuantity": 1 },
-    { "id": "recipe_pickaxe", "outputItemId": "pickaxe", "inputs": [{ "itemId": "iron_ingot", "quantity": 3 }, { "itemId": "planks", "quantity": 2 }], "outputQuantity": 1 },
-    { "id": "recipe_furnace", "outputItemId": "furnace", "inputs": [{ "itemId": "stone", "quantity": 8 }, { "itemId": "iron_ingot", "quantity": 2 }], "outputQuantity": 1 },
-    { "id": "recipe_anvil", "outputItemId": "anvil", "inputs": [{ "itemId": "iron_ingot", "quantity": 5 }, { "itemId": "stone", "quantity": 3 }], "outputQuantity": 1 },
-    { "id": "recipe_workbench", "outputItemId": "workbench", "inputs": [{ "itemId": "planks", "quantity": 4 }, { "itemId": "nails", "quantity": 8 }], "outputQuantity": 1 },
-    { "id": "recipe_chest", "outputItemId": "chest", "inputs": [{ "itemId": "planks", "quantity": 6 }, { "itemId": "nails", "quantity": 4 }], "outputQuantity": 1 },
-    { "id": "recipe_steel_ingot", "outputItemId": "steel_ingot", "inputs": [{ "itemId": "iron_ingot", "quantity": 2 }, { "itemId": "coal", "quantity": 2 }], "outputQuantity": 1 },
-    { "id": "recipe_steel_hammer", "outputItemId": "steel_hammer", "inputs": [{ "itemId": "steel_ingot", "quantity": 2 }, { "itemId": "planks", "quantity": 1 }], "outputQuantity": 1 },
-    { "id": "recipe_steel_pickaxe", "outputItemId": "steel_pickaxe", "inputs": [{ "itemId": "steel_ingot", "quantity": 3 }, { "itemId": "planks", "quantity": 2 }], "outputQuantity": 1 },
-    { "id": "recipe_advanced_workbench", "outputItemId": "advanced_workbench", "inputs": [{ "itemId": "workbench", "quantity": 1 }, { "itemId": "steel_ingot", "quantity": 4 }, { "itemId": "gear", "quantity": 2 }], "outputQuantity": 1 },
-    { "id": "recipe_gear", "outputItemId": "gear", "inputs": [{ "itemId": "iron_ingot", "quantity": 4 }, { "itemId": "copper_ingot", "quantity": 2 }], "outputQuantity": 1 }
-  ]
-};
+// Cache for BitCraft data to avoid reloading on every instance
+let bitCraftDataCache: { items: Item[]; recipes: Recipe[] } | null = null;
+
+function loadBitCraftData(): { items: Item[]; recipes: Recipe[] } {
+  if (!bitCraftDataCache) {
+    try {
+      bitCraftDataCache = loadAndParseBitCraftData();
+      console.log(`Loaded ${bitCraftDataCache.items.length} items and ${bitCraftDataCache.recipes.length} recipes from BitCraft data`);
+    } catch (error) {
+      console.error('Failed to load BitCraft data, falling back to empty data:', error);
+      bitCraftDataCache = { items: [], recipes: [] };
+    }
+  }
+  return bitCraftDataCache;
+}
 
 export class RecipeCalculator {
   private items: Map<string, Item>;
@@ -54,14 +28,16 @@ export class RecipeCalculator {
   }
 
   private loadData() {
+    const { items, recipes } = loadBitCraftData();
+    
     // Load items
-    for (const item of recipesData.items) {
-      this.items.set(item.id, item as Item);
+    for (const item of items) {
+      this.items.set(item.id, item);
     }
 
     // Load recipes
-    for (const recipe of recipesData.recipes) {
-      this.recipes.set(recipe.outputItemId, recipe as Recipe);
+    for (const recipe of recipes) {
+      this.recipes.set(recipe.outputItemId, recipe);
     }
   }
 
