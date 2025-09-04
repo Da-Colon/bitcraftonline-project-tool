@@ -24,10 +24,13 @@ export default function Index() {
         </Box>
         
         <HStack spacing={4}>
-          <Button as={Link} to="/players" colorScheme="blue" size="lg">
+          <Button as={Link} to="/recipes" colorScheme="blue" size="lg">
+            Recipe Calculator
+          </Button>
+          <Button as={Link} to="/players" colorScheme="green" size="lg">
             Search Players
           </Button>
-          <Button as={Link} to="/projects" colorScheme="green" size="lg">
+          <Button as={Link} to="/projects" colorScheme="purple" size="lg">
             My Projects
           </Button>
         </HStack>

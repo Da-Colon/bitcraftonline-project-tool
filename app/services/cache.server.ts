@@ -29,13 +29,4 @@ export const cache = {
       console.error("Cache set error:", error);
     }
   },
-  
-  async del(key: string): Promise<void> {
-    if (!redis) return;
-    try {
-      await redis.del(key);
-    } catch (error) {
-      console.error("Cache delete error:", error);
-    }
-  },
 };

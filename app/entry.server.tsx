@@ -3,11 +3,10 @@ import type { AppLoadContext, EntryContext } from "@remix-run/node";
 import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { isbot } from "isbot";
-import { renderToPipeableStream, renderToString } from "react-dom/server";
+import { renderToPipeableStream } from "react-dom/server";
 import { CacheProvider } from "@emotion/react";
 import createEmotionServer from "@emotion/server/create-instance";
 import createEmotionCache from "./createEmotionCache";
-import { ServerStyleContext } from "./context";
 
 const ABORT_DELAY = 5_000;
 
@@ -56,25 +55,14 @@ function handleBotRequest(
         onAllReady() {
           shellRendered = true;
           const body = new PassThrough();
+          const chunks = extractCriticalToChunks(body.read?.() || "");
+          
           const stream = createReadableStreamFromReadable(body);
 
           responseHeaders.set("Content-Type", "text/html");
 
-          const markup = renderToString(
-            <CacheProvider value={emotionCache}>
-              <RemixServer
-                context={remixContext}
-                url={request.url}
-                abortDelay={ABORT_DELAY}
-              />
-            </CacheProvider>
-          );
-
-          const chunks = extractCriticalToChunks(markup);
-          const html = `<!DOCTYPE html>${chunks.html}`;
-
           resolve(
-            new Response(html, {
+            new Response(stream, {
               headers: responseHeaders,
               status: responseStatusCode,
             })
@@ -106,6 +94,7 @@ function handleBrowserRequest(
 ) {
   return new Promise((resolve, reject) => {
     const emotionCache = createEmotionCache();
+    const { extractCriticalToChunks } = createEmotionServer(emotionCache);
 
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
@@ -117,7 +106,6 @@ function handleBrowserRequest(
         />
       </CacheProvider>,
       {
-        bootstrapScripts: ["/build/entry.client.js"],
         onShellReady() {
           shellRendered = true;
           const body = new PassThrough();

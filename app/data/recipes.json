@@ -1,0 +1,374 @@
+{
+  "items": {
+    "wood": {
+      "id": "wood",
+      "name": "Wood",
+      "category": "Raw Materials",
+      "tier": 0,
+      "stackSize": 100
+    },
+    "stone": {
+      "id": "stone",
+      "name": "Stone",
+      "category": "Raw Materials",
+      "tier": 0,
+      "stackSize": 100
+    },
+    "iron_ore": {
+      "id": "iron_ore",
+      "name": "Iron Ore",
+      "category": "Raw Materials",
+      "tier": 0,
+      "stackSize": 100
+    },
+    "coal": {
+      "id": "coal",
+      "name": "Coal",
+      "category": "Raw Materials",
+      "tier": 0,
+      "stackSize": 100
+    },
+    "clay": {
+      "id": "clay",
+      "name": "Clay",
+      "category": "Raw Materials",
+      "tier": 0,
+      "stackSize": 100
+    },
+    "fiber": {
+      "id": "fiber",
+      "name": "Fiber",
+      "category": "Raw Materials",
+      "tier": 0,
+      "stackSize": 100
+    },
+    "planks": {
+      "id": "planks",
+      "name": "Planks",
+      "category": "Refined Materials",
+      "tier": 1,
+      "stackSize": 50
+    },
+    "iron_ingot": {
+      "id": "iron_ingot",
+      "name": "Iron Ingot",
+      "category": "Refined Materials",
+      "tier": 1,
+      "stackSize": 50
+    },
+    "brick": {
+      "id": "brick",
+      "name": "Brick",
+      "category": "Refined Materials",
+      "tier": 1,
+      "stackSize": 50
+    },
+    "rope": {
+      "id": "rope",
+      "name": "Rope",
+      "category": "Refined Materials",
+      "tier": 1,
+      "stackSize": 50
+    },
+    "nails": {
+      "id": "nails",
+      "name": "Nails",
+      "category": "Components",
+      "tier": 1,
+      "stackSize": 100
+    },
+    "wooden_handle": {
+      "id": "wooden_handle",
+      "name": "Wooden Handle",
+      "category": "Components",
+      "tier": 1,
+      "stackSize": 50
+    },
+    "wooden_wall": {
+      "id": "wooden_wall",
+      "name": "Wooden Wall",
+      "category": "Building",
+      "tier": 2,
+      "stackSize": 10
+    },
+    "stone_wall": {
+      "id": "stone_wall",
+      "name": "Stone Wall",
+      "category": "Building",
+      "tier": 2,
+      "stackSize": 10
+    },
+    "wooden_door": {
+      "id": "wooden_door",
+      "name": "Wooden Door",
+      "category": "Building",
+      "tier": 2,
+      "stackSize": 5
+    },
+    "hammer": {
+      "id": "hammer",
+      "name": "Hammer",
+      "category": "Tools",
+      "tier": 2,
+      "stackSize": 1
+    },
+    "pickaxe": {
+      "id": "pickaxe",
+      "name": "Pickaxe",
+      "category": "Tools",
+      "tier": 2,
+      "stackSize": 1
+    },
+    "axe": {
+      "id": "axe",
+      "name": "Axe",
+      "category": "Tools",
+      "tier": 2,
+      "stackSize": 1
+    },
+    "chest": {
+      "id": "chest",
+      "name": "Chest",
+      "category": "Storage",
+      "tier": 2,
+      "stackSize": 5
+    },
+    "workbench": {
+      "id": "workbench",
+      "name": "Workbench",
+      "category": "Crafting Stations",
+      "tier": 2,
+      "stackSize": 1
+    },
+    "furnace": {
+      "id": "furnace",
+      "name": "Furnace",
+      "category": "Crafting Stations",
+      "tier": 3,
+      "stackSize": 1
+    }
+  },
+  "recipes": {
+    "planks": {
+      "id": "planks",
+      "outputItemId": "planks",
+      "outputQuantity": 4,
+      "inputs": [
+        {
+          "itemId": "wood",
+          "quantity": 1
+        }
+      ]
+    },
+    "iron_ingot": {
+      "id": "iron_ingot",
+      "outputItemId": "iron_ingot",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "iron_ore",
+          "quantity": 2
+        },
+        {
+          "itemId": "coal",
+          "quantity": 1
+        }
+      ]
+    },
+    "brick": {
+      "id": "brick",
+      "outputItemId": "brick",
+      "outputQuantity": 2,
+      "inputs": [
+        {
+          "itemId": "clay",
+          "quantity": 2
+        },
+        {
+          "itemId": "coal",
+          "quantity": 1
+        }
+      ]
+    },
+    "rope": {
+      "id": "rope",
+      "outputItemId": "rope",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "fiber",
+          "quantity": 3
+        }
+      ]
+    },
+    "nails": {
+      "id": "nails",
+      "outputItemId": "nails",
+      "outputQuantity": 10,
+      "inputs": [
+        {
+          "itemId": "iron_ingot",
+          "quantity": 1
+        }
+      ]
+    },
+    "wooden_handle": {
+      "id": "wooden_handle",
+      "outputItemId": "wooden_handle",
+      "outputQuantity": 2,
+      "inputs": [
+        {
+          "itemId": "planks",
+          "quantity": 1
+        }
+      ]
+    },
+    "wooden_wall": {
+      "id": "wooden_wall",
+      "outputItemId": "wooden_wall",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "planks",
+          "quantity": 4
+        },
+        {
+          "itemId": "nails",
+          "quantity": 2
+        }
+      ]
+    },
+    "stone_wall": {
+      "id": "stone_wall",
+      "outputItemId": "stone_wall",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "stone",
+          "quantity": 6
+        },
+        {
+          "itemId": "brick",
+          "quantity": 2
+        }
+      ]
+    },
+    "wooden_door": {
+      "id": "wooden_door",
+      "outputItemId": "wooden_door",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "planks",
+          "quantity": 6
+        },
+        {
+          "itemId": "nails",
+          "quantity": 4
+        },
+        {
+          "itemId": "iron_ingot",
+          "quantity": 1
+        }
+      ]
+    },
+    "hammer": {
+      "id": "hammer",
+      "outputItemId": "hammer",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "iron_ingot",
+          "quantity": 2
+        },
+        {
+          "itemId": "wooden_handle",
+          "quantity": 1
+        }
+      ]
+    },
+    "pickaxe": {
+      "id": "pickaxe",
+      "outputItemId": "pickaxe",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "iron_ingot",
+          "quantity": 3
+        },
+        {
+          "itemId": "wooden_handle",
+          "quantity": 1
+        }
+      ]
+    },
+    "axe": {
+      "id": "axe",
+      "outputItemId": "axe",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "iron_ingot",
+          "quantity": 2
+        },
+        {
+          "itemId": "wooden_handle",
+          "quantity": 1
+        }
+      ]
+    },
+    "chest": {
+      "id": "chest",
+      "outputItemId": "chest",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "planks",
+          "quantity": 8
+        },
+        {
+          "itemId": "nails",
+          "quantity": 4
+        }
+      ]
+    },
+    "workbench": {
+      "id": "workbench",
+      "outputItemId": "workbench",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "planks",
+          "quantity": 12
+        },
+        {
+          "itemId": "nails",
+          "quantity": 8
+        },
+        {
+          "itemId": "iron_ingot",
+          "quantity": 2
+        }
+      ]
+    },
+    "furnace": {
+      "id": "furnace",
+      "outputItemId": "furnace",
+      "outputQuantity": 1,
+      "inputs": [
+        {
+          "itemId": "stone",
+          "quantity": 20
+        },
+        {
+          "itemId": "brick",
+          "quantity": 10
+        },
+        {
+          "itemId": "iron_ingot",
+          "quantity": 4
+        }
+      ]
+    }
+  }
+}
