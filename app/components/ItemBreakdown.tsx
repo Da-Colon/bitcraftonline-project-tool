@@ -13,12 +13,16 @@ import {
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import type { Item, Recipe } from "~/types/recipes";
-import { RecipeCalculator } from "~/services/recipe-calculator";
+
+export interface RecipeLookup {
+  getItem: (id: string) => Item | undefined;
+  getRecipe: (id: string) => Recipe | undefined;
+}
 
 interface ItemBreakdownProps {
   itemId: string;
   quantity: number;
-  calculator: RecipeCalculator;
+  lookup: RecipeLookup;
   level?: number;
   maxLevel?: number;
 }
@@ -26,13 +30,13 @@ interface ItemBreakdownProps {
 export function ItemBreakdown({ 
   itemId, 
   quantity, 
-  calculator, 
+  lookup, 
   level = 0, 
   maxLevel = 5 
 }: ItemBreakdownProps) {
   const { isOpen, onToggle } = useDisclosure({ defaultIsOpen: level < 2 });
-  const item = calculator.getItem(itemId);
-  const recipe = calculator.getRecipe(itemId);
+  const item = lookup.getItem(itemId);
+  const recipe = lookup.getRecipe(itemId);
 
   if (!item) {
     return (
@@ -111,7 +115,7 @@ export function ItemBreakdown({
                   key={input.itemId}
                   itemId={input.itemId}
                   quantity={inputQuantityNeeded}
-                  calculator={calculator}
+                  lookup={lookup}
                   level={level + 1}
                   maxLevel={maxLevel}
                 />
@@ -127,11 +131,11 @@ export function ItemBreakdown({
 interface RecipeTreeProps {
   itemId: string;
   quantity: number;
-  calculator: RecipeCalculator;
+  lookup: RecipeLookup;
 }
 
-export function RecipeTree({ itemId, quantity, calculator }: RecipeTreeProps) {
-  const item = calculator.getItem(itemId);
+export function RecipeTree({ itemId, quantity, lookup }: RecipeTreeProps) {
+  const item = lookup.getItem(itemId);
 
   if (!item) {
     return (
@@ -153,11 +157,7 @@ export function RecipeTree({ itemId, quantity, calculator }: RecipeTreeProps) {
       </Box>
       
       <Box>
-        <ItemBreakdown
-          itemId={itemId}
-          quantity={quantity}
-          calculator={calculator}
-        />
+        <ItemBreakdown itemId={itemId} quantity={quantity} lookup={lookup} />
       </Box>
     </Box>
   );

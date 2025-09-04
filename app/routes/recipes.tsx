@@ -31,33 +31,63 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect, useMemo } from "react";
 import { DeleteIcon, AddIcon } from "@chakra-ui/icons";
-import type { Item, ProjectItem } from "~/types/recipes";
-import { RecipeCalculator } from "~/services/recipe-calculator";
+import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import { RecipeTree } from "~/components/ItemBreakdown";
 import { RECIPE_PROJECTS_KEY } from "~/constants/storage";
+import { useLoaderData } from "@remix-run/react";
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { RecipeCalculator } from "~/services/recipe-calculator.server";
+
+export async function loader({}: LoaderFunctionArgs) {
+  // Build a minimal searchable index server-side
+  const calc = new RecipeCalculator();
+  const items = calc.getAllItems();
+  return json({ items });
+}
 
 export default function Recipes() {
-  const [calculator] = useState(() => new RecipeCalculator());
+  const { items: loaderItems } = useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
   const [projectName, setProjectName] = useState("New Project");
   const toast = useToast();
+  const itemMap = useMemo(() => new Map(loaderItems.map((i: Item) => [i.id, i])), [loaderItems]);
+
+  type CalcResponse = {
+    rawMaterials: Array<[string, number]>;
+    intermediates: Array<[string, number]>;
+    totalItems: Array<[string, number]>;
+    steps: Array<{ itemId: string; quantity: number; tier: number }>;
+    items: Record<string, Item>;
+    recipes: Record<string, Recipe>;
+  };
+
+  const [calcData, setCalcData] = useState<CalcResponse | null>(null);
 
   // Search results
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    return calculator.searchItems(searchQuery).slice(0, 10);
-  }, [searchQuery, calculator]);
+    const q = searchQuery.toLowerCase();
+    return loaderItems
+      .filter(
+        (item: Item) =>
+          item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
+      )
+      .slice(0, 10);
+  }, [searchQuery, loaderItems]);
 
   // Calculate breakdown
   const breakdown = useMemo(() => {
-    return calculator.calculateRequirements(projectItems);
-  }, [projectItems, calculator]);
+    if (!calcData) return null;
+    return {
+      rawMaterials: new Map(calcData.rawMaterials),
+      intermediates: new Map(calcData.intermediates),
+      totalItems: new Map(calcData.totalItems),
+    };
+  }, [calcData]);
 
   // Crafting steps
-  const craftingSteps = useMemo(() => {
-    return calculator.getCraftingSteps(projectItems);
-  }, [projectItems, calculator]);
+  const craftingSteps = useMemo(() => calcData?.steps ?? [], [calcData]);
 
   const addItem = (item: Item) => {
     const existingIndex = projectItems.findIndex(pi => pi.itemId === item.id);
@@ -72,7 +102,6 @@ export default function Recipes() {
       const newProjectItem: ProjectItem = {
         itemId: item.id,
         quantity: 1,
-        recipe: calculator.getRecipe(item.id)
       };
       setProjectItems([...projectItems, newProjectItem]);
     }
@@ -86,6 +115,26 @@ export default function Recipes() {
       isClosable: true,
     });
   };
+
+  // Recalculate server-side when projectItems change
+  useEffect(() => {
+    const run = async () => {
+      if (projectItems.length === 0) {
+        setCalcData(null);
+        return;
+      }
+      const res = await fetch("/api/recipes/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: projectItems }),
+      });
+      if (res.ok) {
+        const data: CalcResponse = await res.json();
+        setCalcData(data);
+      }
+    };
+    run();
+  }, [projectItems]);
 
   const updateItemQuantity = (itemId: string, quantity: number) => {
     if (quantity <= 0) {
@@ -210,7 +259,7 @@ export default function Recipes() {
               </Thead>
               <Tbody>
                 {projectItems.map((projectItem) => {
-                  const item = calculator.getItem(projectItem.itemId);
+                  const item = itemMap.get(projectItem.itemId);
                   if (!item) return null;
                   
                   return (
@@ -233,8 +282,8 @@ export default function Recipes() {
                         </NumberInput>
                       </Td>
                       <Td>
-                        <Badge colorScheme={projectItem.recipe ? "green" : "gray"}>
-                          {projectItem.recipe ? "Yes" : "Raw Material"}
+                        <Badge colorScheme={breakdown?.intermediates.has(projectItem.itemId) ? "green" : "gray"}>
+                          {breakdown?.intermediates.has(projectItem.itemId) ? "Yes" : "Raw Material"}
                         </Badge>
                       </Td>
                       <Td>
@@ -256,7 +305,7 @@ export default function Recipes() {
         )}
 
         {/* Breakdown Tabs */}
-        {projectItems.length > 0 && (
+        {projectItems.length > 0 && breakdown && (
           <Tabs>
             <TabList>
               <Tab>Raw Materials</Tab>
@@ -282,7 +331,7 @@ export default function Recipes() {
                       </Thead>
                       <Tbody>
                         {Array.from(breakdown.rawMaterials.entries()).map(([itemId, quantity]) => {
-                          const item = calculator.getItem(itemId);
+                          const item = calcData?.items[itemId] || itemMap.get(itemId);
                           return (
                             <Tr key={itemId}>
                               <Td fontWeight="medium">{item?.name || itemId}</Td>
@@ -316,7 +365,7 @@ export default function Recipes() {
                     </Thead>
                     <Tbody>
                       {Array.from(breakdown.totalItems.entries()).map(([itemId, quantity]) => {
-                        const item = calculator.getItem(itemId);
+                        const item = calcData?.items[itemId] || itemMap.get(itemId);
                         if (!item) return null;
                         
                         const isRaw = breakdown.rawMaterials.has(itemId);
@@ -358,7 +407,7 @@ export default function Recipes() {
                       </Thead>
                       <Tbody>
                         {craftingSteps.map((step, index) => {
-                          const item = calculator.getItem(step.itemId);
+                          const item = calcData?.items[step.itemId] || itemMap.get(step.itemId);
                           if (!item) return null;
                           
                           return (
@@ -382,14 +431,20 @@ export default function Recipes() {
               <TabPanel>
                 <VStack spacing={4} align="stretch">
                   <Heading size="md">Recipe Trees</Heading>
-                  {projectItems.map((projectItem) => (
-                    <RecipeTree
-                      key={projectItem.itemId}
-                      itemId={projectItem.itemId}
-                      quantity={projectItem.quantity}
-                      calculator={calculator}
-                    />
-                  ))}
+                  {projectItems.map((projectItem) => {
+                    const lookup = {
+                      getItem: (id: string) => calcData?.items[id] || itemMap.get(id),
+                      getRecipe: (id: string) => (calcData?.recipes || {})[id],
+                    };
+                    return (
+                      <RecipeTree
+                        key={projectItem.itemId}
+                        itemId={projectItem.itemId}
+                        quantity={projectItem.quantity}
+                        lookup={lookup}
+                      />
+                    );
+                  })}
                 </VStack>
               </TabPanel>
             </TabPanels>
