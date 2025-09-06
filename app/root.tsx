@@ -6,10 +6,11 @@ import {
   ScrollRestoration,
   LiveReload,
 } from "@remix-run/react";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
 import { useContext, useEffect } from "react";
 import { withEmotionCache } from "@emotion/react";
 import { ServerStyleContext, ClientStyleContext } from "./context";
+import theme from "./theme";
 
 interface DocumentProps {
   children: React.ReactNode;
@@ -48,6 +49,8 @@ const Document = withEmotionCache(
           ))}
         </head>
         <body>
+          {/* Ensure we start in dark mode for the new UI */}
+          <ColorModeScript initialColorMode={theme.config.initialColorMode} />
           {children}
           <ScrollRestoration />
           <Scripts />
@@ -61,7 +64,7 @@ const Document = withEmotionCache(
 export default function App() {
   return (
     <Document>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <Outlet />
       </ChakraProvider>
     </Document>

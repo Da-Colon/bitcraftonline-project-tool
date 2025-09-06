@@ -28,9 +28,23 @@ import {
   useToast,
   Flex,
   Spacer,
+  Divider,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Avatar,
+  Tag,
+  Link,
 } from "@chakra-ui/react";
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { DeleteIcon } from "@chakra-ui/icons";
+import {
+  DeleteIcon,
+  SearchIcon,
+  ChevronDownIcon,
+  TimeIcon,
+  ExternalLinkIcon,
+} from "@chakra-ui/icons";
 import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import { RecipeTree } from "~/components/ItemBreakdown";
 import { RECIPE_PROJECTS_KEY } from "~/constants/storage";
@@ -60,6 +74,7 @@ export default function Projects() {
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
   const [projectName, setProjectName] = useState("New Project");
   const [calcData, setCalcData] = useState<CalcResponse | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const toast = useToast();
 
   const itemMap = useMemo(
@@ -151,6 +166,7 @@ export default function Projects() {
   // Recalculate when projectItems change
   useEffect(() => {
     recalc(projectItems);
+    setLastUpdated(new Date());
   }, [projectItems, recalc]);
 
   const updateItemQuantity = useCallback((itemId: string, quantity: number) => {
@@ -200,59 +216,128 @@ export default function Projects() {
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
-        {/* Header */}
-        <Box>
-          <Heading size="xl" mb={1}>
-            BitCraft Project Planner
-          </Heading>
-          <Text color="gray.600">Plan a single project and its resources</Text>
-        </Box>
+        {/* Top App Bar */}
+        <Flex
+          p={4}
+          borderRadius="lg"
+          bg="gray.800"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+          align="center"
+        >
+          <HStack spacing={3}>
+            <Avatar size="sm" name="BC" bg="gray.700" color="white" />
+            <Box>
+              <HStack spacing={2}>
+                <Heading size="md">BitCraft Project Planner</Heading>
+                <Tag size="sm" colorScheme="gray" opacity={0.8}>
+                  v2.1.0
+                </Tag>
+              </HStack>
+              <Text fontSize="sm" color="gray.400">
+                Plan a single project and its resources
+              </Text>
+            </Box>
+          </HStack>
 
-        {/* Project Controls */}
-        <Box p={6} bg="gray.50" borderRadius="lg">
-          <Flex mb={4}>
-            <Input
-              placeholder="Project Name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              maxW="300px"
-            />
-            <Spacer />
-            <HStack>
-              <Button
-                onClick={() => recalc(projectItems)}
-                isDisabled={projectItems.length === 0}
-              >
-                Calculate Complete Project Resources
+          <Spacer />
+
+          <HStack spacing={3}>
+            <Link href="https://discord.com" isExternal>
+              <Button size="sm" variant="ghost" rightIcon={<ExternalLinkIcon />}
+                colorScheme="gray">
+                Discord
               </Button>
-              <Button
-                onClick={saveProject}
-                colorScheme="blue"
-                isDisabled={projectItems.length === 0}
-              >
+            </Link>
+            <Link href="#" isExternal>
+              <Button size="sm" variant="ghost" rightIcon={<ExternalLinkIcon />}
+                colorScheme="gray">
+                Support
+              </Button>
+            </Link>
+            <Menu>
+              <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
+                Switch Project
+              </MenuButton>
+              <MenuList>
+                <MenuItem>New Project</MenuItem>
+                <MenuItem>Demo Project A</MenuItem>
+                <MenuItem>Demo Project B</MenuItem>
+              </MenuList>
+            </Menu>
+          </HStack>
+        </Flex>
+
+        {/* Project header area + Tabs wrapper */}
+        <Tabs colorScheme="gray" variant="enclosed" defaultIndex={2}>
+          <Box p={5} bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200">
+          <Flex align="center" gap={4} mb={4}>
+            <Heading size="lg">{projectName || "Untitled Project"}</Heading>
+            <Badge colorScheme="gray" variant="subtle">
+              {projectItems.length} items
+            </Badge>
+            <HStack spacing={1} color="gray.400">
+              <TimeIcon />
+              <Text fontSize="sm">
+                {lastUpdated ? `Last updated ${lastUpdated.toLocaleTimeString()}` : "Not updated yet"}
+              </Text>
+            </HStack>
+            <Spacer />
+            <HStack spacing={2}>
+              <Input
+                placeholder="Project Name"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                maxW="280px"
+                bg="gray.900"
+                borderColor="whiteAlpha.300"
+              />
+              <Button onClick={saveProject} colorScheme="blue" variant="solid" isDisabled={projectItems.length === 0}>
                 Save Project
               </Button>
-              <Button onClick={clearProject} variant="outline">
-                Clear
-              </Button>
+              <Button onClick={clearProject} variant="outline">Clear</Button>
             </HStack>
           </Flex>
 
-          {/* Search & Add Items */}
-          <VStack spacing={4} align="stretch">
-            <Heading size="md">Add Items to Project</Heading>
+          {/* Primary tabs across the app */}
+            <TabList bg="gray.900" p={2} borderRadius="md" border="1px solid" borderColor="whiteAlpha.200">
+              <Tab>Project Planner</Tab>
+              <Tab>Recipe Tree</Tab>
+              <Tab>Resource Summary</Tab>
+              <Tab>Stats</Tab>
+              <Tab>Budget</Tab>
+            </TabList>
+          </Box>
+
+          {/* Add Items card (global action area) */}
+          <Box p={5} mt={4} bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200">
+            <Flex align="center" mb={3}>
+              <Heading size="md">Add Items to Project</Heading>
+              <Spacer />
+              <Button
+                leftIcon={<SearchIcon />}
+                onClick={() => recalc(projectItems)}
+                isDisabled={projectItems.length === 0}
+                variant="outline"
+              >
+                Calculate Complete Project Resources
+              </Button>
+            </Flex>
             <Input
               placeholder="Search items to add to project..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              bg="gray.900"
+              borderColor="whiteAlpha.300"
             />
 
             {searchResults.length > 0 && (
               <Box
-                maxH="200px"
+                mt={3}
+                maxH="220px"
                 overflowY="auto"
                 border="1px"
-                borderColor="gray.200"
+                borderColor="whiteAlpha.300"
                 borderRadius="md"
               >
                 {searchResults.map((item) => (
@@ -260,14 +345,14 @@ export default function Projects() {
                     key={item.id}
                     p={3}
                     borderBottom="1px"
-                    borderColor="gray.100"
+                    borderColor="whiteAlpha.200"
                     cursor="pointer"
-                    _hover={{ bg: "gray.100" }}
+                    _hover={{ bg: "whiteAlpha.100" }}
                     onClick={() => addItem(item)}
                   >
                     <Box>
                       <Text fontWeight="medium">{item.name}</Text>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize="sm" color="gray.400">
                         {item.category}
                       </Text>
                     </Box>
@@ -277,101 +362,125 @@ export default function Projects() {
                 ))}
               </Box>
             )}
-          </VStack>
-        </Box>
-
-        {/* Project Items Table */}
-        {projectItems.length > 0 && (
-          <Box>
-            <Heading size="md" mb={4}>
-              Project Items
-            </Heading>
-            <Table variant="simple">
-              <Thead>
-                <Tr>
-                  <Th>Item</Th>
-                  <Th>Category</Th>
-                  <Th>Quantity</Th>
-                  <Th>Has Recipe</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {projectItems.map((projectItem) => {
-                  const item = itemMap.get(projectItem.itemId);
-                  if (!item) return null;
-
-                  return (
-                    <Tr key={projectItem.itemId}>
-                      <Td>{item.name}</Td>
-                      <Td>{item.category}</Td>
-                      <Td>
-                        <NumberInput
-                          value={projectItem.quantity}
-                          onChange={(_, value) =>
-                            updateItemQuantity(projectItem.itemId, value)
-                          }
-                          min={1}
-                          max={1000}
-                          w="100px"
-                        >
-                          <NumberInputField />
-                          <NumberInputStepper>
-                            <NumberIncrementStepper />
-                            <NumberDecrementStepper />
-                          </NumberInputStepper>
-                        </NumberInput>
-                      </Td>
-                      <Td>
-                        <Badge
-                          colorScheme={
-                            breakdown?.intermediates.has(projectItem.itemId)
-                              ? "green"
-                              : "gray"
-                          }
-                        >
-                          {breakdown?.intermediates.has(projectItem.itemId)
-                            ? "Yes"
-                            : "Raw Material"}
-                        </Badge>
-                      </Td>
-                      <Td>
-                        <IconButton
-                          aria-label="Remove item"
-                          icon={<DeleteIcon />}
-                          size="sm"
-                          colorScheme="red"
-                          variant="ghost"
-                          onClick={() => removeItem(projectItem.itemId)}
-                        />
-                      </Td>
-                    </Tr>
-                  );
-                })}
-              </Tbody>
-            </Table>
           </Box>
-        )}
 
-        {/* Breakdown Tabs */}
-        {projectItems.length > 0 && breakdown && (
-          <Tabs>
-            <TabList>
-              <Tab>Resource Summary</Tab>
-              <Tab>All Requirements</Tab>
-              <Tab>Crafting Steps</Tab>
-              <Tab>Recipe Tree</Tab>
-            </TabList>
+          {/* Main content driven by tabs */}
+          <TabPanels>
+            {/* 0: Project Planner */}
+            <TabPanel>
+              {projectItems.length > 0 ? (
+                <Box bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200" p={4}>
+                  <Heading size="md" mb={4}>
+                    Project Items
+                  </Heading>
+                  <Table variant="simple" size="sm">
+                    <Thead>
+                      <Tr>
+                        <Th>Item</Th>
+                        <Th>Category</Th>
+                        <Th>Quantity</Th>
+                        <Th>Has Recipe</Th>
+                        <Th>Actions</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {projectItems.map((projectItem) => {
+                        const item = itemMap.get(projectItem.itemId);
+                        if (!item) return null;
 
-            <TabPanels>
-              {/* Resource Summary (raw materials) */}
-              <TabPanel>
+                        return (
+                          <Tr key={projectItem.itemId}>
+                            <Td>{item.name}</Td>
+                            <Td>{item.category}</Td>
+                            <Td>
+                              <NumberInput
+                                value={projectItem.quantity}
+                                onChange={(_, value) =>
+                                  updateItemQuantity(projectItem.itemId, value)
+                                }
+                                min={1}
+                                max={1000}
+                                w="100px"
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper />
+                                  <NumberDecrementStepper />
+                                </NumberInputStepper>
+                              </NumberInput>
+                            </Td>
+                            <Td>
+                              <Badge
+                                colorScheme={
+                                  breakdown?.intermediates.has(projectItem.itemId)
+                                    ? "green"
+                                    : "gray"
+                                }
+                              >
+                                {breakdown?.intermediates.has(projectItem.itemId)
+                                  ? "Yes"
+                                  : "Raw Material"}
+                              </Badge>
+                            </Td>
+                            <Td>
+                              <IconButton
+                                aria-label="Remove item"
+                                icon={<DeleteIcon />}
+                                size="sm"
+                                colorScheme="red"
+                                variant="ghost"
+                                onClick={() => removeItem(projectItem.itemId)}
+                              />
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+                    </Tbody>
+                  </Table>
+                </Box>
+              ) : (
+                <Box bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200" p={12} textAlign="center">
+                  <Text fontSize="2xl" mb={2}>📦</Text>
+                  <Heading size="sm" mb={2}>No items in project</Heading>
+                  <Text color="gray.400">Use the search above to add items to your crafting project.</Text>
+                </Box>
+              )}
+            </TabPanel>
+
+            {/* 1: Recipe Tree */}
+            <TabPanel>
+              {projectItems.length > 0 && breakdown ? (
+                <VStack spacing={4} align="stretch">
+                  <Heading size="md">Recipe Tree</Heading>
+                  {projectItems.map((projectItem) => {
+                    const lookup = {
+                      getItem: (id: string) => calcData?.items[id] || itemMap.get(id),
+                      getRecipe: (id: string) => (calcData?.recipes || {})[id],
+                    };
+                    return (
+                      <RecipeTree
+                        key={projectItem.itemId}
+                        itemId={projectItem.itemId}
+                        quantity={projectItem.quantity}
+                        lookup={lookup}
+                      />
+                    );
+                  })}
+                </VStack>
+              ) : (
+                <Text color="gray.400">Add items to view the recipe tree.</Text>
+              )}
+            </TabPanel>
+
+            {/* 2: Resource Summary (raw materials) */}
+            <TabPanel>
+              {projectItems.length > 0 && breakdown ? (
                 <VStack spacing={4} align="stretch">
                   <Heading size="md">Raw Materials</Heading>
                   {breakdown.rawMaterials.size === 0 ? (
-                    <Text color="gray.500">No raw materials needed</Text>
+                    <Text color="gray.400">No raw materials needed</Text>
                   ) : (
-                    <Table variant="simple">
+                    <Table variant="simple" size="sm">
                       <Thead>
                         <Tr>
                           <Th>Item</Th>
@@ -403,124 +512,109 @@ export default function Projects() {
                     </Table>
                   )}
                 </VStack>
-              </TabPanel>
+              ) : (
+                <Text color="gray.400">Add items to see resource summary.</Text>
+              )}
+            </TabPanel>
 
-              {/* All Requirements Tab */}
-              <TabPanel>
-                <VStack spacing={4} align="stretch">
-                  <Heading size="md">All Items Required</Heading>
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Item</Th>
-                        <Th>Category</Th>
-                        <Th>Type</Th>
-                        <Th isNumeric>Quantity</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {Array.from(breakdown.totalItems.entries()).map(
-                        ([itemId, quantity]) => {
-                          const item = calcData?.items[itemId] || itemMap.get(itemId);
-                          if (!item) return null;
-
-                          const isRaw = breakdown.rawMaterials.has(itemId);
-                          const isIntermediate = breakdown.intermediates.has(itemId);
-
-                          return (
-                            <Tr key={itemId}>
-                              <Td>{item.name}</Td>
-                              <Td>{item.category}</Td>
-                              <Td>
-                                <Badge
-                                  colorScheme={
-                                    isRaw ? "orange" : isIntermediate ? "blue" : "gray"
-                                  }
-                                >
-                                  {isRaw ? "Raw" : isIntermediate ? "Crafted" : "Final"}
-                                </Badge>
-                              </Td>
-                              <Td isNumeric>{quantity}</Td>
-                            </Tr>
-                          );
-                        }
-                      )}
-                    </Tbody>
-                  </Table>
-                </VStack>
-              </TabPanel>
-
-              {/* Crafting Steps Tab */}
-              <TabPanel>
-                <VStack spacing={4} align="stretch">
-                  <Heading size="md">Crafting Order</Heading>
-                  {craftingSteps.length === 0 ? (
-                    <Text color="gray.500">
-                      No crafting required (only raw materials)
-                    </Text>
-                  ) : (
-                    <Table variant="simple">
+            {/* 3: Stats (All requirements + crafting steps) */}
+            <TabPanel>
+              {projectItems.length > 0 && breakdown ? (
+                <VStack spacing={8} align="stretch">
+                  <Box>
+                    <Heading size="md" mb={3}>All Items Required</Heading>
+                    <Table variant="simple" size="sm">
                       <Thead>
                         <Tr>
-                          <Th>Step</Th>
                           <Th>Item</Th>
-                          <Th>Tier</Th>
-                          <Th isNumeric>Quantity to Craft</Th>
+                          <Th>Category</Th>
+                          <Th>Type</Th>
+                          <Th isNumeric>Quantity</Th>
                         </Tr>
                       </Thead>
                       <Tbody>
-                        {craftingSteps.map((step, index) => {
-                          const item = calcData?.items[step.itemId] || itemMap.get(step.itemId);
-                          if (!item) return null;
+                        {Array.from(breakdown.totalItems.entries()).map(
+                          ([itemId, quantity]) => {
+                            const item = calcData?.items[itemId] || itemMap.get(itemId);
+                            if (!item) return null;
 
-                          return (
-                            <Tr key={step.itemId}>
-                              <Td>{index + 1}</Td>
-                              <Td>{item.name}</Td>
-                              <Td>
-                                <Badge colorScheme="purple">Tier {step.tier}</Badge>
-                              </Td>
-                              <Td isNumeric>{step.quantity}</Td>
-                            </Tr>
-                          );
-                        })}
+                            const isRaw = breakdown.rawMaterials.has(itemId);
+                            const isIntermediate = breakdown.intermediates.has(itemId);
+
+                            return (
+                              <Tr key={itemId}>
+                                <Td>{item.name}</Td>
+                                <Td>{item.category}</Td>
+                                <Td>
+                                  <Badge
+                                    colorScheme={
+                                      isRaw ? "orange" : isIntermediate ? "blue" : "gray"
+                                    }
+                                  >
+                                    {isRaw ? "Raw" : isIntermediate ? "Crafted" : "Final"}
+                                  </Badge>
+                                </Td>
+                                <Td isNumeric>{quantity}</Td>
+                              </Tr>
+                            );
+                          }
+                        )}
                       </Tbody>
                     </Table>
-                  )}
-                </VStack>
-              </TabPanel>
+                  </Box>
 
-              {/* Recipe Tree Tab */}
-              <TabPanel>
-                <VStack spacing={4} align="stretch">
-                  <Heading size="md">Recipe Tree</Heading>
-                  {projectItems.map((projectItem) => {
-                    const lookup = {
-                      getItem: (id: string) => calcData?.items[id] || itemMap.get(id),
-                      getRecipe: (id: string) => (calcData?.recipes || {})[id],
-                    };
-                    return (
-                      <RecipeTree
-                        key={projectItem.itemId}
-                        itemId={projectItem.itemId}
-                        quantity={projectItem.quantity}
-                        lookup={lookup}
-                      />
-                    );
-                  })}
-                </VStack>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
-        )}
+                  <Divider borderColor="whiteAlpha.300" />
 
-        {projectItems.length === 0 && (
-          <Box textAlign="center" py={12}>
-            <Text fontSize="lg" color="gray.500">
-              Use the search above to add items to your crafting project.
-            </Text>
-          </Box>
-        )}
+                  <Box>
+                    <Heading size="md" mb={3}>Crafting Order</Heading>
+                    {craftingSteps.length === 0 ? (
+                      <Text color="gray.400">No crafting required (only raw materials)</Text>
+                    ) : (
+                      <Table variant="simple" size="sm">
+                        <Thead>
+                          <Tr>
+                            <Th>Step</Th>
+                            <Th>Item</Th>
+                            <Th>Tier</Th>
+                            <Th isNumeric>Quantity to Craft</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
+                          {craftingSteps.map((step, index) => {
+                            const item = calcData?.items[step.itemId] || itemMap.get(step.itemId);
+                            if (!item) return null;
+
+                            return (
+                              <Tr key={step.itemId}>
+                                <Td>{index + 1}</Td>
+                                <Td>{item.name}</Td>
+                                <Td>
+                                  <Badge colorScheme="purple">Tier {step.tier}</Badge>
+                                </Td>
+                                <Td isNumeric>{step.quantity}</Td>
+                              </Tr>
+                            );
+                          })}
+                        </Tbody>
+                      </Table>
+                    )}
+                  </Box>
+                </VStack>
+              ) : (
+                <Text color="gray.400">Stats will appear after adding items.</Text>
+              )}
+            </TabPanel>
+
+            {/* 4: Budget placeholder */}
+            <TabPanel>
+              <Box bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200" p={6}>
+                <Heading size="md" mb={2}>Budget</Heading>
+                <Text color="gray.400">Budget planning UI is coming soon.</Text>
+              </Box>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+        
       </VStack>
     </Container>
   );

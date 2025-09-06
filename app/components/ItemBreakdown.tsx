@@ -55,10 +55,10 @@ export function ItemBreakdown({
         pl={`${indent}px`}
         py={2}
         px={3}
-        bg={level % 2 === 0 ? "gray.50" : "white"}
+        bg={level % 2 === 0 ? "gray.800" : "gray.900"}
         borderLeft={level > 0 ? "2px solid" : "none"}
-        borderLeftColor="gray.200"
-        _hover={{ bg: "blue.50" }}
+        borderLeftColor="whiteAlpha.300"
+        _hover={{ bg: "whiteAlpha.100" }}
       >
         <HStack spacing={2} flex={1}>
           {hasRecipe && (
@@ -84,7 +84,7 @@ export function ItemBreakdown({
             Tier {item.tier}
           </Badge>
           
-          <Text fontSize="sm" color="gray.600">
+          <Text fontSize="sm" color="gray.400">
             ({item.category})
           </Text>
         </HStack>
@@ -92,11 +92,11 @@ export function ItemBreakdown({
         <Spacer />
         
         <VStack spacing={0} align="end">
-          <Text fontWeight="bold" color="blue.600">
+          <Text fontWeight="bold" color="blue.300">
             {quantity}x
           </Text>
           {recipe && (
-            <Text fontSize="xs" color="gray.500">
+            <Text fontSize="xs" color="gray.400">
               {Math.ceil(quantity / recipe.outputQuantity)} batches
             </Text>
           )}
@@ -146,8 +146,8 @@ export function RecipeTree({ itemId, quantity, lookup }: RecipeTreeProps) {
   }
 
   return (
-    <Box border="1px" borderColor="gray.200" borderRadius="md" overflow="hidden">
-      <Box bg="blue.500" color="white" p={3}>
+    <Box border="1px" borderColor="whiteAlpha.300" borderRadius="md" overflow="hidden">
+      <Box bg="blue.600" color="white" p={3}>
         <Text fontWeight="bold" fontSize="lg">
           Recipe Tree: {item.name}
         </Text>
