@@ -243,30 +243,16 @@ export default function Index() {
 
           <Spacer />
 
-          <HStack spacing={3}>
-            <Link href="https://discord.com" isExternal>
-              <Button size="sm" variant="ghost" rightIcon={<ExternalLinkIcon />}
-                colorScheme="gray">
-                Discord
-              </Button>
-            </Link>
-            <Link href="#" isExternal>
-              <Button size="sm" variant="ghost" rightIcon={<ExternalLinkIcon />}
-                colorScheme="gray">
-                Support
-              </Button>
-            </Link>
-            <Menu>
-              <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
-                Switch Project
-              </MenuButton>
-              <MenuList>
-                <MenuItem>New Project</MenuItem>
-                <MenuItem>Demo Project A</MenuItem>
-                <MenuItem>Demo Project B</MenuItem>
-              </MenuList>
-            </Menu>
-          </HStack>
+          <Menu>
+            <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
+              Switch Project
+            </MenuButton>
+            <MenuList>
+              <MenuItem>New Project</MenuItem>
+              <MenuItem>Demo Project A</MenuItem>
+              <MenuItem>Demo Project B</MenuItem>
+            </MenuList>
+          </Menu>
         </Flex>
 
         {/* Project header area + Tabs wrapper */}
