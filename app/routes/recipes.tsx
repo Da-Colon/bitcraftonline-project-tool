@@ -29,7 +29,7 @@ import {
   Flex,
   Spacer,
 } from "@chakra-ui/react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { DeleteIcon, AddIcon } from "@chakra-ui/icons";
 import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import { RecipeTree } from "~/components/ItemBreakdown";
@@ -48,6 +48,7 @@ export async function loader({}: LoaderFunctionArgs) {
 export default function Recipes() {
   const { items: loaderItems } = useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
   const [projectName, setProjectName] = useState("New Project");
   const toast = useToast();
@@ -64,17 +65,25 @@ export default function Recipes() {
 
   const [calcData, setCalcData] = useState<CalcResponse | null>(null);
 
-  // Search results
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Search results with debounced query
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
+    if (!debouncedSearchQuery.trim()) return [];
+    const q = debouncedSearchQuery.toLowerCase();
     return loaderItems
       .filter(
         (item: Item) =>
           item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
       )
       .slice(0, 10);
-  }, [searchQuery, loaderItems]);
+  }, [debouncedSearchQuery, loaderItems]);
 
   // Calculate breakdown
   const breakdown = useMemo(() => {
@@ -89,7 +98,7 @@ export default function Recipes() {
   // Crafting steps
   const craftingSteps = useMemo(() => calcData?.steps ?? [], [calcData]);
 
-  const addItem = (item: Item) => {
+  const addItem = useCallback((item: Item) => {
     const existingIndex = projectItems.findIndex(pi => pi.itemId === item.id);
     
     if (existingIndex >= 0) {
@@ -107,6 +116,7 @@ export default function Recipes() {
     }
     
     setSearchQuery("");
+    setDebouncedSearchQuery(""); // Clear debounced query too
     toast({
       title: "Item added",
       description: `${item.name} added to project`,
@@ -114,7 +124,7 @@ export default function Recipes() {
       duration: 2000,
       isClosable: true,
     });
-  };
+  }, [projectItems, toast]);
 
   // Recalculate server-side when projectItems change
   useEffect(() => {
@@ -136,23 +146,22 @@ export default function Recipes() {
     run();
   }, [projectItems]);
 
-  const updateItemQuantity = (itemId: string, quantity: number) => {
+  const updateItemQuantity = useCallback((itemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(itemId);
+      setProjectItems(prev => prev.filter(item => item.itemId !== itemId));
       return;
     }
     
-    const updated = projectItems.map(item =>
+    setProjectItems(prev => prev.map(item =>
       item.itemId === itemId ? { ...item, quantity } : item
-    );
-    setProjectItems(updated);
-  };
+    ));
+  }, []);
 
-  const removeItem = (itemId: string) => {
-    setProjectItems(projectItems.filter(item => item.itemId !== itemId));
-  };
+  const removeItem = useCallback((itemId: string) => {
+    setProjectItems(prev => prev.filter(item => item.itemId !== itemId));
+  }, []);
 
-  const saveProject = () => {
+  const saveProject = useCallback(() => {
     const project = {
       id: Date.now().toString(),
       name: projectName,
@@ -172,12 +181,12 @@ export default function Recipes() {
       duration: 3000,
       isClosable: true,
     });
-  };
+  }, [projectName, projectItems, toast]);
 
-  const clearProject = () => {
+  const clearProject = useCallback(() => {
     setProjectItems([]);
     setProjectName("New Project");
-  };
+  }, []);
 
   return (
     <Container maxW="container.xl" py={8}>
