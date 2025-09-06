@@ -1,13 +1,13 @@
-BitCraft Helper
-================
+BitCraft Project Planner
+=======================
 
-A Remix + Vite app with Chakra UI that helps plan BitCraft crafting projects and (future) player/claim tools. It ingests BitCraft GameData via a Git submodule and provides a recipe calculator and API endpoints.
+A Remix + Vite one‑pager with Chakra UI to plan BitCraft crafting projects. It ingests BitCraft GameData via a Git submodule and provides a server API to compute recipe/resource breakdowns.
 
 Project Structure
 - `app/`: Remix app code
-  - `routes/`: UI and API routes (server-only API under `api.*`)
-  - `services/`: domain logic; server-only files end with `.server.ts`
-  - `components/`, `types/`, `utils/`, `constants/`
+  - `routes/`: `/projects` (main UI) and `api.recipes.calculate` (server API)
+  - `services/`: recipe calculator + bitcraft parser
+  - `components/`, `types/`, `constants/`
   - `entry.*`, `root.tsx`: Chakra + Emotion SSR setup
 - `GameData/BitCraft_GameData`: Git submodule with JSON game data
 - `scripts/`: Node scripts and tests
@@ -19,19 +19,9 @@ Common Tasks
 - Build: `npm run build`
 - Start (prod): `npm start`
 - Typecheck: `npm run typecheck`
-- Extract BitCraft data to `app/data/bitcraft-data.ts` (optional for client use):
-  - `npm run data:extract`
-- Run sample data tests:
-  - `npm run test:data`
-  - `npm run test:search`
-  - `npm run test:recipes`
 
 Environment
-- Server env is validated in `app/utils/env.server.ts` (zod schema)
-- Example `.env` (do not commit secrets):
-  - `DATABASE_URL`, `REDIS_URL`, `BITJITA_BASE_URL`, `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW`
+- No server env vars are required for the planner.
 
 Notes
-- The app reads BitCraft GameData directly in server code via JSON imports. Scripts under `scripts/bitcraft` offer Node-based parsing and optional extraction for client-side bundles.
-- Server-only modules that use Node APIs (`fs`, `path`, Redis) are suffixed with `.server.ts`.
-
+- The app reads BitCraft GameData directly in server code via JSON imports.
