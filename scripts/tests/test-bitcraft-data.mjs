@@ -1,7 +1,7 @@
 // Test BitCraft Data Integration
 
 // Import our parsing functions
-import { loadAndParseBitCraftData } from './bitcraft-data-loader.js';
+import { loadAndParseBitCraftData } from '../bitcraft/bitcraft-data-loader.js';
 
 console.log('Testing BitCraft Data Integration...');
 

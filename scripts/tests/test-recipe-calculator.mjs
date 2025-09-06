@@ -1,5 +1,5 @@
 // Test RecipeCalculator with BitCraft Data
-import { loadAndParseBitCraftData } from './bitcraft-data-loader.js';
+import { loadAndParseBitCraftData } from '../bitcraft/bitcraft-data-loader.js';
 
 // Simple RecipeCalculator implementation for testing
 class TestRecipeCalculator {

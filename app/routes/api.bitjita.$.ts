@@ -1,3 +1,4 @@
+// API route for BitJita proxy (server-only)
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { rateLimit } from "~/services/rate-limit.server";

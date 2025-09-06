@@ -1,5 +1,5 @@
 // Extract BitCraft Data for Browser Use
-import { loadAndParseBitCraftData } from '../bitcraft-data-loader.js';
+import { loadAndParseBitCraftData } from './bitcraft/bitcraft-data-loader.js';
 import * as fs from 'fs';
 import * as path from 'path';
 

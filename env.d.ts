@@ -1,9 +1,10 @@
 /// <reference types="@remix-run/node" />
 /// <reference types="vite/client" />
 
-interface ImportMetaEnv {
-  readonly VITE_BITJITA_BASE_URL: string;
-}
+// Client-side Vite env variables
+// Note: currently the app does not consume a VITE_ client env var.
+// Add here if you introduce client-side env usage.
+interface ImportMetaEnv {}
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;

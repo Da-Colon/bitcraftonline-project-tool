@@ -1,5 +1,5 @@
 // Test Search Functionality with BitCraft Data
-import { loadAndParseBitCraftData } from './bitcraft-data-loader.js';
+import { loadAndParseBitCraftData } from '../bitcraft/bitcraft-data-loader.js';
 
 console.log('Testing search functionality with BitCraft data...');
 

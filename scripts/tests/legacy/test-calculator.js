@@ -1,4 +1,7 @@
+// Legacy test (does not run as-is): kept for reference
 // Simple test to verify the calculator works
+// Note: This attempted to import a TypeScript server file directly in Node.
+// Use scripts/tests/test-recipe-calculator.mjs for a working example.
 import { RecipeCalculator } from "./app/services/recipe-calculator.ts";
 
 const calculator = new RecipeCalculator();

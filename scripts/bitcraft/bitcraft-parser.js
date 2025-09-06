@@ -1,4 +1,4 @@
-// BitCraft Data Parser (JavaScript version for testing)
+// BitCraft Data Parser (JavaScript version for testing) - moved under scripts/bitcraft
 
 // Convert BitCraft numeric ID to our string ID format
 function convertId(id) {

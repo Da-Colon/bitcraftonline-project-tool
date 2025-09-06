@@ -1,15 +1,14 @@
-// BitCraft Data Loader
+// BitCraft Data Loader (JavaScript version for testing) - moved under scripts/bitcraft
 import * as fs from 'fs';
 import * as path from 'path';
-import { BitCraftItem, BitCraftRecipe } from '../types/bitcraft-data';
-import { parseItem, parseRecipe, parseExtractionRecipe } from './bitcraft-parser';
+import { parseItem, parseRecipe, parseExtractionRecipe } from './bitcraft-parser.js';
 
 // Load items from BitCraft GameData
-export function loadBitCraftItems(): BitCraftItem[] {
+export function loadBitCraftItems() {
   try {
     const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'server', 'region', 'item_desc.json');
     const rawData = fs.readFileSync(gameDataPath, 'utf-8');
-    const items: BitCraftItem[] = JSON.parse(rawData);
+    const items = JSON.parse(rawData);
     return items;
   } catch (error) {
     console.error('Error loading BitCraft items:', error);
@@ -18,11 +17,11 @@ export function loadBitCraftItems(): BitCraftItem[] {
 }
 
 // Load crafting recipes from BitCraft GameData
-export function loadBitCraftRecipes(): BitCraftRecipe[] {
+export function loadBitCraftRecipes() {
   try {
     const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'server', 'region', 'crafting_recipe_desc.json');
     const rawData = fs.readFileSync(gameDataPath, 'utf-8');
-    const recipes: BitCraftRecipe[] = JSON.parse(rawData);
+    const recipes = JSON.parse(rawData);
     return recipes;
   } catch (error) {
     console.error('Error loading BitCraft recipes:', error);
@@ -31,11 +30,11 @@ export function loadBitCraftRecipes(): BitCraftRecipe[] {
 }
 
 // Load extraction recipes from BitCraft GameData
-export function loadBitCraftExtractionRecipes(): any[] {
+export function loadBitCraftExtractionRecipes() {
   try {
     const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'server', 'region', 'extraction_recipe_desc.json');
     const rawData = fs.readFileSync(gameDataPath, 'utf-8');
-    const recipes: any[] = JSON.parse(rawData);
+    const recipes = JSON.parse(rawData);
     return recipes;
   } catch (error) {
     console.error('Error loading BitCraft extraction recipes:', error);
@@ -58,10 +57,10 @@ export function loadAndParseBitCraftData() {
   const parsedItems = rawItems.map(parseItem);
   
   // Parse crafting recipes
-  const parsedCraftingRecipes = rawRecipes.map(parseRecipe).filter((recipe): recipe is any => recipe !== null);
+  const parsedCraftingRecipes = rawRecipes.map(parseRecipe).filter((recipe) => recipe !== null);
   
   // Parse extraction recipes
-  const parsedExtractionRecipes = rawExtractionRecipes.map((recipe: any) => parseExtractionRecipe(recipe)).filter((recipe): recipe is any => recipe !== null);
+  const parsedExtractionRecipes = rawExtractionRecipes.map((recipe) => parseExtractionRecipe(recipe)).filter((recipe) => recipe !== null);
   
   // Combine all recipes
   const allParsedRecipes = [...parsedCraftingRecipes, ...parsedExtractionRecipes];
