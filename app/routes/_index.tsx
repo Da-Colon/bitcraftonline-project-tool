@@ -112,10 +112,7 @@ export default function Index() {
       totalItems: new Map(calcData.totalItems),
     };
   }, [calcData]);
-
-  // Crafting steps
-  const craftingSteps = useMemo(() => calcData?.steps ?? [], [calcData]);
-
+  
   const addItem = useCallback(
     (item: Item) => {
       const existingIndex = projectItems.findIndex(
@@ -283,8 +280,6 @@ export default function Index() {
               <Tab>Project Planner</Tab>
               <Tab>Recipe Tree</Tab>
               <Tab>Resource Summary</Tab>
-              <Tab>Stats</Tab>
-              <Tab>Budget</Tab>
             </TabList>
           </Box>
 
@@ -494,99 +489,7 @@ export default function Index() {
               )}
             </TabPanel>
 
-            {/* 3: Stats (All requirements + crafting steps) */}
-            <TabPanel>
-              {projectItems.length > 0 && breakdown ? (
-                <VStack spacing={8} align="stretch">
-                  <Box>
-                    <Heading size="md" mb={3}>All Items Required</Heading>
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          <Th>Item</Th>
-                          <Th>Category</Th>
-                          <Th>Type</Th>
-                          <Th isNumeric>Quantity</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {Array.from(breakdown.totalItems.entries()).map(
-                          ([itemId, quantity]) => {
-                            const item = calcData?.items[itemId] || itemMap.get(itemId);
-                            if (!item) return null;
-
-                            const isRaw = breakdown.rawMaterials.has(itemId);
-                            const isIntermediate = breakdown.intermediates.has(itemId);
-
-                            return (
-                              <Tr key={itemId}>
-                                <Td>{item.name}</Td>
-                                <Td>{item.category}</Td>
-                                <Td>
-                                  <Badge
-                                    colorScheme={
-                                      isRaw ? "orange" : isIntermediate ? "blue" : "gray"
-                                    }
-                                  >
-                                    {isRaw ? "Raw" : isIntermediate ? "Crafted" : "Final"}
-                                  </Badge>
-                                </Td>
-                                <Td isNumeric>{quantity}</Td>
-                              </Tr>
-                            );
-                          }
-                        )}
-                      </Tbody>
-                    </Table>
-                  </Box>
-
-                  <Box mt={6}>
-                    <Heading size="md" mb={3}>Crafting Order</Heading>
-                    {craftingSteps.length === 0 ? (
-                      <Text color="text.muted">No crafting required (only raw materials)</Text>
-                    ) : (
-                      <Table variant="simple" size="sm">
-                        <Thead>
-                          <Tr>
-                            <Th>Step</Th>
-                            <Th>Item</Th>
-                            <Th>Tier</Th>
-                            <Th isNumeric>Quantity to Craft</Th>
-                          </Tr>
-                        </Thead>
-                        <Tbody>
-                          {craftingSteps.map((step, index) => {
-                            const item = calcData?.items[step.itemId] || itemMap.get(step.itemId);
-                            if (!item) return null;
-
-                            return (
-                              <Tr key={step.itemId}>
-                                <Td>{index + 1}</Td>
-                                <Td>{item.name}</Td>
-                                <Td>
-                                  <Badge colorScheme={getTierColorScheme(step.tier)}>Tier {step.tier}</Badge>
-                                </Td>
-                                <Td isNumeric>{step.quantity}</Td>
-                              </Tr>
-                            );
-                          })}
-                        </Tbody>
-                      </Table>
-                    )}
-                  </Box>
-                </VStack>
-              ) : (
-                <Text color="text.muted">Stats will appear after adding items.</Text>
-              )}
-            </TabPanel>
-
-            {/* 4: Budget placeholder */}
-            <TabPanel>
-              <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={6}>
-                <Heading size="md" mb={2}>Budget</Heading>
-                <Text color="text.muted">Budget planning UI is coming soon.</Text>
-              </Box>
-            </TabPanel>
+            
           </TabPanels>
         </Tabs>
         
