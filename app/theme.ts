@@ -154,17 +154,32 @@ const theme = extendTheme({
       },
     },
     Input: {
+      baseStyle: {
+        field: {
+          color: "text.primary",
+          _placeholder: {
+            color: "text.muted",
+          },
+        },
+      },
       variants: {
         filled: {
           field: {
-            bg: "surface.background",
-            borderColor: "border.secondary",
+            bg: "surface.elevated",
+            border: "1px solid",
+            borderColor: "border.primary",
             _hover: {
-              borderColor: "border.accent",
+              bg: "surface.elevated",
+              borderColor: "border.secondary",
             },
             _focus: {
-              borderColor: "border.focus",
-              boxShadow: "0 0 0 1px var(--chakra-colors-border-focus)",
+              bg: "surface.elevated",
+              borderColor: "brand.primary",
+              boxShadow: "0 0 0 1px var(--chakra-colors-brand-primary)",
+            },
+            _invalid: {
+              borderColor: "status.error",
+              boxShadow: "0 0 0 1px var(--chakra-colors-status-error)",
             },
           },
         },

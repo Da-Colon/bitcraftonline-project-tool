@@ -36,7 +36,6 @@ import {
   MenuItem,
   MenuList,
   Avatar,
-  Tag,
 } from "@chakra-ui/react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -54,7 +53,9 @@ import { getTierColorScheme } from "~/theme";
 export async function loader({}: LoaderFunctionArgs) {
   const calc = new RecipeCalculator();
   const items = calc.getAllItems();
-  return json({ items });
+  const { getAppVersion } = await import("~/utils/version.server");
+  const version = await getAppVersion();
+  return json({ items, version });
 }
 
 type CalcResponse = {
@@ -67,7 +68,7 @@ type CalcResponse = {
 };
 
 export default function Index() {
-  const { items: loaderItems } = useLoaderData<typeof loader>();
+  const { items: loaderItems, version } = useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
@@ -224,7 +225,7 @@ export default function Index() {
                 <HStack spacing={2}>
                   <Heading size="md">BitCraft Project Planner</Heading>
                   <Badge variant="status">
-                    v2.1.0
+                    {`v${version}`}
                   </Badge>
                 </HStack>
                 <Text fontSize="sm" color="text.muted">
