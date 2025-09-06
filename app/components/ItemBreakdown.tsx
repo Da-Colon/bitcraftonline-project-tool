@@ -11,8 +11,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons";
-import { useState } from "react";
 import type { Item, Recipe } from "~/types/recipes";
+import { getTierColorScheme } from "~/theme";
 
 export interface RecipeLookup {
   getItem: (id: string) => Item | undefined;
@@ -55,10 +55,10 @@ export function ItemBreakdown({
         pl={`${indent}px`}
         py={2}
         px={3}
-        bg={level % 2 === 0 ? "gray.800" : "gray.900"}
+        bg={level % 2 === 0 ? "surface.primary" : "surface.background"}
         borderLeft={level > 0 ? "2px solid" : "none"}
-        borderLeftColor="whiteAlpha.300"
-        _hover={{ bg: "whiteAlpha.100" }}
+        borderLeftColor="border.secondary"
+        _hover={{ bg: "surface.secondary" }}
       >
         <HStack spacing={2} flex={1}>
           {hasRecipe && (
@@ -78,13 +78,13 @@ export function ItemBreakdown({
           </Text>
           
           <Badge 
-            colorScheme={item.tier === 0 ? "orange" : item.tier === 1 ? "blue" : "purple"}
+            colorScheme={getTierColorScheme(item.tier)}
             size="sm"
           >
             Tier {item.tier}
           </Badge>
           
-          <Text fontSize="sm" color="gray.400">
+          <Text fontSize="sm" color="text.muted">
             ({item.category})
           </Text>
         </HStack>
@@ -92,11 +92,11 @@ export function ItemBreakdown({
         <Spacer />
         
         <VStack spacing={0} align="end">
-          <Text fontWeight="bold" color="blue.300">
+          <Text fontWeight="bold" color="brand.primary">
             {quantity}x
           </Text>
           {recipe && (
-            <Text fontSize="xs" color="gray.400">
+            <Text fontSize="xs" color="text.muted">
               {Math.ceil(quantity / recipe.outputQuantity)} batches
             </Text>
           )}
@@ -146,12 +146,12 @@ export function RecipeTree({ itemId, quantity, lookup }: RecipeTreeProps) {
   }
 
   return (
-    <Box border="1px" borderColor="whiteAlpha.300" borderRadius="md" overflow="hidden">
-      <Box bg="blue.600" color="white" p={3}>
+    <Box border="1px" borderColor="border.secondary" borderRadius="md" overflow="hidden">
+      <Box bg="brand.primary" color="white" p={3}>
         <Text fontWeight="bold" fontSize="lg">
           Recipe Tree: {item.name}
         </Text>
-        <Text fontSize="sm" opacity={0.9}>
+        <Text fontSize="sm" color="whiteAlpha.800">
           Showing breakdown for {quantity} units
         </Text>
       </Box>

@@ -49,6 +49,7 @@ import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import { RecipeTree } from "~/components/ItemBreakdown";
 import { RECIPE_PROJECTS_KEY } from "~/constants/storage";
 import { RecipeCalculator } from "~/services/recipe-calculator.server";
+import { getTierColorScheme } from "~/theme";
 
 export async function loader({}: LoaderFunctionArgs) {
   const calc = new RecipeCalculator();
@@ -215,52 +216,47 @@ export default function Index() {
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
         {/* Top App Bar */}
-        <Flex
-          p={4}
-          borderRadius="lg"
-          bg="gray.800"
-          border="1px solid"
-          borderColor="whiteAlpha.200"
-          align="center"
-        >
-          <HStack spacing={3}>
-            <Avatar size="sm" name="BC" bg="gray.700" color="white" />
-            <Box>
-              <HStack spacing={2}>
-                <Heading size="md">BitCraft Project Planner</Heading>
-                <Tag size="sm" colorScheme="gray" opacity={0.8}>
-                  v2.1.0
-                </Tag>
-              </HStack>
-              <Text fontSize="sm" color="gray.400">
-                Plan a single project and its resources
-              </Text>
-            </Box>
-          </HStack>
+        <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={4}>
+          <Flex align="center">
+            <HStack spacing={3}>
+              <Avatar size="sm" name="BC" />
+              <Box>
+                <HStack spacing={2}>
+                  <Heading size="md">BitCraft Project Planner</Heading>
+                  <Badge variant="status">
+                    v2.1.0
+                  </Badge>
+                </HStack>
+                <Text fontSize="sm" color="text.muted">
+                  Plan a single project and its resources
+                </Text>
+              </Box>
+            </HStack>
 
-          <Spacer />
+            <Spacer />
 
-          <Menu>
-            <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
-              Switch Project
-            </MenuButton>
-            <MenuList>
-              <MenuItem>New Project</MenuItem>
-              <MenuItem>Demo Project A</MenuItem>
-              <MenuItem>Demo Project B</MenuItem>
-            </MenuList>
-          </Menu>
-        </Flex>
+            <Menu>
+              <MenuButton as={Button} size="sm" rightIcon={<ChevronDownIcon />}>
+                Switch Project
+              </MenuButton>
+              <MenuList>
+                <MenuItem>New Project</MenuItem>
+                <MenuItem>Demo Project A</MenuItem>
+                <MenuItem>Demo Project B</MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
+        </Box>
 
         {/* Project header area + Tabs wrapper */}
         <Tabs colorScheme="gray" variant="enclosed" defaultIndex={2}>
-          <Box p={5} bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200">
+          <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={5}>
           <Flex align="center" gap={4} mb={4}>
             <Heading size="lg">{projectName || "Untitled Project"}</Heading>
-            <Badge colorScheme="gray" variant="subtle">
+            <Badge variant="status">
               {projectItems.length} items
             </Badge>
-            <HStack spacing={1} color="gray.400">
+            <HStack spacing={1} color="text.muted">
               <TimeIcon />
               <Text fontSize="sm">
                 {lastUpdated ? `Last updated ${lastUpdated.toLocaleTimeString()}` : "Not updated yet"}
@@ -273,18 +269,16 @@ export default function Index() {
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 maxW="280px"
-                bg="gray.900"
-                borderColor="whiteAlpha.300"
               />
-              <Button onClick={saveProject} colorScheme="blue" variant="solid" isDisabled={projectItems.length === 0}>
+              <Button onClick={saveProject} variant="primary" isDisabled={projectItems.length === 0}>
                 Save Project
               </Button>
-              <Button onClick={clearProject} variant="outline">Clear</Button>
+              <Button onClick={clearProject} variant="secondary">Clear</Button>
             </HStack>
           </Flex>
 
           {/* Primary tabs across the app */}
-            <TabList bg="gray.900" p={2} borderRadius="md" border="1px solid" borderColor="whiteAlpha.200">
+            <TabList>
               <Tab>Project Planner</Tab>
               <Tab>Recipe Tree</Tab>
               <Tab>Resource Summary</Tab>
@@ -294,7 +288,7 @@ export default function Index() {
           </Box>
 
           {/* Add Items card (global action area) */}
-          <Box p={5} mt={4} bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200">
+          <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={5} mt={4}>
             <Flex align="center" mb={3}>
               <Heading size="md">Add Items to Project</Heading>
               <Spacer />
@@ -311,8 +305,6 @@ export default function Index() {
               placeholder="Search items to add to project..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              bg="gray.900"
-              borderColor="whiteAlpha.300"
             />
 
             {searchResults.length > 0 && (
@@ -321,7 +313,7 @@ export default function Index() {
                 maxH="220px"
                 overflowY="auto"
                 border="1px"
-                borderColor="whiteAlpha.300"
+                borderColor="border.secondary"
                 borderRadius="md"
               >
                 {searchResults.map((item) => (
@@ -329,19 +321,19 @@ export default function Index() {
                     key={item.id}
                     p={3}
                     borderBottom="1px"
-                    borderColor="whiteAlpha.200"
+                    borderColor="border.primary"
                     cursor="pointer"
-                    _hover={{ bg: "whiteAlpha.100" }}
+                    _hover={{ bg: "surface.secondary" }}
                     onClick={() => addItem(item)}
                   >
                     <Box>
                       <Text fontWeight="medium">{item.name}</Text>
-                      <Text fontSize="sm" color="gray.400">
+                      <Text fontSize="sm" color="text.muted">
                         {item.category}
                       </Text>
                     </Box>
                     <Spacer />
-                    <Badge colorScheme="blue">Tier {item.tier}</Badge>
+                    <Badge colorScheme={getTierColorScheme(item.tier)}>Tier {item.tier}</Badge>
                   </Flex>
                 ))}
               </Box>
@@ -353,7 +345,7 @@ export default function Index() {
             {/* 0: Project Planner */}
             <TabPanel>
               {projectItems.length > 0 ? (
-                <Box bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200" p={4}>
+                <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={4}>
                   <Heading size="md" mb={4}>
                     Project Items
                   </Heading>
@@ -398,7 +390,7 @@ export default function Index() {
                                 colorScheme={
                                   breakdown?.intermediates.has(projectItem.itemId)
                                     ? "green"
-                                    : "gray"
+                                    : "orange"
                                 }
                               >
                                 {breakdown?.intermediates.has(projectItem.itemId)
@@ -423,10 +415,10 @@ export default function Index() {
                   </Table>
                 </Box>
               ) : (
-                <Box bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200" p={12} textAlign="center">
+                <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={12} textAlign="center">
                   <Text fontSize="2xl" mb={2}>📦</Text>
                   <Heading size="sm" mb={2}>No items in project</Heading>
-                  <Text color="gray.400">Use the search above to add items to your crafting project.</Text>
+                  <Text color="text.muted">Use the search above to add items to your crafting project.</Text>
                 </Box>
               )}
             </TabPanel>
@@ -452,7 +444,7 @@ export default function Index() {
                   })}
                 </VStack>
               ) : (
-                <Text color="gray.400">Add items to view the recipe tree.</Text>
+                <Text color="text.muted">Add items to view the recipe tree.</Text>
               )}
             </TabPanel>
 
@@ -462,7 +454,7 @@ export default function Index() {
                 <VStack spacing={4} align="stretch">
                   <Heading size="md">Raw Materials</Heading>
                   {breakdown.rawMaterials.size === 0 ? (
-                    <Text color="gray.400">No raw materials needed</Text>
+                    <Text color="text.muted">No raw materials needed</Text>
                   ) : (
                     <Table variant="simple" size="sm">
                       <Thead>
@@ -482,7 +474,7 @@ export default function Index() {
                                 <Td fontWeight="medium">{item?.name || itemId}</Td>
                                 <Td>
                                   <Badge
-                                    colorScheme={item?.tier === 0 ? "orange" : "blue"}
+                                    colorScheme={getTierColorScheme(item?.tier || 0)}
                                   >
                                     {item?.category}
                                   </Badge>
@@ -497,7 +489,7 @@ export default function Index() {
                   )}
                 </VStack>
               ) : (
-                <Text color="gray.400">Add items to see resource summary.</Text>
+                <Text color="text.muted">Add items to see resource summary.</Text>
               )}
             </TabPanel>
 
@@ -550,7 +542,7 @@ export default function Index() {
                   <Box mt={6}>
                     <Heading size="md" mb={3}>Crafting Order</Heading>
                     {craftingSteps.length === 0 ? (
-                      <Text color="gray.400">No crafting required (only raw materials)</Text>
+                      <Text color="text.muted">No crafting required (only raw materials)</Text>
                     ) : (
                       <Table variant="simple" size="sm">
                         <Thead>
@@ -571,7 +563,7 @@ export default function Index() {
                                 <Td>{index + 1}</Td>
                                 <Td>{item.name}</Td>
                                 <Td>
-                                  <Badge colorScheme="purple">Tier {step.tier}</Badge>
+                                  <Badge colorScheme={getTierColorScheme(step.tier)}>Tier {step.tier}</Badge>
                                 </Td>
                                 <Td isNumeric>{step.quantity}</Td>
                               </Tr>
@@ -583,15 +575,15 @@ export default function Index() {
                   </Box>
                 </VStack>
               ) : (
-                <Text color="gray.400">Stats will appear after adding items.</Text>
+                <Text color="text.muted">Stats will appear after adding items.</Text>
               )}
             </TabPanel>
 
             {/* 4: Budget placeholder */}
             <TabPanel>
-              <Box bg="gray.800" borderRadius="lg" border="1px solid" borderColor="whiteAlpha.200" p={6}>
+              <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={6}>
                 <Heading size="md" mb={2}>Budget</Heading>
-                <Text color="gray.400">Budget planning UI is coming soon.</Text>
+                <Text color="text.muted">Budget planning UI is coming soon.</Text>
               </Box>
             </TabPanel>
           </TabPanels>
