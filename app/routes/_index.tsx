@@ -31,14 +31,12 @@ import {
   useToast,
   Flex,
   Spacer,
-  Divider,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Avatar,
   Tag,
-  Link,
 } from "@chakra-ui/react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
@@ -46,7 +44,6 @@ import {
   SearchIcon,
   ChevronDownIcon,
   TimeIcon,
-  ExternalLinkIcon,
 } from "@chakra-ui/icons";
 import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import { RecipeTree } from "~/components/ItemBreakdown";
@@ -550,9 +547,7 @@ export default function Index() {
                     </Table>
                   </Box>
 
-                  <Divider borderColor="whiteAlpha.300" />
-
-                  <Box>
+                  <Box mt={6}>
                     <Heading size="md" mb={3}>Crafting Order</Heading>
                     {craftingSteps.length === 0 ? (
                       <Text color="gray.400">No crafting required (only raw materials)</Text>
