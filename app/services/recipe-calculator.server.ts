@@ -94,7 +94,14 @@ export class RecipeCalculator {
     stack: Set<string> = new Set()
   ): void {
     if (stack.has(itemId)) {
-      console.warn(`Cycle detected in recipes for item: ${itemId}`);
+      // Cycle detected - treat as raw material to break the cycle
+      const item = this.getItem(itemId);
+      const itemName = item?.name || itemId;
+      console.warn(`Cycle detected in recipes for item: ${itemId} (${itemName}) - treating as raw material`);
+      
+      // Add to raw materials to break the cycle
+      const currentRaw = rawMaterials.get(itemId) || 0;
+      rawMaterials.set(itemId, currentRaw + quantity);
       return;
     }
     stack.add(itemId);
