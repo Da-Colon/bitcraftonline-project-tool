@@ -250,8 +250,8 @@ export default function Index() {
 
         {/* Project header area + Tabs wrapper */}
         <Tabs colorScheme="gray" variant="enclosed" defaultIndex={2}>
-          <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={5}>
-          <Flex align="center" gap={4} mb={4}>
+          <Box bg="surface.primary" borderRadius="lg" p={5}>
+          <Flex align="center" justify="center" gap={4} mb={4}>
             <Heading size="lg">{projectName || "Untitled Project"}</Heading>
             <Badge variant="status">
               {projectItems.length} items
@@ -270,7 +270,7 @@ export default function Index() {
                 onChange={(e) => setProjectName(e.target.value)}
                 maxW="280px"
               />
-              <Button onClick={saveProject} variant="primary" isDisabled={projectItems.length === 0}>
+              <Button onClick={saveProject} variant="primary" isDisabled={projectItems.length === 0} px={6}>
                 Save Project
               </Button>
               <Button onClick={clearProject} variant="secondary">Clear</Button>
