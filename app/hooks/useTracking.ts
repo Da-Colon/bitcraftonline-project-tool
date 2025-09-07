@@ -4,6 +4,7 @@
 import { useState, useMemo, useCallback } from "react";
 import type { TrackingData, TrackedItem, TrackingStatus, ProfessionProgress, TrackingStats } from "~/types/tracking";
 import type { Item } from "~/types/recipes";
+import { calculateTierReductions, applyTierReductions } from "~/utils/tier-calculation";
 
 interface UseTrackingProps {
   breakdown: {
@@ -147,6 +148,71 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     });
   }, [breakdown]);
 
+  const applyPlayerInventory = useCallback(async (playerName: string, selectedInventories: string[]) => {
+    if (!breakdown) return;
+
+    // Fetch player inventory data
+    const params = new URLSearchParams();
+    params.set('playerName', playerName);
+    selectedInventories.forEach(inv => params.append('inventoryTypes', inv));
+    
+    const response = await fetch(`/api/player/inventory?${params}`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to fetch player inventory');
+    }
+    
+    const inventoryData = await response.json();
+    
+    // Aggregate all inventory items
+    const playerItems = new Map<string, number>();
+    Object.values(inventoryData.inventories).forEach((inventory) => {
+      if (Array.isArray(inventory)) {
+        inventory.forEach((item: any) => {
+          const current = playerItems.get(item.itemId) || 0;
+          playerItems.set(item.itemId, current + item.quantity);
+        });
+      }
+    });
+
+    // Apply tier-aware calculation to reduce lower tier requirements
+    const tierReductions = calculateTierReductions(
+      breakdown.rawMaterials,
+      playerItems,
+      itemMap
+    );
+    
+    const adjustedRequirements = applyTierReductions(
+      breakdown.rawMaterials,
+      tierReductions
+    );
+
+    // Apply inventory to tracking with tier-aware calculation
+    setTrackingData((prev: TrackingData) => {
+      const newTrackedItems = new Map(prev.trackedItems);
+      
+      for (const [itemId, requiredQuantity] of adjustedRequirements.entries()) {
+        const availableQuantity = playerItems.get(itemId) || 0;
+        const completedQuantity = Math.min(availableQuantity, requiredQuantity);
+        
+        if (completedQuantity > 0) {
+          const status: TrackingStatus = completedQuantity >= requiredQuantity ? 'completed' : 'in_progress';
+          newTrackedItems.set(itemId, {
+            itemId,
+            status,
+            completedQuantity,
+            totalQuantity: requiredQuantity,
+          });
+        }
+      }
+      
+      return {
+        ...prev,
+        trackedItems: newTrackedItems,
+      };
+    });
+  }, [breakdown]);
+
   return {
     trackingData,
     professionProgress,
@@ -154,5 +220,6 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     toggleItemTracking,
     resetAllTracking,
     autoFillCompleted,
+    applyPlayerInventory,
   };
 }

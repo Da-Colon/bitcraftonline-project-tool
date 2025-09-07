@@ -28,6 +28,7 @@ interface ProgressTrackingTabProps {
   overallStats: TrackingStats;
   onAutoFillCompleted: () => void;
   onResetAllTracking: () => void;
+  onApplyPlayerInventory?: (playerName: string, selectedInventories: string[]) => Promise<void>;
 }
 
 export function ProgressTrackingTab({
@@ -35,6 +36,7 @@ export function ProgressTrackingTab({
   overallStats,
   onAutoFillCompleted,
   onResetAllTracking,
+  onApplyPlayerInventory,
 }: ProgressTrackingTabProps) {
   const { isOpen: filtersOpen, onToggle: toggleFilters } = useDisclosure();
 
@@ -96,6 +98,7 @@ export function ProgressTrackingTab({
       <TrackingControls
         onAutoFillCompleted={onAutoFillCompleted}
         onResetAllTracking={onResetAllTracking}
+        onApplyPlayerInventory={onApplyPlayerInventory}
       />
 
       {/* Progress Table */}

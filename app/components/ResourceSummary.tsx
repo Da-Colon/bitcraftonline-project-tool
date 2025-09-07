@@ -55,6 +55,7 @@ export function ResourceSummary({
     toggleItemTracking,
     resetAllTracking,
     autoFillCompleted,
+    applyPlayerInventory,
   } = useTracking({ breakdown, calcData, itemMap });
 
   // Group raw materials by category (as a proxy for professions)
@@ -184,6 +185,7 @@ export function ResourceSummary({
               overallStats={overallStats}
               onAutoFillCompleted={autoFillCompleted}
               onResetAllTracking={resetAllTracking}
+              onApplyPlayerInventory={applyPlayerInventory}
             />
           </TabPanel>
           
