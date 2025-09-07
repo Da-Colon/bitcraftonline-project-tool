@@ -54,21 +54,44 @@ export function ResourceSummary({
     overallStats,
     toggleItemTracking,
     resetAllTracking,
-    autoFillCompleted,
+    addAllToTracking,
     applyPlayerInventory,
+    lastApplyInfo,
   } = useTracking({ breakdown, calcData, itemMap });
 
-  // Group raw materials by category (as a proxy for professions)
-  const groupedRawMaterials = useMemo(() => {
-    if (!breakdown) return [];
+  // Group ALL materials (raw + intermediates) by category,
+  // showing REMAINING quantities after applying player inventory/tracking.
+  const groupedAllMaterials = useMemo(() => {
+    if (!breakdown) return [] as Array<{ category: string; items: Array<{ item: Item; quantity: number }> }>;
     const groups = new Map<string, Array<{ item: Item; quantity: number }>>();
+    
+    // Combine raw materials and intermediates into one list
+    const allMaterials = new Map<string, number>();
+    
+    // Add raw materials
     for (const [itemId, quantity] of breakdown.rawMaterials.entries()) {
+      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+    }
+    
+    // Add intermediates
+    for (const [itemId, quantity] of breakdown.intermediates.entries()) {
+      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+    }
+    
+    // Process all materials
+    for (const [itemId, requiredQuantity] of allMaterials.entries()) {
       const item = (calcData?.items[itemId] as Item | undefined) || itemMap.get(itemId);
       if (!item) continue;
+      // Subtract any completed quantity from tracking (e.g., player inventory autofill)
+      const tracked = trackingData.trackedItems.get(item.id);
+      const completed = tracked?.completedQuantity ?? 0;
+      const remaining = Math.max(0, requiredQuantity - completed);
+      if (remaining === 0) continue; // hide fully satisfied items
       const key = item.category || "Other";
       if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push({ item, quantity });
+      groups.get(key)!.push({ item, quantity: remaining });
     }
+    
     const result = Array.from(groups.entries()).map(([category, items]) => ({
       category,
       items: items.sort((a, b) => a.item.tier - b.item.tier || a.item.name.localeCompare(b.item.name)),
@@ -76,7 +99,7 @@ export function ResourceSummary({
     // Sort groups by size (ascending) to compact smaller tables together, then by category name
     result.sort((a, b) => a.items.length - b.items.length || a.category.localeCompare(b.category));
     return result;
-  }, [breakdown, calcData, itemMap]);
+  }, [breakdown, calcData, itemMap, trackingData]);
 
   if (projectItems.length === 0 || !breakdown) {
     return <Text color="text.muted">Add items to see resource summary.</Text>;
@@ -96,22 +119,44 @@ export function ResourceSummary({
         <TabPanels>
           {/* Lists sub-tab */}
           <TabPanel>
-            {groupedRawMaterials.length === 0 ? (
-              <Text color="text.muted">No raw materials needed</Text>
+            {lastApplyInfo && (
+              <Box mb={3} bg="surface.primary" borderRadius="md" border="1px solid" borderColor="border.primary" p={3}>
+                <HStack spacing={3}>
+                  <Badge colorScheme={lastApplyInfo.matchedItems > 0 ? 'green' : 'yellow'}>
+                    {lastApplyInfo.matchedItems > 0 ? 'Applied' : 'No Matches'}
+                  </Badge>
+                  <Text>
+                    {lastApplyInfo.playerName ? `Inventory from ${lastApplyInfo.playerName}` : 'Inventory applied'}
+                    {lastApplyInfo.selectedInventories && lastApplyInfo.selectedInventories.length > 0
+                      ? ` • Sources: ${lastApplyInfo.selectedInventories.join(', ')}`
+                      : ''}
+                  </Text>
+                  <Spacer />
+                  <HStack spacing={4} fontSize="sm" color="text.muted">
+                    <Text>Matched: {lastApplyInfo.matchedItems}</Text>
+                    <Text>Full: {lastApplyInfo.fullySatisfiedItems}</Text>
+                    <Text>Partial: {lastApplyInfo.partiallySatisfiedItems}</Text>
+                    <Text>Qty added: {lastApplyInfo.totalCompletedQuantity}</Text>
+                  </HStack>
+                </HStack>
+              </Box>
+            )}
+            {groupedAllMaterials.length === 0 ? (
+              <Text color="text.muted">No materials needed</Text>
             ) : (
               <VStack spacing={3} align="stretch">
                 <HStack>
-                  <Heading size="md">Raw Materials</Heading>
-                  <Badge variant="status">{breakdown ? Array.from(breakdown.rawMaterials.values()).reduce((a, b) => a + b, 0) : 0} total</Badge>
+                  <Heading size="md">All Materials</Heading>
+                  <Badge variant="status">{groupedAllMaterials.reduce((sum, g) => sum + g.items.reduce((s, it) => s + it.quantity, 0), 0)} remaining</Badge>
                   <Spacer />
                   <ButtonGroup size="sm">
-                    <Button leftIcon={<SettingsIcon />} onClick={autoFillCompleted}>
+                    <Button leftIcon={<SettingsIcon />} onClick={addAllToTracking}>
                       Add All to Tracking
                     </Button>
                   </ButtonGroup>
                 </HStack>
                 <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={3}>
-                  {groupedRawMaterials.map((group) => (
+                  {groupedAllMaterials.map((group) => (
                     <Box
                       key={group.category}
                       bg="surface.primary"
@@ -183,7 +228,7 @@ export function ResourceSummary({
             <ProgressTrackingTab
               professionProgress={professionProgress}
               overallStats={overallStats}
-              onAutoFillCompleted={autoFillCompleted}
+              onAutoFillCompleted={addAllToTracking}
               onResetAllTracking={resetAllTracking}
               onApplyPlayerInventory={applyPlayerInventory}
             />

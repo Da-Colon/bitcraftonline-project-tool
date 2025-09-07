@@ -33,19 +33,38 @@ interface BitJitaSearchResponse {
   // Handle different possible response structures
 }
 
-// BitJita inventory responses can vary a bit; support both arrays and maps
-type BitJitaInventoryItems =
-  | Array<{ item_id?: string; id?: string; itemId?: string; quantity?: number; qty?: number; count?: number }>
-  | Record<string, number>;
+// BitJita inventory response structure
+interface BitJitaPocket {
+  locked: boolean;
+  volume: number;
+  contents: {
+    itemId: number;
+    itemType: number;
+    quantity: number;
+  };
+}
 
-interface BitJitaInventoryObjectEntry {
-  items?: BitJitaInventoryItems;
-  type?: string;
-  name?: string;
+interface BitJitaInventoryEntry {
+  entityId: string;
+  playerOwnerEntityId: string;
+  ownerEntityId: string;
+  pockets: BitJitaPocket[];
+  inventoryIndex: number;
+  cargoIndex: number;
+  buildingName: string | null;
+  claimEntityId: string | null;
+  claimName: string | null;
+  claimLocationX: number | null;
+  claimLocationZ: number | null;
+  claimLocationDimension: number | null;
+  regionId: number;
+  inventoryName: string;
 }
 
 interface BitJitaInventoryData {
-  inventories: Record<string, BitJitaInventoryObjectEntry> | Array<BitJitaInventoryObjectEntry & { key?: string }>;
+  inventories: BitJitaInventoryEntry[];
+  items: Record<string, any>;
+  cargos: Record<string, any>;
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -156,58 +175,52 @@ async function fetchPlayerInventoryFromBitJita(
     personal_storages: [],
   };
 
-  // Helpers to normalize varying inventory shapes
-  const normalizeInventories = (
-    inv: BitJitaInventoryData["inventories"]
-  ): Array<[string, BitJitaInventoryObjectEntry]> => {
-    if (Array.isArray(inv)) {
-      return inv.map((entry, idx) => [entry.type || entry.name || `inv_${idx}`, entry]);
+  // Map BitJita inventory names to our categories
+  const mapInventoryNameToCategory = (inventoryName: string): string | null => {
+    const name = inventoryName.toLowerCase();
+    
+    // House inventory - banks in claims/towns
+    if (name.includes('bank') || name.includes('town') || name.includes('ancient')) {
+      return 'house_inventory';
     }
-    if (inv && typeof inv === 'object') {
-      return Object.entries(inv as Record<string, BitJitaInventoryObjectEntry>);
+    
+    // Personal banks - recovery chests, personal storage
+    if (name.includes('recovery') || name.includes('chest') || name.includes('cache')) {
+      return 'personal_banks';
     }
-    return [];
+    
+    // Personal storages - inventory, toolbelt, wallet, carts
+    if (name.includes('inventory') || name.includes('toolbelt') || name.includes('wallet') || name.includes('cart')) {
+      return 'personal_storages';
+    }
+    
+    return null;
   };
 
-  const normalizeItems = (
-    items: BitJitaInventoryItems | undefined
-  ): Array<{ item_id: string; quantity: number }> => {
-    if (!items) return [];
-    if (Array.isArray(items)) {
-      return items
-        .map((raw) => {
-          const item_id = String(raw.item_id ?? raw.id ?? raw.itemId ?? '');
-          const quantity = Number(raw.quantity ?? raw.qty ?? raw.count ?? 0);
-          return { item_id, quantity };
-        })
-        .filter((x) => x.item_id && !Number.isNaN(x.quantity));
+  // Process BitJita inventory data
+  for (const inventory of inventoryData.inventories) {
+    const category = mapInventoryNameToCategory(inventory.inventoryName);
+    
+    // Skip if this inventory category isn't requested
+    if (!category || !inventoryTypes.includes(category)) {
+      continue;
     }
-    // items as a map
-    return Object.entries(items)
-      .map(([id, qty]) => ({ item_id: String(id), quantity: Number(qty) }))
-      .filter((x) => x.item_id && !Number.isNaN(x.quantity));
-  };
-
-  // Map BitJita inventory data to our structure based on inventory types
-  const normalizedInventories = normalizeInventories(inventoryData.inventories);
-  for (const [inventoryKey, inventoryInfo] of normalizedInventories) {
-    const itemsArr = normalizeItems(inventoryInfo.items);
-    const location = mapBitJitaInventoryType(inventoryKey);
-
-    for (const normalized of itemsArr) {
-      const item = {
-        itemId: normalized.item_id,
-        quantity: normalized.quantity,
-        location,
-      } as PlayerInventoryItem;
-
-      if (inventoryTypes.includes('house_inventory') && item.location === 'house_inventory') {
-        inventories.house_inventory.push(item);
-      } else if (inventoryTypes.includes('personal_banks') && item.location === 'personal_banks') {
-        inventories.personal_banks.push(item);
-      } else if (inventoryTypes.includes('personal_storages') && item.location === 'personal_storages') {
-        inventories.personal_storages.push(item);
-      }
+    
+    // Process each pocket in the inventory
+    for (const pocket of inventory.pockets) {
+      if (!pocket.contents) continue;
+      
+      // Map BitJita item_id to our internal GameData id format (e.g., "item_12345")
+      const itemId = String(pocket.contents.itemId);
+      const internalId = itemId.startsWith('item_') ? itemId : `item_${itemId}`;
+      
+      const item: PlayerInventoryItem = {
+        itemId: internalId,
+        quantity: pocket.contents.quantity,
+        location: category as 'house_inventory' | 'personal_banks' | 'personal_storages',
+      };
+      
+      inventories[category as keyof typeof inventories].push(item);
     }
   }
 

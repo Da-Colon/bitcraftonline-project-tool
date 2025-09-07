@@ -41,7 +41,7 @@ export function TrackingControls({
             Manage Tracking
           </MenuButton>
           <MenuList>
-            <MenuItem onClick={onAutoFillCompleted}>Auto-fill All Complete</MenuItem>
+            <MenuItem onClick={onAutoFillCompleted}>Add All to Tracking</MenuItem>
             <MenuItem>Mark Section Complete</MenuItem>
             <MenuItem>Import from CSV</MenuItem>
           </MenuList>

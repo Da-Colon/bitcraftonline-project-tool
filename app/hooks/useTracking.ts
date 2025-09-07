@@ -28,6 +28,14 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
       showNotStarted: true,
     },
   });
+  const [lastApplyInfo, setLastApplyInfo] = useState<{
+    playerName?: string;
+    selectedInventories?: string[];
+    matchedItems: number;
+    fullySatisfiedItems: number;
+    partiallySatisfiedItems: number;
+    totalCompletedQuantity: number;
+  } | null>(null);
 
   // Calculate profession progress for tracking
   const professionProgress = useMemo(() => {
@@ -38,8 +46,21 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
       tierQuantities: Record<number, { completed: number; total: number }>;
     }>();
 
-    // Initialize profession data
+    // Combine raw materials and intermediates for tracking
+    const allMaterials = new Map<string, number>();
+    
+    // Add raw materials
     for (const [itemId, quantity] of breakdown.rawMaterials.entries()) {
+      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+    }
+    
+    // Add intermediates
+    for (const [itemId, quantity] of breakdown.intermediates.entries()) {
+      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+    }
+
+    // Initialize profession data from all materials
+    for (const [itemId, quantity] of allMaterials.entries()) {
       const item = (calcData?.items[itemId] as Item | undefined) || itemMap.get(itemId);
       if (!item) continue;
       
@@ -63,6 +84,8 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
       profData.tierQuantities[item.tier].total += quantity;
       if (tracked?.status === 'completed') {
         profData.tierQuantities[item.tier].completed += tracked.completedQuantity;
+      } else if (tracked?.status === 'in_progress') {
+        profData.tierQuantities[item.tier].completed += tracked.completedQuantity;
       }
     }
 
@@ -83,10 +106,17 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     }).sort((a, b) => a.profession.localeCompare(b.profession));
   }, [breakdown, calcData, itemMap, trackingData]);
 
-  // Calculate overall stats
+  // Calculate overall stats from all materials
   const overallStats = useMemo((): TrackingStats => {
     if (!breakdown) return { totalItems: 0, completedItems: 0, inProgressItems: 0, notStartedItems: 0 };
-    const totalItems = Array.from(breakdown.rawMaterials.keys()).length;
+    
+    // Count all unique items (raw + intermediates)
+    const allItemIds = new Set([
+      ...Array.from(breakdown.rawMaterials.keys()),
+      ...Array.from(breakdown.intermediates.keys())
+    ]);
+    
+    const totalItems = allItemIds.size;
     const completedItems = Array.from(trackingData.trackedItems.values())
       .filter((t: TrackedItem) => t.status === 'completed').length;
     const inProgressItems = Array.from(trackingData.trackedItems.values())
@@ -99,15 +129,20 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
   const toggleItemTracking = useCallback((itemId: string, status: TrackingStatus) => {
     setTrackingData((prev: TrackingData) => {
       const newTrackedItems = new Map(prev.trackedItems);
-      const quantity = breakdown?.rawMaterials.get(itemId) || 0;
+      
+      // Get quantity from either raw materials or intermediates
+      const rawQuantity = breakdown?.rawMaterials.get(itemId) || 0;
+      const intermediateQuantity = breakdown?.intermediates.get(itemId) || 0;
+      const quantity = rawQuantity + intermediateQuantity;
       
       if (status === 'not_started') {
         newTrackedItems.delete(itemId);
       } else {
+        // Always start with 0 completed quantity - user must manually update
         newTrackedItems.set(itemId, {
           itemId,
-          status,
-          completedQuantity: status === 'completed' ? quantity : 0,
+          status: 'in_progress',
+          completedQuantity: 0,
           totalQuantity: quantity,
         });
       }
@@ -126,19 +161,35 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     }));
   }, []);
 
-  const autoFillCompleted = useCallback(() => {
+  const addAllToTracking = useCallback(() => {
     if (!breakdown) return;
     
     setTrackingData((prev: TrackingData) => {
       const newTrackedItems = new Map(prev.trackedItems);
       
+      // Add all materials (raw + intermediates)
+      const allMaterials = new Map<string, number>();
+      
+      // Add raw materials
       for (const [itemId, quantity] of breakdown.rawMaterials.entries()) {
-        newTrackedItems.set(itemId, {
-          itemId,
-          status: 'completed',
-          completedQuantity: quantity,
-          totalQuantity: quantity,
-        });
+        allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+      }
+      
+      // Add intermediates
+      for (const [itemId, quantity] of breakdown.intermediates.entries()) {
+        allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+      }
+      
+      for (const [itemId, quantity] of allMaterials.entries()) {
+        // Only add if not already tracked
+        if (!newTrackedItems.has(itemId)) {
+          newTrackedItems.set(itemId, {
+            itemId,
+            status: 'in_progress',
+            completedQuantity: 0,
+            totalQuantity: quantity,
+          });
+        }
       }
       
       return {
@@ -156,6 +207,7 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     params.set('playerName', playerName);
     selectedInventories.forEach(inv => params.append('inventoryTypes', inv));
     
+    console.log('Fetching inventory for:', playerName, 'sources:', selectedInventories);
     const response = await fetch(`/api/player/inventory?${params}`);
     if (!response.ok) {
       const error = await response.json();
@@ -163,6 +215,7 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     }
     
     const inventoryData = await response.json();
+    console.log('Raw inventory response:', inventoryData);
     
     // Aggregate all inventory items
     const playerItems = new Map<string, number>();
@@ -174,26 +227,50 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
         });
       }
     });
+    
+    console.log('Aggregated player items:', Array.from(playerItems.entries()));
+    console.log('Required items from breakdown:', Array.from(breakdown.rawMaterials.entries()).slice(0, 5));
 
-    // Apply tier-aware calculation to reduce lower tier requirements
+    // Combine all materials for tier-aware calculation
+    const allMaterials = new Map<string, number>();
+    
+    // Add raw materials
+    for (const [itemId, quantity] of breakdown.rawMaterials.entries()) {
+      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+    }
+    
+    // Add intermediates
+    for (const [itemId, quantity] of breakdown.intermediates.entries()) {
+      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
+    }
+
+    // Apply tier-aware calculation to all materials
     const tierReductions = calculateTierReductions(
-      breakdown.rawMaterials,
+      allMaterials,
       playerItems,
       itemMap
     );
     
     const adjustedRequirements = applyTierReductions(
-      breakdown.rawMaterials,
+      allMaterials,
       tierReductions
     );
 
+    console.log('Adjusted requirements after tier calc:', Array.from(adjustedRequirements.entries()).slice(0, 5));
+
     // Apply inventory to tracking with tier-aware calculation
+    let matchedItems = 0;
+    let fullySatisfiedItems = 0;
+    let partiallySatisfiedItems = 0;
+    let totalCompletedQuantity = 0;
     setTrackingData((prev: TrackingData) => {
       const newTrackedItems = new Map(prev.trackedItems);
       
       for (const [itemId, requiredQuantity] of adjustedRequirements.entries()) {
         const availableQuantity = playerItems.get(itemId) || 0;
         const completedQuantity = Math.min(availableQuantity, requiredQuantity);
+        
+        console.log(`Item ${itemId}: required=${requiredQuantity}, available=${availableQuantity}, completed=${completedQuantity}`);
         
         if (completedQuantity > 0) {
           const status: TrackingStatus = completedQuantity >= requiredQuantity ? 'completed' : 'in_progress';
@@ -203,6 +280,14 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
             completedQuantity,
             totalQuantity: requiredQuantity,
           });
+
+          matchedItems += 1;
+          totalCompletedQuantity += completedQuantity;
+          if (completedQuantity >= requiredQuantity) {
+            fullySatisfiedItems += 1;
+          } else {
+            partiallySatisfiedItems += 1;
+          }
         }
       }
       
@@ -210,6 +295,15 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
         ...prev,
         trackedItems: newTrackedItems,
       };
+    });
+
+    setLastApplyInfo({
+      playerName,
+      selectedInventories,
+      matchedItems,
+      fullySatisfiedItems,
+      partiallySatisfiedItems,
+      totalCompletedQuantity,
     });
   }, [breakdown]);
 
@@ -219,7 +313,8 @@ export function useTracking({ breakdown, calcData, itemMap }: UseTrackingProps) 
     overallStats,
     toggleItemTracking,
     resetAllTracking,
-    autoFillCompleted,
+    addAllToTracking,
     applyPlayerInventory,
+    lastApplyInfo,
   };
 }
