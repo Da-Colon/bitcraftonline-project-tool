@@ -1,4 +1,4 @@
-import { VStack, Text } from "@chakra-ui/react";
+import { VStack, Text, Box } from "@chakra-ui/react";
 import type { Player } from "~/types/player";
 import { PlayerCard } from "./PlayerCard";
 
@@ -10,15 +10,17 @@ type PlayerResultsProps = {
 };
 
 export function PlayerResults({ players, onSelect, isLoading, error }: PlayerResultsProps) {
-  if (isLoading) return <Text color="gray.500">Searching…</Text>;
-  if (error) return <Text color="red.500">{error}</Text>;
-  if (!players?.length) return <Text color="gray.500">No matches</Text>;
+  if (isLoading) return <Text color="text.muted">Searching…</Text>;
+  if (error) return <Text color="status.error">{error}</Text>;
+  if (!players?.length) return <Text color="text.muted">No matches</Text>;
 
   return (
-    <VStack align="stretch" spacing={2} maxH="60vh" overflowY="auto">
-      {players.map((p) => (
-        <PlayerCard key={p.entityId} player={p} onSelect={onSelect} />)
-      )}
-    </VStack>
+    <Box p={2}>
+      <VStack align="stretch" spacing={2} maxH="60vh" overflowY="auto">
+        {players.map((p) => (
+          <PlayerCard key={p.entityId} player={p} onSelect={onSelect} />)
+        )}
+      </VStack>
+    </Box>
   );
 }

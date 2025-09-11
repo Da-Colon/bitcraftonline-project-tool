@@ -1,4 +1,5 @@
-import { Box, Container, Grid, GridItem, Heading, Input, Text } from "@chakra-ui/react";
+import { Box, Container, Grid, GridItem, Heading, Input, Text, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { usePlayerSearch } from "~/hooks/usePlayerSearch";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
@@ -16,18 +17,23 @@ export default function Index() {
 
   return (
     <Container maxW="container.lg" minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Box w="100%" variant="card">
+      <Box w="100%">
         <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6}>
           <GridItem>
             <Heading size="md" mb={3}>Choose Your Player</Heading>
-            <Input
-              autoFocus
-              placeholder="Start typing a player name…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <SearchIcon color="text.muted" />
+              </InputLeftElement>
+              <Input
+                autoFocus
+                placeholder="Start typing a player name…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </InputGroup>
             {(!query || query.trim().length < 3) && (
-              <Text mt={2} color="gray.500">Type at least 3 characters to search</Text>
+              <Text mt={2} color="text.muted">Type at least 3 characters to search</Text>
             )}
           </GridItem>
 

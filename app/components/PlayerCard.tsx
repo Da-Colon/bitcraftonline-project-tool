@@ -1,4 +1,5 @@
-import { Box, HStack, Text, Badge, Circle } from "@chakra-ui/react";
+import { Box, HStack, Text, Badge, Circle, Flex, Icon } from "@chakra-ui/react";
+import { ChevronRightIcon } from "@chakra-ui/icons";
 import type { Player } from "~/types/player";
 
 type PlayerCardProps = {
@@ -9,26 +10,24 @@ type PlayerCardProps = {
 export function PlayerCard({ player, onSelect }: PlayerCardProps) {
   const online = player.signedIn;
   return (
-    <Box
+    <Flex
       as="button"
       onClick={() => onSelect(player)}
       w="100%"
-      textAlign="left"
-      bg="white"
-      borderWidth="1px"
-      borderColor="gray.200"
-      borderRadius="lg"
+      align="center"
+      justify="space-between"
+      _hover={{ bg: "surface.elevated", transform: "translateY(-1px)" }}
+      transition="all 0.15s ease-out"
       p={3}
-      _hover={{ bg: "gray.50" }}
-      transition="background 0.2s"
     >
       <HStack spacing={3} align="center">
         <Circle size="10px" bg={online ? "green.400" : "gray.500"} />
         <Text fontWeight="semibold">{player.username}</Text>
-        <Badge variant="subtle" colorScheme={online ? "green" : "gray"}>
+        <Badge variant="status" colorScheme={online ? "green" : "gray"}>
           {online ? "Online" : "Offline"}
         </Badge>
       </HStack>
-    </Box>
+      <Icon as={ChevronRightIcon} color="text.muted" />
+    </Flex>
   );
 }
