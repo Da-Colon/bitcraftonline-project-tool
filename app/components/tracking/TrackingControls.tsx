@@ -13,24 +13,26 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, SettingsIcon, DownloadIcon, DeleteIcon } from "@chakra-ui/icons";
 import { PlayerSearchModal } from "~/components/PlayerSearchModal";
+import type { PlayerInventoryResponse } from "~/routes/api.player.inventory";
+import type { Item } from "~/types/recipes";
 
 interface TrackingControlsProps {
   onAutoFillCompleted: () => void;
   onResetAllTracking: () => void;
-  onApplyPlayerInventory?: (playerName: string, selectedInventories: string[]) => Promise<void>;
+  onApplyPlayerInventory: (inventory: PlayerInventoryResponse) => void;
+  itemMap: Map<string, Item>;
 }
 
 export function TrackingControls({
   onAutoFillCompleted,
   onResetAllTracking,
   onApplyPlayerInventory,
+  itemMap,
 }: TrackingControlsProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const handleApplyPlayerInventory = async (playerName: string, selectedInventories: string[]) => {
-    if (onApplyPlayerInventory) {
-      await onApplyPlayerInventory(playerName, selectedInventories);
-    }
+  const handleApplyPlayerInventory = (inventory: PlayerInventoryResponse) => {
+    onApplyPlayerInventory(inventory);
   };
 
   return (
@@ -72,6 +74,7 @@ export function TrackingControls({
         isOpen={isOpen}
         onClose={onClose}
         onApplyInventory={handleApplyPlayerInventory}
+        itemMap={itemMap}
       />
     </>
   );

@@ -22,7 +22,7 @@ import {
   ButtonGroup,
 } from "@chakra-ui/react";
 import { SettingsIcon } from "@chakra-ui/icons";
-import type { Item, ProjectItem } from "~/types/recipes";
+import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import type { TrackingStatus } from "~/types/tracking";
 import { getTierColorScheme } from "~/theme";
 import { useMemo } from "react";
@@ -38,6 +38,7 @@ interface ResourceSummaryProps {
   } | null;
   calcData: {
     items: Record<string, Item>;
+    recipes: Record<string, Recipe>;
   } | null;
   itemMap: Map<string, Item>;
 }
@@ -57,49 +58,38 @@ export function ResourceSummary({
     addAllToTracking,
     applyPlayerInventory,
     lastApplyInfo,
+    adjustedBreakdown,
   } = useTracking({ breakdown, calcData, itemMap });
 
-  // Group ALL materials (raw + intermediates) by category,
-  // showing REMAINING quantities after applying player inventory/tracking.
+  // Group ALL materials by category, using the adjusted breakdown from the hook.
   const groupedAllMaterials = useMemo(() => {
-    if (!breakdown) return [] as Array<{ category: string; items: Array<{ item: Item; quantity: number }> }>;
+    const sourceBreakdown = adjustedBreakdown || breakdown;
+    if (!sourceBreakdown) return [];
+
     const groups = new Map<string, Array<{ item: Item; quantity: number }>>();
-    
-    // Combine raw materials and intermediates into one list
-    const allMaterials = new Map<string, number>();
-    
-    // Add raw materials
-    for (const [itemId, quantity] of breakdown.rawMaterials.entries()) {
-      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
-    }
-    
-    // Add intermediates
-    for (const [itemId, quantity] of breakdown.intermediates.entries()) {
-      allMaterials.set(itemId, (allMaterials.get(itemId) || 0) + quantity);
-    }
-    
-    // Process all materials
-    for (const [itemId, requiredQuantity] of allMaterials.entries()) {
-      const item = (calcData?.items[itemId] as Item | undefined) || itemMap.get(itemId);
+    const allMaterials = new Map([
+      ...sourceBreakdown.rawMaterials,
+      ...sourceBreakdown.intermediates,
+    ]);
+
+    for (const [itemId, quantity] of allMaterials.entries()) {
+      if (quantity <= 0) continue; // Hide fully satisfied items
+
+      const item = itemMap.get(itemId);
       if (!item) continue;
-      // Subtract any completed quantity from tracking (e.g., player inventory autofill)
-      const tracked = trackingData.trackedItems.get(item.id);
-      const completed = tracked?.completedQuantity ?? 0;
-      const remaining = Math.max(0, requiredQuantity - completed);
-      if (remaining === 0) continue; // hide fully satisfied items
+
       const key = item.category || "Other";
       if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push({ item, quantity: remaining });
+      groups.get(key)!.push({ item, quantity });
     }
-    
+
     const result = Array.from(groups.entries()).map(([category, items]) => ({
       category,
       items: items.sort((a, b) => a.item.tier - b.item.tier || a.item.name.localeCompare(b.item.name)),
     }));
-    // Sort groups by size (ascending) to compact smaller tables together, then by category name
     result.sort((a, b) => a.items.length - b.items.length || a.category.localeCompare(b.category));
     return result;
-  }, [breakdown, calcData, itemMap, trackingData]);
+  }, [adjustedBreakdown, breakdown, itemMap]);
 
   if (projectItems.length === 0 || !breakdown) {
     return <Text color="text.muted">Add items to see resource summary.</Text>;
@@ -231,6 +221,7 @@ export function ResourceSummary({
               onAutoFillCompleted={addAllToTracking}
               onResetAllTracking={resetAllTracking}
               onApplyPlayerInventory={applyPlayerInventory}
+              itemMap={itemMap}
             />
           </TabPanel>
           

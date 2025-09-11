@@ -18,9 +18,10 @@ import {
   Collapse,
   useDisclosure,
 } from "@chakra-ui/react";
-import type { ProfessionProgress } from "~/types/tracking";
-import type { TrackingStats } from "~/types/tracking";
+import type { ProfessionProgress, TrackingStats } from "~/types/tracking";
 import { TrackingControls } from "~/components/tracking/TrackingControls";
+import type { PlayerInventoryResponse } from "~/routes/api.player.inventory";
+import type { Item } from "~/types/recipes";
 import { ProfessionProgressTable } from "~/components/tracking/ProfessionProgressTable";
 
 interface ProgressTrackingTabProps {
@@ -28,7 +29,8 @@ interface ProgressTrackingTabProps {
   overallStats: TrackingStats;
   onAutoFillCompleted: () => void;
   onResetAllTracking: () => void;
-  onApplyPlayerInventory?: (playerName: string, selectedInventories: string[]) => Promise<void>;
+  onApplyPlayerInventory: (inventory: PlayerInventoryResponse) => void;
+  itemMap: Map<string, Item>;
 }
 
 export function ProgressTrackingTab({
@@ -37,6 +39,7 @@ export function ProgressTrackingTab({
   onAutoFillCompleted,
   onResetAllTracking,
   onApplyPlayerInventory,
+  itemMap,
 }: ProgressTrackingTabProps) {
   const { isOpen: filtersOpen, onToggle: toggleFilters } = useDisclosure();
 
@@ -99,6 +102,7 @@ export function ProgressTrackingTab({
         onAutoFillCompleted={onAutoFillCompleted}
         onResetAllTracking={onResetAllTracking}
         onApplyPlayerInventory={onApplyPlayerInventory}
+        itemMap={itemMap}
       />
 
       {/* Progress Table */}

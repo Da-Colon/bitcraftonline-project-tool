@@ -1,18 +1,14 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 
-interface PlayerInventoryItem {
+export interface PlayerInventoryItem {
   itemId: string;
   quantity: number;
   location: string; // "house_inventory" | "personal_banks" | "personal_storages"
 }
 
-interface PlayerInventoryResponse {
+export interface PlayerInventoryResponse {
   playerName: string;
-  inventories: {
-    house_inventory: PlayerInventoryItem[];
-    personal_banks: PlayerInventoryItem[];
-    personal_storages: PlayerInventoryItem[];
-  };
+  inventories: Record<string, PlayerInventoryItem[]>;
   lastUpdated: string;
 }
 
@@ -76,27 +72,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json({ error: "Player name is required" }, { status: 400 });
   }
 
-  if (!inventoryTypes.length) {
-    return json({ error: "At least one inventory type is required" }, { status: 400 });
-  }
-
   try {
     // Fetch player data from BitJita API
     const playerData = await fetchPlayerInventoryFromBitJita(playerName, inventoryTypes);
 
-    // Filter based on requested inventory types
-    const filteredInventories: Partial<PlayerInventoryResponse["inventories"]> = {};
-    for (const type of inventoryTypes) {
-      if (type in playerData.inventories) {
-        filteredInventories[type as keyof PlayerInventoryResponse["inventories"]] = 
-          playerData.inventories[type as keyof PlayerInventoryResponse["inventories"]];
+    // If specific inventory types are requested, filter them.
+    // Otherwise, return all inventories (for the 'Fetch Sources' step).
+    if (inventoryTypes && inventoryTypes.length > 0) {
+      const filteredInventories: Record<string, PlayerInventoryItem[]> = {};
+      for (const type of inventoryTypes) {
+        if (playerData.inventories[type]) {
+          filteredInventories[type] = playerData.inventories[type];
+        }
       }
+      return json({ ...playerData, inventories: filteredInventories });
     }
 
-    return json({
-      ...playerData,
-      inventories: filteredInventories,
-    });
+    // Return all inventories if no specific types are requested
+    return json(playerData);
 
   } catch (error) {
     console.error("Failed to fetch player inventory:", error);
@@ -168,59 +161,32 @@ async function fetchPlayerInventoryFromBitJita(
   // Debug log actual inventory response once to aid parsing adjustments
   console.log('BitJita inventories response:', JSON.stringify(inventoryData, null, 2));
   
-  // Transform BitJita data to our expected format
-  const inventories: PlayerInventoryResponse["inventories"] = {
-    house_inventory: [],
-    personal_banks: [],
-    personal_storages: [],
-  };
-
-  // Map BitJita inventory names to our categories
-  const mapInventoryNameToCategory = (inventoryName: string): string | null => {
-    const name = inventoryName.toLowerCase();
-    
-    // House inventory - banks in claims/towns
-    if (name.includes('bank') || name.includes('town') || name.includes('ancient')) {
-      return 'house_inventory';
-    }
-    
-    // Personal banks - recovery chests, personal storage
-    if (name.includes('recovery') || name.includes('chest') || name.includes('cache')) {
-      return 'personal_banks';
-    }
-    
-    // Personal storages - inventory, toolbelt, wallet, carts
-    if (name.includes('inventory') || name.includes('toolbelt') || name.includes('wallet') || name.includes('cart')) {
-      return 'personal_storages';
-    }
-    
-    return null;
-  };
+  const inventories: Record<string, PlayerInventoryItem[]> = {};
 
   // Process BitJita inventory data
   for (const inventory of inventoryData.inventories) {
-    const category = mapInventoryNameToCategory(inventory.inventoryName);
-    
-    // Skip if this inventory category isn't requested
-    if (!category || !inventoryTypes.includes(category)) {
-      continue;
+    // Use the real inventory name as the category, and handle null names.
+    const category = inventory.inventoryName || "Unknown";
+
+    // Initialize the array for this category if it doesn't exist
+    if (!inventories[category]) {
+      inventories[category] = [];
     }
-    
+
     // Process each pocket in the inventory
     for (const pocket of inventory.pockets) {
       if (!pocket.contents) continue;
-      
-      // Map BitJita item_id to our internal GameData id format (e.g., "item_12345")
+
       const itemId = String(pocket.contents.itemId);
       const internalId = itemId.startsWith('item_') ? itemId : `item_${itemId}`;
-      
+
       const item: PlayerInventoryItem = {
         itemId: internalId,
         quantity: pocket.contents.quantity,
-        location: category as 'house_inventory' | 'personal_banks' | 'personal_storages',
+        location: category,
       };
-      
-      inventories[category as keyof typeof inventories].push(item);
+
+      inventories[category].push(item);
     }
   }
 
@@ -231,18 +197,3 @@ async function fetchPlayerInventoryFromBitJita(
   };
 }
 
-// Helper function to map BitJita inventory types to our categories
-function mapBitJitaInventoryType(bitJitaType: string): string {
-  // Map BitJita inventory types to our standardized categories
-  const typeMapping: Record<string, string> = {
-    'house': 'house_inventory',
-    'inventory': 'house_inventory',
-    'bank': 'personal_banks',
-    'storage': 'personal_storages',
-    'trader': 'personal_storages',
-    'boat': 'personal_storages',
-    // Add more mappings as needed based on actual BitJita response
-  };
-
-  return typeMapping[bitJitaType.toLowerCase()] || 'personal_storages';
-}
