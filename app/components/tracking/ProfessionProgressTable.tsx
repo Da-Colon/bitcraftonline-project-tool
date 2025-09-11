@@ -24,9 +24,9 @@ interface ProfessionProgressTableProps {
 
 export function ProfessionProgressTable({ professionProgress }: ProfessionProgressTableProps) {
   return (
-    <Box bg="surface.primary" borderRadius="md" border="1px solid" borderColor="border.primary" overflow="hidden">
+    <Box bg="white" borderRadius="md" border="1px solid" borderColor="gray.200" overflow="hidden">
       <Table variant="simple" size="sm">
-        <Thead bg="surface.elevated">
+        <Thead bg="gray.50">
           <Tr>
             <Th>Profession</Th>
             <Th>Category</Th>
@@ -44,7 +44,7 @@ export function ProfessionProgressTable({ professionProgress }: ProfessionProgre
         </Thead>
         <Tbody>
           {professionProgress.map((prof) => (
-            <Tr key={prof.profession} _hover={{ bg: "surface.elevated" }}>
+            <Tr key={prof.profession} _hover={{ bg: "gray.50" }}>
               <Td>
                 <HStack>
                   <Text fontWeight="medium">{prof.profession}</Text>
@@ -76,7 +76,7 @@ export function ProfessionProgressTable({ professionProgress }: ProfessionProgre
                       <Text fontSize="xs" fontWeight="bold">
                         {tierData.completed}
                       </Text>
-                      <Text fontSize="xs" color="text.muted">
+                      <Text fontSize="xs" color="gray.500">
                         {tierData.total}
                       </Text>
                     </VStack>

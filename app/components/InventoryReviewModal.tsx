@@ -72,7 +72,7 @@ export function InventoryReviewModal({ isOpen, onClose, inventoryData, itemMap, 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="4xl" scrollBehavior="inside">
       <ModalOverlay />
-      <ModalContent bg="surface.primary">
+      <ModalContent bg="white">
         <ModalHeader>Review Player Inventory</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
@@ -105,10 +105,10 @@ export function InventoryReviewModal({ isOpen, onClose, inventoryData, itemMap, 
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="secondary" mr={3} onClick={onClose}>
+          <Button variant="outline" mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleApply}>
+          <Button colorScheme="blue" onClick={handleApply}>
             Apply to Tracking
           </Button>
         </ModalFooter>

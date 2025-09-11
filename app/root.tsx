@@ -6,11 +6,10 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction, MetaFunction } from "@remix-run/node";
-import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
 import { useContext, useEffect } from "react";
 import { withEmotionCache } from "@emotion/react";
 import { ServerStyleContext, ClientStyleContext } from "./context";
-import theme from "./theme";
 
 interface DocumentProps {
   children: React.ReactNode;
@@ -23,7 +22,7 @@ export const meta: MetaFunction = () => [
     content:
       "Plan projects and calculate crafting resources for BitCraft.",
   },
-  { name: "theme-color", content: "#1A202C" },
+  { name: "theme-color", content: "#ffffff" },
   // Open Graph
   { property: "og:type", content: "website" },
   { property: "og:title", content: "BitCraft Project Planner" },
@@ -79,8 +78,6 @@ const Document = withEmotionCache(
           ))}
         </head>
         <body>
-          {/* Ensure we start in dark mode for the new UI */}
-          <ColorModeScript initialColorMode={theme.config.initialColorMode} />
           {children}
           <ScrollRestoration />
           <Scripts />
@@ -93,7 +90,7 @@ const Document = withEmotionCache(
 export default function App() {
   return (
     <Document>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider>
         <Outlet />
       </ChakraProvider>
     </Document>

@@ -10,9 +10,9 @@ type PlayerResultsProps = {
 };
 
 export function PlayerResults({ players, onSelect, isLoading, error }: PlayerResultsProps) {
-  if (isLoading) return <Text color="text.muted">Searching…</Text>;
-  if (error) return <Text color="status.error">{error}</Text>;
-  if (!players?.length) return <Text color="text.muted">No matches</Text>;
+  if (isLoading) return <Text color="gray.500">Searching…</Text>;
+  if (error) return <Text color="red.500">{error}</Text>;
+  if (!players?.length) return <Text color="gray.500">No matches</Text>;
 
   return (
     <VStack align="stretch" spacing={2} maxH="60vh" overflowY="auto">
@@ -22,4 +22,3 @@ export function PlayerResults({ players, onSelect, isLoading, error }: PlayerRes
     </VStack>
   );
 }
-

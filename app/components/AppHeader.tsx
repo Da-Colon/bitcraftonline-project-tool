@@ -21,18 +21,18 @@ interface AppHeaderProps {
 
 export function AppHeader({ version }: AppHeaderProps) {
   return (
-    <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={4}>
+    <Box bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" p={4}>
       <Flex align="center">
         <HStack spacing={3}>
           <Avatar size="sm" name="BC" />
           <Box>
             <HStack spacing={2}>
               <Heading size="md">BitCraft Project Planner</Heading>
-              <Badge variant="status">
+              <Badge variant="subtle">
                 {`v${version}`}
               </Badge>
             </HStack>
-            <Text fontSize="sm" color="text.muted">
+            <Text fontSize="sm" color="gray.500">
               Plan a single project and its resources
             </Text>
           </Box>

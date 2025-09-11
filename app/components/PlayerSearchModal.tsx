@@ -96,7 +96,7 @@ export function PlayerSearchModal({
     <>
       <Modal isOpen={isOpen} onClose={handleMainClose} size="md" isCentered>
         <ModalOverlay />
-        <ModalContent bg="surface.primary">
+        <ModalContent bg="white">
           <ModalHeader>Auto-fill from Player Inventory</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
@@ -119,7 +119,7 @@ export function PlayerSearchModal({
                 {isFetchingSources ? (
                   <Spinner />
                 ) : availableInventories.length > 0 ? (
-                  <VStack as="div" spacing={2} align="stretch" maxHeight="200px" overflowY="auto" p={2} bg="surface.secondary" borderRadius="md">
+                  <VStack as="div" spacing={2} align="stretch" maxHeight="200px" overflowY="auto" p={2} bg="gray.50" borderRadius="md">
                     {availableInventories.map((inv) => (
                       <Checkbox
                         key={inv}
@@ -135,12 +135,12 @@ export function PlayerSearchModal({
                     ))}
                   </VStack>
                 ) : (
-                  <Text color="text.muted">Click 'Fetch Sources' to begin.</Text>
+                  <Text color="gray.500">Click 'Fetch Sources' to begin.</Text>
                 )}
               </FormControl>
             </VStack>
           </ModalBody>
-          <ModalFooter borderTop="1px solid" borderColor="border.secondary">
+          <ModalFooter borderTop="1px solid" borderColor="gray.200">
             <Button variant="ghost" mr={3} onClick={handleMainClose}>
               Cancel
             </Button>

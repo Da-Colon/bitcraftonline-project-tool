@@ -14,18 +14,21 @@ export function PlayerCard({ player, onSelect }: PlayerCardProps) {
       onClick={() => onSelect(player)}
       w="100%"
       textAlign="left"
-      variant="card"
-      _hover={{ bg: "surface.elevated" }}
+      bg="white"
+      borderWidth="1px"
+      borderColor="gray.200"
+      borderRadius="lg"
+      p={3}
+      _hover={{ bg: "gray.50" }}
       transition="background 0.2s"
     >
       <HStack spacing={3} align="center">
         <Circle size="10px" bg={online ? "green.400" : "gray.500"} />
         <Text fontWeight="semibold">{player.username}</Text>
-        <Badge variant="status" colorScheme={online ? "green" : "gray"}>
+        <Badge variant="subtle" colorScheme={online ? "green" : "gray"}>
           {online ? "Online" : "Offline"}
         </Badge>
       </HStack>
     </Box>
   );
 }
-

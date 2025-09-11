@@ -21,7 +21,7 @@ export function RecipeTreeTab({
   itemMap,
 }: RecipeTreeTabProps) {
   if (projectItems.length === 0) {
-    return <Text color="text.muted">Add items to view the recipe tree.</Text>;
+    return <Text color="gray.500">Add items to view the recipe tree.</Text>;
   }
 
   const lookup = {

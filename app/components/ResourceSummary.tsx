@@ -24,7 +24,7 @@ import {
 import { SettingsIcon } from "@chakra-ui/icons";
 import type { Item, ProjectItem, Recipe } from "~/types/recipes";
 import type { TrackingStatus } from "~/types/tracking";
-import { getTierColorScheme } from "~/theme";
+import { getTierColorScheme } from "~/utils/colors";
 import { useMemo } from "react";
 import { useTracking } from "~/hooks/useTracking";
 import { ProgressTrackingTab } from "~/components/tracking";
@@ -92,13 +92,13 @@ export function ResourceSummary({
   }, [adjustedBreakdown, breakdown, itemMap]);
 
   if (projectItems.length === 0 || !breakdown) {
-    return <Text color="text.muted">Add items to see resource summary.</Text>;
+    return <Text color="gray.500">Add items to see resource summary.</Text>;
   }
 
   return (
     <VStack spacing={4} align="stretch">
       <Tabs colorScheme="gray" variant="enclosed">
-        <Box bg="surface.primary" borderRadius="md" p={3} border="1px solid" borderColor="border.primary">
+        <Box bg="white" borderRadius="md" p={3} border="1px solid" borderColor="gray.200">
           <TabList>
             <Tab>Lists</Tab>
             <Tab>Tracking</Tab>
@@ -110,7 +110,7 @@ export function ResourceSummary({
           {/* Lists sub-tab */}
           <TabPanel>
             {lastApplyInfo && (
-              <Box mb={3} bg="surface.primary" borderRadius="md" border="1px solid" borderColor="border.primary" p={3}>
+              <Box mb={3} bg="white" borderRadius="md" border="1px solid" borderColor="gray.200" p={3}>
                 <HStack spacing={3}>
                   <Badge colorScheme={lastApplyInfo.matchedItems > 0 ? 'green' : 'yellow'}>
                     {lastApplyInfo.matchedItems > 0 ? 'Applied' : 'No Matches'}
@@ -122,7 +122,7 @@ export function ResourceSummary({
                       : ''}
                   </Text>
                   <Spacer />
-                  <HStack spacing={4} fontSize="sm" color="text.muted">
+                  <HStack spacing={4} fontSize="sm" color="gray.500">
                     <Text>Matched: {lastApplyInfo.matchedItems}</Text>
                     <Text>Full: {lastApplyInfo.fullySatisfiedItems}</Text>
                     <Text>Partial: {lastApplyInfo.partiallySatisfiedItems}</Text>
@@ -132,12 +132,12 @@ export function ResourceSummary({
               </Box>
             )}
             {groupedAllMaterials.length === 0 ? (
-              <Text color="text.muted">No materials needed</Text>
+              <Text color="gray.500">No materials needed</Text>
             ) : (
               <VStack spacing={3} align="stretch">
                 <HStack>
                   <Heading size="md">All Materials</Heading>
-                  <Badge variant="status">{groupedAllMaterials.reduce((sum, g) => sum + g.items.reduce((s, it) => s + it.quantity, 0), 0)} remaining</Badge>
+                  <Badge variant="subtle">{groupedAllMaterials.reduce((sum, g) => sum + g.items.reduce((s, it) => s + it.quantity, 0), 0)} remaining</Badge>
                   <Spacer />
                   <ButtonGroup size="sm">
                     <Button leftIcon={<SettingsIcon />} onClick={addAllToTracking}>
@@ -149,23 +149,23 @@ export function ResourceSummary({
                   {groupedAllMaterials.map((group) => (
                     <Box
                       key={group.category}
-                      bg="surface.primary"
+                      bg="white"
                       borderRadius="lg"
                       border="1px solid"
-                      borderColor="border.primary"
+                      borderColor="gray.200"
                       p={3}
                     >
                       <HStack mb={2}>
                         <Heading size="sm">{group.category}</Heading>
                         <Spacer />
-                        <Badge variant="status">{group.items.length} items</Badge>
+                        <Badge variant="subtle">{group.items.length} items</Badge>
                         <Button size="xs" onClick={() => {
                           group.items.forEach(({ item }) => toggleItemTracking(item.id, 'completed'));
                         }}>
                           Add Section
                         </Button>
                       </HStack>
-                      <Table size="sm" variant="bitcraft">
+                      <Table size="sm" variant="simple">
                         <Thead>
                           <Tr>
                             <Th px={2} py={1}>Item</Th>
@@ -174,11 +174,11 @@ export function ResourceSummary({
                             <Th px={2} py={1}>Track</Th>
                           </Tr>
                         </Thead>
-                        <Tbody bg="surface.primary">
+                        <Tbody bg="white">
                           {group.items.map(({ item, quantity }) => {
                             const tracked = trackingData.trackedItems.get(item.id);
                             return (
-                              <Tr key={item.id} _hover={{ bg: "surface.elevated" }}>
+                              <Tr key={item.id} _hover={{ bg: "gray.50" }}>
                                 <Td px={2} py={1} fontWeight="medium" whiteSpace="normal">{item.name}</Td>
                                 <Td px={2} py={1}>
                                   <Badge colorScheme={getTierColorScheme(item.tier)}>T{item.tier}</Badge>
@@ -227,15 +227,15 @@ export function ResourceSummary({
           
           {/* Stats placeholder */}
           <TabPanel>
-            <Box p={6} textAlign="center" bg="surface.primary" borderRadius="md" border="1px solid" borderColor="border.primary">
-              <Text color="text.muted">Stats coming soon.</Text>
+            <Box p={6} textAlign="center" bg="white" borderRadius="md" border="1px solid" borderColor="gray.200">
+              <Text color="gray.500">Stats coming soon.</Text>
             </Box>
           </TabPanel>
           
           {/* Budget placeholder */}
           <TabPanel>
-            <Box p={6} textAlign="center" bg="surface.primary" borderRadius="md" border="1px solid" borderColor="border.primary">
-              <Text color="text.muted">Budget coming soon.</Text>
+            <Box p={6} textAlign="center" bg="white" borderRadius="md" border="1px solid" borderColor="gray.200">
+              <Text color="gray.500">Budget coming soon.</Text>
             </Box>
           </TabPanel>
         </TabPanels>

@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import type { Item, ProjectItem } from "~/types/recipes";
-import { getTierColorScheme } from "~/theme";
+import { getTierColorScheme } from "~/utils/colors";
 
 interface ItemSearchProps {
   searchQuery: string;
@@ -30,7 +30,7 @@ export function ItemSearch({
   onRecalculate,
 }: ItemSearchProps) {
   return (
-    <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={5}>
+    <Box bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" p={5}>
       <Flex align="center" mb={3}>
         <Heading size="md">Add Items to Project</Heading>
         <Spacer />
@@ -55,7 +55,7 @@ export function ItemSearch({
           maxH="220px"
           overflowY="auto"
           border="1px"
-          borderColor="border.secondary"
+          borderColor="gray.200"
           borderRadius="md"
         >
           {searchResults.map((item) => (
@@ -63,14 +63,14 @@ export function ItemSearch({
               key={item.id}
               p={3}
               borderBottom="1px"
-              borderColor="border.primary"
+              borderColor="gray.200"
               cursor="pointer"
-              _hover={{ bg: "surface.secondary" }}
+              _hover={{ bg: "gray.50" }}
               onClick={() => onAddItem(item)}
             >
               <Box>
                 <Text fontWeight="medium">{item.name}</Text>
-                <Text fontSize="sm" color="text.muted">
+                <Text fontSize="sm" color="gray.500">
                   {item.category}
                 </Text>
               </Box>

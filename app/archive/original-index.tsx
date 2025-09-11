@@ -189,7 +189,7 @@ export default function Index() {
         <AppHeader version={version} />
 
         <Tabs colorScheme="gray" variant="enclosed" defaultIndex={2}>
-          <Box bg="surface.primary" borderRadius="lg" p={5}>
+          <Box bg="white" borderRadius="lg" p={5}>
             <ProjectHeader
               projectName={projectName}
               setProjectName={setProjectName}

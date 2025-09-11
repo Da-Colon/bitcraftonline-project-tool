@@ -16,7 +16,7 @@ export default function Index() {
 
   return (
     <Container maxW="container.lg" minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Box w="100%" variant="card">
+      <Box w="100%" bg="white" borderWidth="1px" borderColor="gray.200" borderRadius="lg" p={4}>
         <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6}>
           <GridItem>
             <Heading size="md" mb={3}>Choose Your Player</Heading>
@@ -27,7 +27,7 @@ export default function Index() {
               onChange={(e) => setQuery(e.target.value)}
             />
             {(!query || query.trim().length < 3) && (
-              <Text mt={2} color="text.muted">Type at least 3 characters to search</Text>
+              <Text mt={2} color="gray.500">Type at least 3 characters to search</Text>
             )}
           </GridItem>
 

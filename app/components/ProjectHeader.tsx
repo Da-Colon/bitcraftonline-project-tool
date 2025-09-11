@@ -31,10 +31,10 @@ export function ProjectHeader({
   return (
     <Flex align="center" justify="center" gap={4} mb={4}>
       <Heading size="lg">{projectName || "Untitled Project"}</Heading>
-      <Badge variant="status">
+      <Badge variant="subtle">
         {projectItems.length} items
       </Badge>
-      <HStack spacing={1} color="text.muted">
+      <HStack spacing={1} color="gray.500">
         <TimeIcon />
         <Text fontSize="sm">
           {lastUpdated ? `Last updated ${lastUpdated.toLocaleTimeString()}` : "Not updated yet"}
@@ -48,10 +48,10 @@ export function ProjectHeader({
           onChange={(e) => setProjectName(e.target.value)}
           maxW="280px"
         />
-        <Button onClick={onSaveProject} variant="primary" isDisabled={projectItems.length === 0} px={6}>
+        <Button onClick={onSaveProject} colorScheme="blue" isDisabled={projectItems.length === 0} px={6}>
           Save Project
         </Button>
-        <Button onClick={onClearProject} variant="secondary">Clear</Button>
+        <Button onClick={onClearProject} variant="outline">Clear</Button>
       </HStack>
     </Flex>
   );

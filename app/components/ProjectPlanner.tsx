@@ -40,16 +40,16 @@ export function ProjectPlanner({
 }: ProjectPlannerProps) {
   if (projectItems.length === 0) {
     return (
-      <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={12} textAlign="center">
+      <Box bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" p={12} textAlign="center">
         <Text fontSize="2xl" mb={2}>📦</Text>
         <Heading size="sm" mb={2}>No items in project</Heading>
-        <Text color="text.muted">Use the search above to add items to your crafting project.</Text>
+        <Text color="gray.500">Use the search above to add items to your crafting project.</Text>
       </Box>
     );
   }
 
   return (
-    <Box bg="surface.primary" borderRadius="lg" border="1px solid" borderColor="border.primary" p={4}>
+    <Box bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" p={4}>
       <Heading size="md" mb={4}>
         Project Items
       </Heading>

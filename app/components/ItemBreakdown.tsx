@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import type { Item, Recipe } from "~/types/recipes";
-import { getTierColorScheme } from "~/theme";
+import { getTierColorScheme } from "~/utils/colors";
 
 export interface RecipeLookup {
   getItem: (id: string) => Item | undefined;
@@ -55,10 +55,10 @@ export function ItemBreakdown({
         pl={`${indent}px`}
         py={2}
         px={3}
-        bg={level % 2 === 0 ? "surface.primary" : "surface.background"}
+        bg={level % 2 === 0 ? "white" : "gray.50"}
         borderLeft={level > 0 ? "2px solid" : "none"}
-        borderLeftColor="border.secondary"
-        _hover={{ bg: "surface.secondary" }}
+        borderLeftColor="gray.200"
+        _hover={{ bg: "gray.50" }}
       >
         <HStack spacing={2} flex={1}>
           {hasRecipe && (
@@ -84,7 +84,7 @@ export function ItemBreakdown({
             Tier {item.tier}
           </Badge>
           
-          <Text fontSize="sm" color="text.muted">
+          <Text fontSize="sm" color="gray.500">
             ({item.category})
           </Text>
         </HStack>
@@ -92,11 +92,11 @@ export function ItemBreakdown({
         <Spacer />
         
         <VStack spacing={0} align="end">
-          <Text fontWeight="bold" color="brand.primary">
+          <Text fontWeight="bold" color="blue.500">
             {quantity}x
           </Text>
           {recipe && (
-            <Text fontSize="xs" color="text.muted">
+            <Text fontSize="xs" color="gray.500">
               {Math.ceil(quantity / recipe.outputQuantity)} batches
             </Text>
           )}
@@ -146,8 +146,8 @@ export function RecipeTree({ itemId, quantity, lookup }: RecipeTreeProps) {
   }
 
   return (
-    <Box border="1px" borderColor="border.secondary" borderRadius="md" overflow="hidden">
-      <Box bg="brand.primary" color="white" p={3}>
+    <Box border="1px" borderColor="gray.200" borderRadius="md" overflow="hidden">
+      <Box bg="blue.500" color="white" p={3}>
         <Text fontWeight="bold" fontSize="lg">
           Recipe Tree: {item.name}
         </Text>

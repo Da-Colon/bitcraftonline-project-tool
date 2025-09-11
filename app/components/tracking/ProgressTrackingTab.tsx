@@ -46,13 +46,13 @@ export function ProgressTrackingTab({
   return (
     <VStack spacing={4} align="stretch">
       {/* Progress Tracking Header */}
-      <Box bg="surface.primary" borderRadius="md" p={4} border="1px solid" borderColor="border.primary">
+      <Box bg="white" borderRadius="md" p={4} border="1px solid" borderColor="gray.200">
         <VStack spacing={3}>
           <HStack w="full">
             <Heading size="md" color="orange.400">Progress Tracking</Heading>
             <Badge bg="orange.400" color="white" px={2} py={1} borderRadius="md">Alpha</Badge>
             <Spacer />
-            <Text fontSize="sm" color="text.muted">{professionProgress.length} professions</Text>
+            <Text fontSize="sm" color="gray.500">{professionProgress.length} professions</Text>
             <Button size="sm" variant="ghost" onClick={toggleFilters}>
               Hide Profession
             </Button>
@@ -87,7 +87,7 @@ export function ProgressTrackingTab({
 
       {/* Global Filters */}
       <Collapse in={filtersOpen}>
-        <Box bg="surface.primary" borderRadius="md" p={3} border="1px solid" borderColor="border.primary">
+        <Box bg="white" borderRadius="md" p={3} border="1px solid" borderColor="gray.200">
           <HStack>
             <Text fontWeight="medium">Global Filters</Text>
             <Badge>Affects all tabs</Badge>
