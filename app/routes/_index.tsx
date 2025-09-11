@@ -3,20 +3,20 @@ import { useState } from "react";
 import { usePlayerSearch } from "~/hooks/usePlayerSearch";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 import { PlayerResults } from "~/components/PlayerResults";
+import { PlayerHeader } from "~/components/PlayerHeader";
 
 export default function Index() {
   const { player, savePlayer } = useSelectedPlayer();
   const [query, setQuery] = useState("");
   const { results, loading, error } = usePlayerSearch(query, { minLength: 3, delay: 300 });
 
-  // Once selected, hide the input flow entirely
   if (player) {
-    return <></>;
+    return <PlayerHeader />;
   }
 
   return (
     <Container maxW="container.lg" minH="100vh" display="flex" alignItems="center" justifyContent="center">
-      <Box w="100%" bg="white" borderWidth="1px" borderColor="gray.200" borderRadius="lg" p={4}>
+      <Box w="100%" variant="card">
         <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={6}>
           <GridItem>
             <Heading size="md" mb={3}>Choose Your Player</Heading>
