@@ -83,9 +83,10 @@ export function InventoryList({ inventories }: InventoryListProps) {
 
   return (
     <VStack spacing={6} align="stretch">
-      {renderInventorySection("House Inventories", inventories.house_inventory)}
-      {renderInventorySection("Personal Banks", inventories.personal_banks)}
-      {renderInventorySection("Personal Storages", inventories.personal_storages)}
+      {renderInventorySection("Personal Inventories", inventories.personal)}
+      {renderInventorySection("Banks", inventories.banks)}
+      {renderInventorySection("Storage", inventories.storage)}
+      {renderInventorySection("Recovery Chests", inventories.recovery)}
     </VStack>
   );
 }

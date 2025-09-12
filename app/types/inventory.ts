@@ -1,7 +1,57 @@
+// BitJita API response structure
+export interface BitJitaPocket {
+  locked: boolean;
+  volume: number;
+  contents: {
+    itemId: number;
+    itemType: number;
+    quantity: number;
+  };
+}
+
+export interface BitJitaInventory {
+  entityId: string;
+  playerOwnerEntityId: string;
+  ownerEntityId: string;
+  pockets: BitJitaPocket[];
+  inventoryIndex: number;
+  cargoIndex: number;
+  buildingName: string | null;
+  claimEntityId: string | null;
+  claimName: string | null;
+  claimLocationX: number | null;
+  claimLocationZ: number | null;
+  claimLocationDimension: number | null;
+  regionId: number;
+  inventoryName: string;
+}
+
+export interface BitJitaItem {
+  name: string;
+  iconAssetName: string;
+  tier: number;
+  rarityStr: string;
+  tag: string;
+  toolLevel?: number;
+  toolPower?: number;
+  toolType?: number;
+  toolSkillId?: number;
+}
+
+export interface BitJitaInventoriesResponse {
+  inventories: BitJitaInventory[];
+  items: Record<string, BitJitaItem>;
+  cargos?: Record<string, BitJitaItem>;
+}
+
+// Our internal UI structure
 export interface InventoryItem {
   itemId: string;
   quantity: number;
-  metadata?: Record<string, any>;
+  name?: string;
+  tier?: number;
+  category?: string;
+  rarity?: string;
 }
 
 export interface Inventory {
@@ -10,12 +60,16 @@ export interface Inventory {
   type: string;
   items: InventoryItem[];
   maxSlots?: number;
+  buildingName?: string;
+  claimName?: string;
+  region?: number;
 }
 
 export interface PlayerInventories {
-  house_inventory?: Inventory[];
-  personal_banks?: Inventory[];
-  personal_storages?: Inventory[];
+  personal?: Inventory[];
+  banks?: Inventory[];
+  storage?: Inventory[];
+  recovery?: Inventory[];
 }
 
 export type ContentViewType = 'dashboard' | 'personal-inventories';

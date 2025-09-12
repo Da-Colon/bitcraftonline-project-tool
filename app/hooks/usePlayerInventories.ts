@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import type { PlayerInventories } from "~/types/inventory";
+import type { PlayerInventories, BitJitaInventoriesResponse } from "~/types/inventory";
+import { transformBitJitaInventories } from "~/utils/inventoryTransform";
 
 export function usePlayerInventories(playerId?: string) {
   const [inventories, setInventories] = useState<PlayerInventories | null>(null);
@@ -24,8 +25,9 @@ export function usePlayerInventories(playerId?: string) {
           throw new Error(`Failed to fetch inventories: ${response.statusText}`);
         }
         
-        const data = await response.json();
-        setInventories(data);
+        const bitjitaData: BitJitaInventoriesResponse = await response.json();
+        const transformedData = transformBitJitaInventories(bitjitaData);
+        setInventories(transformedData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
         setInventories(null);
