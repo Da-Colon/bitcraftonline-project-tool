@@ -1,10 +1,15 @@
-import { Badge, Box, Container, HStack, Link, Spinner, Text, Tooltip, useToast, IconButton, Tag, TagLabel, TagLeftIcon, Circle } from "@chakra-ui/react";
-import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
+import { Badge, Box, Container, HStack, Link, Spinner, Text, Tooltip, useToast, IconButton, Tag, TagLabel, TagLeftIcon, Circle, Menu, MenuButton, MenuList, MenuItem, Button } from "@chakra-ui/react";
+import { CopyIcon, ExternalLinkIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useCallback } from "react";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 import { usePlayerDetails } from "~/hooks/usePlayerDetails";
+import type { ContentViewType } from "~/types/inventory";
 
-export function PlayerHeader() {
+interface PlayerHeaderProps {
+  onViewChange?: (view: ContentViewType) => void;
+}
+
+export function PlayerHeader({ onViewChange }: PlayerHeaderProps) {
   const toast = useToast();
   const { player } = useSelectedPlayer();
   const { detail, loading, error, derived } = usePlayerDetails(player?.entityId);
@@ -44,6 +49,17 @@ export function PlayerHeader() {
           </HStack>
 
           <HStack spacing={3} align="center">
+            <Menu>
+              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="outline" size="sm">
+                Inventories
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={() => onViewChange?.('personal-inventories')}>
+                  Manage Personal Inventories
+                </MenuItem>
+              </MenuList>
+            </Menu>
+            
             {loading ? (
               <Spinner size="sm" />
             ) : (
