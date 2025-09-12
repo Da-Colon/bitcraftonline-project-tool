@@ -1,17 +1,23 @@
 import { SimpleGrid, Box, Text, HStack, Badge } from "@chakra-ui/react";
 import type { InventoryItem } from "~/types/inventory";
+import { InventoryTierTable } from "~/components/InventoryTierTable";
 
 interface InventoryContentsProps {
   items: InventoryItem[];
+  viewMode?: 'list' | 'tier';
 }
 
-export function InventoryContents({ items }: InventoryContentsProps) {
+export function InventoryContents({ items, viewMode = 'list' }: InventoryContentsProps) {
   if (items.length === 0) {
     return (
       <Text color="text.muted" textAlign="center" py={4}>
         This inventory is empty
       </Text>
     );
+  }
+
+  if (viewMode === 'tier') {
+    return <InventoryTierTable items={items} />;
   }
 
   return (

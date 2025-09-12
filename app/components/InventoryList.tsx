@@ -5,9 +5,10 @@ import { InventoryContents } from "~/components/InventoryContents";
 
 interface InventoryListProps {
   inventories: PlayerInventories;
+  viewMode?: 'list' | 'tier';
 }
 
-export function InventoryList({ inventories }: InventoryListProps) {
+export function InventoryList({ inventories, viewMode = 'list' }: InventoryListProps) {
   const [trackedInventories, setTrackedInventories] = useState<Set<string>>(new Set());
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set());
 
@@ -71,7 +72,7 @@ export function InventoryList({ inventories }: InventoryListProps) {
               
               <Collapse in={expandedInventories.has(inventory.id)} animateOpacity>
                 <Box mt={4}>
-                  <InventoryContents items={inventory.items} />
+                  <InventoryContents items={inventory.items} viewMode={viewMode} />
                 </Box>
               </Collapse>
             </Box>
