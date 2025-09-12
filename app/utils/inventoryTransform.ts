@@ -51,6 +51,14 @@ function transformPockets(
       const itemId = pocket.contents.itemId.toString();
       const gameItem = items[itemId] || cargos?.[itemId];
       
+      // Debug logging
+      if (!gameItem) {
+        console.log(`Item not found: ${itemId}`, { 
+          availableItems: Object.keys(items).slice(0, 5),
+          availableCargos: cargos ? Object.keys(cargos).slice(0, 5) : []
+        });
+      }
+      
       return {
         itemId,
         quantity: pocket.contents.quantity,

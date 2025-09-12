@@ -1,14 +1,11 @@
 import { SimpleGrid, Box, Text, HStack, Badge } from "@chakra-ui/react";
 import type { InventoryItem } from "~/types/inventory";
-import { useGameData } from "~/hooks/useGameData";
 
 interface InventoryContentsProps {
   items: InventoryItem[];
 }
 
 export function InventoryContents({ items }: InventoryContentsProps) {
-  const { getItemById } = useGameData();
-
   if (items.length === 0) {
     return (
       <Text color="text.muted" textAlign="center" py={4}>
@@ -20,8 +17,6 @@ export function InventoryContents({ items }: InventoryContentsProps) {
   return (
     <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={3}>
       {items.map((item, index) => {
-        const gameItem = getItemById(item.itemId);
-        
         return (
           <Box
             key={`${item.itemId}-${index}`}
@@ -33,22 +28,22 @@ export function InventoryContents({ items }: InventoryContentsProps) {
           >
             <HStack justify="space-between" align="center">
               <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
-                {gameItem?.name || item.itemId}
+                {item.name || item.itemId}
               </Text>
               <Badge variant="solid" colorScheme="green" fontSize="xs">
                 {item.quantity}
               </Badge>
             </HStack>
-            {gameItem && (
+            {(item.category || item.tier !== undefined) && (
               <HStack mt={1} spacing={2}>
-                {gameItem.category && (
+                {item.category && (
                   <Badge variant="subtle" colorScheme="blue" fontSize="xs">
-                    {gameItem.category}
+                    {item.category}
                   </Badge>
                 )}
-                {gameItem.tier && (
+                {item.tier !== undefined && item.tier >= 0 && (
                   <Badge variant="subtle" colorScheme="purple" fontSize="xs">
-                    T{gameItem.tier}
+                    T{item.tier}
                   </Badge>
                 )}
               </HStack>
