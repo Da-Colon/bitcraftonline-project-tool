@@ -1,4 +1,4 @@
-import { Box, HStack, Text, Badge, Circle, Flex, Icon } from "@chakra-ui/react";
+import { HStack, Text, Badge, Circle, Flex, Icon } from "@chakra-ui/react";
 import { ChevronRightIcon } from "@chakra-ui/icons";
 import type { Player } from "~/types/player";
 
