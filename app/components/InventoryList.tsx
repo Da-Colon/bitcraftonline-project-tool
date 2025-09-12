@@ -55,6 +55,11 @@ export function InventoryList({ inventories, viewMode = 'list' }: InventoryListP
                     onChange={(e) => handleTrackingChange(inventory.id, e.target.checked)}
                   />
                   <Text fontWeight="medium">{inventory.name}</Text>
+                  {inventory.claimName && title === "Banks" && (
+                    <Badge variant="subtle" colorScheme="green">
+                      {inventory.claimName}
+                    </Badge>
+                  )}
                   <Badge variant="subtle" colorScheme="blue">
                     {inventory.items.length} items
                   </Badge>
