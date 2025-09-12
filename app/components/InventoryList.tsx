@@ -2,6 +2,7 @@ import { VStack, Box, Text, Checkbox, Collapse, SimpleGrid, Badge, HStack } from
 import { useState } from "react";
 import type { PlayerInventories, Inventory } from "~/types/inventory";
 import { InventoryContents } from "~/components/InventoryContents";
+import { useTrackedInventories } from "~/hooks/useTrackedInventories";
 
 interface InventoryListProps {
   inventories: PlayerInventories;
@@ -9,17 +10,13 @@ interface InventoryListProps {
 }
 
 export function InventoryList({ inventories, viewMode = 'list' }: InventoryListProps) {
-  const [trackedInventories, setTrackedInventories] = useState<Set<string>>(new Set());
+  const { isTracked, toggleTracking } = useTrackedInventories();
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set());
 
   const handleTrackingChange = (inventoryId: string, checked: boolean) => {
-    const newTracked = new Set(trackedInventories);
-    if (checked) {
-      newTracked.add(inventoryId);
-    } else {
-      newTracked.delete(inventoryId);
-    }
-    setTrackedInventories(newTracked);
+    console.log('handleTrackingChange called:', inventoryId, checked);
+    console.log('toggleTracking function:', toggleTracking);
+    toggleTracking(inventoryId);
   };
 
   const handleExpandToggle = (inventoryId: string) => {
@@ -43,16 +40,19 @@ export function InventoryList({ inventories, viewMode = 'list' }: InventoryListP
             <Box
               key={inventory.id}
               p={4}
-              bg="surface.secondary"
+              bg="gray.50"
               borderRadius="md"
               border="1px solid"
-              borderColor="border.primary"
+              borderColor="gray.200"
             >
               <HStack justify="space-between" align="center">
                 <HStack spacing={3}>
                   <Checkbox
-                    isChecked={trackedInventories.has(inventory.id)}
-                    onChange={(e) => handleTrackingChange(inventory.id, e.target.checked)}
+                    isChecked={isTracked(inventory.id)}
+                    onChange={(e) => {
+                      console.log('Checkbox onChange fired:', inventory.id, e.target.checked);
+                      handleTrackingChange(inventory.id, e.target.checked);
+                    }}
                   />
                   <Text fontWeight="medium">{inventory.name}</Text>
                   {inventory.claimName && title === "Banks" && (

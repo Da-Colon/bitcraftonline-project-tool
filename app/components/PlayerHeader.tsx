@@ -7,9 +7,10 @@ import type { ContentViewType } from "~/types/inventory";
 
 interface PlayerHeaderProps {
   onViewChange?: (view: ContentViewType) => void;
+  currentView?: ContentViewType;
 }
 
-export function PlayerHeader({ onViewChange }: PlayerHeaderProps) {
+export function PlayerHeader({ onViewChange, currentView }: PlayerHeaderProps) {
   const toast = useToast();
   const { player } = useSelectedPlayer();
   const { detail, loading, error, derived } = usePlayerDetails(player?.entityId);
@@ -29,6 +30,17 @@ export function PlayerHeader({ onViewChange }: PlayerHeaderProps) {
   const signedIn = detail?.player?.signedIn ?? false;
   const locationName = derived?.locationName || "Unknown";
   const highest = derived?.highestSkill;
+
+  const getViewDisplayName = (view: ContentViewType) => {
+    switch (view) {
+      case 'dashboard':
+        return 'Dashboard';
+      case 'personal-inventories':
+        return 'Manage Inventories';
+      default:
+        return 'Dashboard';
+    }
+  };
 
   return (
     <Box as="header" borderBottom="1px solid" borderColor="gray.200" py={3} bg="gray.50" position="sticky" top={0} zIndex={10}>
@@ -51,9 +63,12 @@ export function PlayerHeader({ onViewChange }: PlayerHeaderProps) {
           <HStack spacing={3} align="center">
             <Menu>
               <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="outline" size="sm">
-                Inventories
+                {getViewDisplayName(currentView || 'dashboard')}
               </MenuButton>
               <MenuList>
+                <MenuItem onClick={() => onViewChange?.('dashboard')}>
+                  Dashboard
+                </MenuItem>
                 <MenuItem onClick={() => onViewChange?.('personal-inventories')}>
                   Manage Personal Inventories
                 </MenuItem>
