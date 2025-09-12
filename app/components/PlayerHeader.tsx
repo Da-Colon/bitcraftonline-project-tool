@@ -31,7 +31,7 @@ export function PlayerHeader({ onViewChange }: PlayerHeaderProps) {
   const highest = derived?.highestSkill;
 
   return (
-    <Box as="header" borderBottom="1px solid" borderColor="border.primary" py={3} bg="surface.primary" position="sticky" top={0} zIndex={10}>
+    <Box as="header" borderBottom="1px solid" borderColor="gray.200" py={3} bg="gray.50" position="sticky" top={0} zIndex={10}>
       <Container maxW="container.xl">
         <HStack justify="space-between" align="center" spacing={4} wrap="wrap">
           <HStack spacing={3} align="center">
