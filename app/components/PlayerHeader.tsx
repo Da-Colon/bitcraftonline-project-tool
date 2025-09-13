@@ -10,7 +10,7 @@ interface PlayerHeaderProps {}
 export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const toast = useToast();
   const location = useLocation();
-  const { player } = useSelectedPlayer();
+  const { player, clearPlayer } = useSelectedPlayer();
   const { detail, loading, error, derived } = usePlayerDetails(player?.entityId);
 
   const copyId = useCallback(async () => {
@@ -58,6 +58,9 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
             <Badge variant="status" colorScheme={signedIn ? "green" : "gray"}>
               {signedIn ? "Online" : "Offline"}
             </Badge>
+            <Button size="sm" variant="outline" onClick={clearPlayer}>
+              Change Player
+            </Button>
           </HStack>
 
           <HStack spacing={3} align="center">

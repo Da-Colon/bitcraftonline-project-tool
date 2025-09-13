@@ -17,9 +17,11 @@ export function TrackedInventoryView() {
   const { trackedInventories, clearAll } = useTrackedInventories();
   const toast = useToast();
 
+  // Don't render if no player is selected
+  if (!player) return null;
+
   const loading = playerLoading || claimLoading;
   const error = playerError || claimError;
-
 
   if (loading) {
     return (
