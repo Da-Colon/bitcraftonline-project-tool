@@ -1,4 +1,5 @@
-import { VStack, Text, Box } from "@chakra-ui/react";
+import { VStack, Text, Box, Spinner, Flex, Icon, Center } from "@chakra-ui/react";
+import { SearchIcon, WarningIcon } from "@chakra-ui/icons";
 import type { Player } from "~/types/player";
 import { PlayerCard } from "./PlayerCard";
 
@@ -10,17 +11,55 @@ type PlayerResultsProps = {
 };
 
 export function PlayerResults({ players, onSelect, isLoading, error }: PlayerResultsProps) {
-  if (isLoading) return <Text color="text.muted">Searching…</Text>;
-  if (error) return <Text color="status.error">{error}</Text>;
-  if (!players?.length) return <Text color="text.muted">No matches</Text>;
+  if (isLoading) {
+    return (
+      <Center py={8}>
+        <VStack spacing={3}>
+          <Spinner size="lg" color="blue.500" thickness="3px" />
+          <Text color="gray.600" fontSize="sm">Searching for players...</Text>
+        </VStack>
+      </Center>
+    );
+  }
+
+  if (error) {
+    return (
+      <Center py={8}>
+        <VStack spacing={3}>
+          <Icon as={WarningIcon} boxSize={8} color="red.400" />
+          <Text color="red.600" textAlign="center" fontSize="sm">
+            {error}
+          </Text>
+        </VStack>
+      </Center>
+    );
+  }
+
+  if (!players?.length) {
+    return (
+      <Center py={8}>
+        <VStack spacing={3}>
+          <Icon as={SearchIcon} boxSize={8} color="gray.300" />
+          <Text color="gray.500" textAlign="center" fontSize="sm">
+            No players found matching your search
+          </Text>
+        </VStack>
+      </Center>
+    );
+  }
 
   return (
-    <Box p={2}>
-      <VStack align="stretch" spacing={2} maxH="60vh" overflowY="auto">
+    <Box>
+      <VStack align="stretch" spacing={3} maxH="400px" overflowY="auto" pr={2}>
         {players.map((p) => (
-          <PlayerCard key={p.entityId} player={p} onSelect={onSelect} />)
-        )}
+          <PlayerCard key={p.entityId} player={p} onSelect={onSelect} />
+        ))}
       </VStack>
+      {players.length > 5 && (
+        <Text mt={3} fontSize="xs" color="gray.500" textAlign="center">
+          Showing {players.length} results • Scroll to see more
+        </Text>
+      )}
     </Box>
   );
 }
