@@ -5,29 +5,14 @@ import {
   Box,
   Container,
   VStack,
-  Heading,
-  Text,
-  Input,
-  Card,
-  CardHeader,
-  CardBody,
   HStack,
+  Input,
   Button,
+  Text,
+  Heading,
+  Card,
+  CardBody,
   Badge,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  useColorModeValue,
-  Spinner,
-  Alert,
-  AlertIcon,
   Table,
   Thead,
   Tbody,
@@ -35,6 +20,17 @@ import {
   Th,
   Td,
   TableContainer,
+  useColorModeValue,
+  Spinner,
+  Checkbox,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  CardHeader,
+  Alert,
+  AlertIcon,
   SimpleGrid,
 } from "@chakra-ui/react";
 import { PlayerHeader } from "~/components/PlayerHeader";
@@ -60,10 +56,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function RecipesRoute() {
   const { items } = useLoaderData<typeof loader>();
-  const searchFetcher = useFetcher<{ items: Item[] }>();
-  const calculationFetcher = useFetcher<{ breakdown: RecipeBreakdownItem[] }>();
+  const searchFetcher = useFetcher();
+  const calculationFetcher = useFetcher();
   
   const [searchQuery, setSearchQuery] = useState("");
+  const [hideCompleted, setHideCompleted] = useState(false);
   
   // Use persistent recipe selection
   const {
@@ -143,15 +140,20 @@ export default function RecipesRoute() {
     }
   };
 
-  const breakdown = calculationFetcher.data?.breakdown || [];
+  const breakdown = (calculationFetcher.data as any)?.breakdown || [];
   const isLoading = calculationFetcher.state === "loading";
   
   // Get search results from search fetcher
-  const searchResults = searchFetcher.data?.items || items;
+  const searchResults = (searchFetcher.data as any)?.items || items;
+
+  // Filter breakdown based on hideCompleted state
+  const filteredBreakdown = hideCompleted 
+    ? breakdown.filter((item: RecipeBreakdownItem) => item.deficit > 0)
+    : breakdown;
 
   // Auto-calculate when component loads with persisted selection
   useEffect(() => {
-    if (selectedItem && !calculationFetcher.data && calculationFetcher.state === "idle") {
+    if (selectedItem && calculationFetcher.state === "idle" && combinedInventory.length >= 0) {
       const formData = new FormData();
       formData.append("itemId", selectedItem.id);
       formData.append("quantity", targetQuantity.toString());
@@ -162,7 +164,7 @@ export default function RecipesRoute() {
         action: "/api/recipes/calculate",
       });
     }
-  }, [selectedItem, calculationFetcher.state]);
+  }, [selectedItem, calculationFetcher.state, combinedInventory, targetQuantity]);
 
 
   return (
@@ -193,7 +195,7 @@ export default function RecipesRoute() {
               
               {searchQuery.length > 2 && searchResults.length > 0 && !selectedItem && (
                 <Box maxH="300px" overflowY="auto" border="1px" borderColor={borderColor} borderRadius="md">
-                  {searchResults.map((item) => (
+                  {searchResults.map((item: Item) => (
                     <Box
                       key={item.id}
                       p={2}
@@ -276,7 +278,15 @@ export default function RecipesRoute() {
             <CardHeader pb={2}>
               <HStack justify="space-between" align="center">
                 <Heading size="md">Recipe Breakdown</Heading>
-                {isLoading && <Spinner size="sm" />}
+                <HStack spacing={4}>
+                  <Checkbox 
+                    isChecked={hideCompleted}
+                    onChange={(e) => setHideCompleted(e.target.checked)}
+                  >
+                    Hide completed items
+                  </Checkbox>
+                  {isLoading && <Spinner size="sm" />}
+                </HStack>
               </HStack>
             </CardHeader>
             <CardBody pt={0}>
@@ -290,15 +300,15 @@ export default function RecipesRoute() {
                   
                   <TabPanels>
                     <TabPanel px={0}>
-                      <RecipeBreakdownTable breakdown={breakdown} />
+                      <RecipeBreakdownTable breakdown={filteredBreakdown} />
                     </TabPanel>
                     
                     <TabPanel px={0}>
-                      <TierSummaryView breakdown={breakdown} />
+                      <TierSummaryView breakdown={filteredBreakdown} />
                     </TabPanel>
                     
                     <TabPanel px={0}>
-                      <RawMaterialsView breakdown={breakdown} />
+                      <RawMaterialsView breakdown={filteredBreakdown} />
                     </TabPanel>
                   </TabPanels>
                 </Tabs>
