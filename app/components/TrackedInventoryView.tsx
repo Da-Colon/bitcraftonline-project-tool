@@ -1,22 +1,25 @@
 import { Box, Text, VStack, Badge, HStack, Divider, Button, useToast } from "@chakra-ui/react";
 import { usePlayerInventories } from "~/hooks/usePlayerInventories";
+import { useClaimInventories } from "~/hooks/useClaimInventories";
 import { useTrackedInventories } from "~/hooks/useTrackedInventories";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
-import { combineTrackedInventories } from "~/utils/combineTrackedInventories";
+import { useSelectedClaim } from "~/hooks/useSelectedClaim";
+import { combineAllTrackedInventories } from "~/utils/combineAllTrackedInventories";
 import { InventoryTierTable } from "~/components/InventoryTierTable";
-import type { CombinedInventoryItem } from "~/utils/combineTrackedInventories";
+import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories";
 
 
 export function TrackedInventoryView() {
   const { player } = useSelectedPlayer();
-  const { inventories, loading, error } = usePlayerInventories(player?.entityId);
+  const { claim } = useSelectedClaim();
+  const { inventories: playerInventories, loading: playerLoading, error: playerError } = usePlayerInventories(player?.entityId);
+  const { inventories: claimInventories, loading: claimLoading, error: claimError } = useClaimInventories(claim?.claimId);
   const { trackedInventories, clearAll } = useTrackedInventories();
   const toast = useToast();
 
-  console.log("TrackedInventoryView - player:", player?.entityId);
-  console.log("TrackedInventoryView - inventories:", inventories);
-  console.log("TrackedInventoryView - trackedInventories:", Array.from(trackedInventories));
-  console.log("TrackedInventoryView - loading:", loading, "error:", error);
+  const loading = playerLoading || claimLoading;
+  const error = playerError || claimError;
+
 
   if (loading) {
     return (
@@ -57,14 +60,18 @@ export function TrackedInventoryView() {
             No Tracked Inventories
           </Text>
           <Text color="gray.500" textAlign="center" fontSize="sm">
-            Go to Personal Inventories and select inventories to track them here.
+            Go to Personal or Claim Inventories and select inventories to track them here.
           </Text>
         </VStack>
       </Box>
     );
   }
 
-  const combinedItems = combineTrackedInventories(inventories || { personal: [], banks: [], storage: [], recovery: [] }, trackedInventories);
+  const combinedItems = combineAllTrackedInventories(
+    playerInventories || { personal: [], banks: [], storage: [], recovery: [] }, 
+    claimInventories, 
+    trackedInventories
+  );
 
   if (combinedItems.length === 0) {
     return (
@@ -77,7 +84,7 @@ export function TrackedInventoryView() {
   }
 
   // Convert combined items to format expected by InventoryTierTable
-  const inventoryItems = combinedItems.map(item => ({
+  const inventoryItems = combinedItems.map((item: CombinedInventoryItem) => ({
     itemId: item.itemId,
     name: item.name,
     category: item.category,
@@ -85,7 +92,7 @@ export function TrackedInventoryView() {
     quantity: item.totalQuantity
   }));
 
-  const totalItems = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0);
+  const totalItems = combinedItems.reduce((sum: number, item: CombinedInventoryItem) => sum + item.totalQuantity, 0);
 
   return (
     <Box>

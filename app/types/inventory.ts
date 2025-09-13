@@ -72,4 +72,23 @@ export interface PlayerInventories {
   recovery?: Inventory[];
 }
 
-export type ContentViewType = 'dashboard' | 'personal-inventories';
+// Claim inventory types
+export interface ClaimInventory {
+  id: string;
+  name: string;
+  type: string;
+  items: InventoryItem[];
+  maxSlots?: number;
+  buildingName?: string;
+  claimName: string; // Always present for claim inventories
+  claimId: string;
+  region?: number;
+}
+
+export interface ClaimInventoriesResponse {
+  inventories: ClaimInventory[];
+  claimName: string;
+  claimId: string;
+}
+
+export type ContentViewType = 'dashboard' | 'personal-inventories' | 'claim-inventories';

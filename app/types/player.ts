@@ -33,6 +33,15 @@ export type PlayerSkillMapEntry = {
   skillCategoryStr: string;
 };
 
+export type PlayerClaim = {
+  entityId: string;
+  name: string;
+  locationX: number;
+  locationZ: number;
+  dimension: number;
+  regionId: number;
+};
+
 export type PlayerDetail = {
   player: Player & {
     teleportLocationX?: number;
@@ -45,5 +54,6 @@ export type PlayerDetail = {
     regionId?: number;
     location?: PlayerLocation | null;
     skillMap?: Record<string, PlayerSkillMapEntry>;
+    claims?: PlayerClaim[];
   };
 };
