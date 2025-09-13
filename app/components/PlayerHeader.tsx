@@ -1,17 +1,15 @@
 import { Badge, Box, Container, HStack, Link, Spinner, Text, Tooltip, useToast, IconButton, Tag, TagLabel, TagLeftIcon, Circle, Menu, MenuButton, MenuList, MenuItem, Button } from "@chakra-ui/react";
 import { CopyIcon, ExternalLinkIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useCallback } from "react";
+import { Link as RemixLink, useLocation } from "@remix-run/react";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 import { usePlayerDetails } from "~/hooks/usePlayerDetails";
-import type { ContentViewType } from "~/types/inventory";
 
-interface PlayerHeaderProps {
-  onViewChange?: (view: ContentViewType) => void;
-  currentView?: ContentViewType;
-}
+interface PlayerHeaderProps {}
 
-export function PlayerHeader({ onViewChange, currentView }: PlayerHeaderProps) {
+export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const toast = useToast();
+  const location = useLocation();
   const { player } = useSelectedPlayer();
   const { detail, loading, error, derived } = usePlayerDetails(player?.entityId);
 
@@ -31,11 +29,11 @@ export function PlayerHeader({ onViewChange, currentView }: PlayerHeaderProps) {
   const locationName = derived?.locationName || "Unknown";
   const highest = derived?.highestSkill;
 
-  const getViewDisplayName = (view: ContentViewType) => {
-    switch (view) {
-      case 'dashboard':
+  const getCurrentPageName = () => {
+    switch (location.pathname) {
+      case '/':
         return 'Dashboard';
-      case 'personal-inventories':
+      case '/inventory':
         return 'Manage Inventories';
       default:
         return 'Dashboard';
@@ -63,13 +61,13 @@ export function PlayerHeader({ onViewChange, currentView }: PlayerHeaderProps) {
           <HStack spacing={3} align="center">
             <Menu>
               <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="outline" size="sm">
-                {getViewDisplayName(currentView || 'dashboard')}
+                {getCurrentPageName()}
               </MenuButton>
               <MenuList>
-                <MenuItem onClick={() => onViewChange?.('dashboard')}>
+                <MenuItem as={RemixLink} to="/">
                   Dashboard
                 </MenuItem>
-                <MenuItem onClick={() => onViewChange?.('personal-inventories')}>
+                <MenuItem as={RemixLink} to="/inventory">
                   Manage Personal Inventories
                 </MenuItem>
               </MenuList>

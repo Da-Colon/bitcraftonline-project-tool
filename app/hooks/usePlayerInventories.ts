@@ -22,6 +22,13 @@ export function usePlayerInventories(playerId?: string) {
       try {
         const response = await fetch(`/api/player/${playerId}/inventories`);
         if (!response.ok) {
+          if (response.status === 503) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMsg = errorData.isExternalError 
+              ? `${errorData.service || 'External API'} Error: ${errorData.detail || 'Service unavailable'}`
+              : errorData.detail || "External service is currently unavailable";
+            throw new Error(errorMsg);
+          }
           throw new Error(`Failed to fetch inventories: ${response.statusText}`);
         }
         

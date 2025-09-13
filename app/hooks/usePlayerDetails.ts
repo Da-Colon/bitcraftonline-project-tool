@@ -21,7 +21,16 @@ export function usePlayerDetails(id: string | null | undefined) {
       try {
         if (!id) return
         const res = await fetch(`/api/player/${encodeURIComponent(id)}`)
-        if (!res.ok) throw new Error(`Failed (${res.status})`)
+        if (!res.ok) {
+          if (res.status === 503) {
+            const errorData = await res.json().catch(() => ({}))
+            const errorMsg = errorData.isExternalError 
+              ? `${errorData.service || 'External API'} Error: ${errorData.detail || 'Service unavailable'}`
+              : errorData.detail || "External service is currently unavailable"
+            throw new Error(errorMsg)
+          }
+          throw new Error(`Failed (${res.status})`)
+        }
         const data: PlayerDetail = await res.json()
         if (active) setDetail(data)
       } catch (e: any) {
