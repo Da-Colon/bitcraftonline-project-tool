@@ -11,7 +11,7 @@ export function PlayerSelectionView() {
   const { results, loading, error } = usePlayerSearch(query, { minLength: 3, delay: 300 });
 
   return (
-    <Box minH="100vh" bg="gradient-to-br from-blue.50 to-purple.50" position="relative">
+    <Box h="100vh" bg="gradient-to-br from-blue.50 to-purple.50" position="relative" overflow="hidden">
       {/* Background decoration */}
       <Box
         position="absolute"
@@ -25,8 +25,8 @@ export function PlayerSelectionView() {
         transform="scale(1.5)"
       />
       
-      <Container maxW="container.lg" minH="100vh" display="flex" alignItems="center" justifyContent="center" position="relative" zIndex="1">
-        <VStack spacing={8} w="100%" maxW="800px">
+      <Container maxW="container.md" h="100vh" display="flex" alignItems="center" justifyContent="center" position="relative" zIndex="1" py={4} px={4}>
+        <Box w="100%" maxW="500px">
 
           {/* Search Card */}
           <Box
@@ -38,8 +38,8 @@ export function PlayerSelectionView() {
             borderColor="gray.100"
             overflow="hidden"
           >
-            <Box p={6} borderBottom="1px solid" borderColor="gray.100">
-              <VStack spacing={4} align="stretch">
+            <Box p={4} borderBottom="1px solid" borderColor="gray.100">
+              <VStack spacing={3} align="stretch">
                 <Flex align="center" justify="space-between">
                   <Heading size="md" color="gray.800">Find Your Player</Heading>
                   {results.length > 0 && (
@@ -76,7 +76,7 @@ export function PlayerSelectionView() {
             </Box>
 
             {/* Results Section */}
-            <Box p={6}>
+            <Box p={4}>
               <PlayerResults
                 players={results}
                 isLoading={loading}
@@ -85,7 +85,7 @@ export function PlayerSelectionView() {
               />
             </Box>
           </Box>
-        </VStack>
+        </Box>
       </Container>
     </Box>
   );

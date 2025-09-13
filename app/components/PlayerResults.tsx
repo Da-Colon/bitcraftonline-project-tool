@@ -13,9 +13,9 @@ type PlayerResultsProps = {
 export function PlayerResults({ players, onSelect, isLoading, error }: PlayerResultsProps) {
   if (isLoading) {
     return (
-      <Center py={8}>
-        <VStack spacing={3}>
-          <Spinner size="lg" color="blue.500" thickness="3px" />
+      <Center py={4}>
+        <VStack spacing={2}>
+          <Spinner size="md" color="blue.500" thickness="3px" />
           <Text color="gray.600" fontSize="sm">Searching for players...</Text>
         </VStack>
       </Center>
@@ -24,9 +24,9 @@ export function PlayerResults({ players, onSelect, isLoading, error }: PlayerRes
 
   if (error) {
     return (
-      <Center py={8}>
-        <VStack spacing={3}>
-          <Icon as={WarningIcon} boxSize={8} color="red.400" />
+      <Center py={4}>
+        <VStack spacing={2}>
+          <Icon as={WarningIcon} boxSize={6} color="red.400" />
           <Text color="red.600" textAlign="center" fontSize="sm">
             {error}
           </Text>
@@ -37,9 +37,9 @@ export function PlayerResults({ players, onSelect, isLoading, error }: PlayerRes
 
   if (!players?.length) {
     return (
-      <Center py={8}>
-        <VStack spacing={3}>
-          <Icon as={SearchIcon} boxSize={8} color="gray.300" />
+      <Center py={4}>
+        <VStack spacing={2}>
+          <Icon as={SearchIcon} boxSize={6} color="gray.300" />
           <Text color="gray.500" textAlign="center" fontSize="sm">
             No players found matching your search
           </Text>
