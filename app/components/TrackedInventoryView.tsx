@@ -1,4 +1,4 @@
-import { Box, Text, VStack, Badge, HStack, Divider } from "@chakra-ui/react";
+import { Box, Text, VStack, Badge, HStack, Divider, Button, useToast } from "@chakra-ui/react";
 import { usePlayerInventories } from "~/hooks/usePlayerInventories";
 import { useTrackedInventories } from "~/hooks/useTrackedInventories";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
@@ -10,7 +10,8 @@ import type { CombinedInventoryItem } from "~/utils/combineTrackedInventories";
 export function TrackedInventoryView() {
   const { player } = useSelectedPlayer();
   const { inventories, loading, error } = usePlayerInventories(player?.entityId);
-  const { trackedInventories } = useTrackedInventories();
+  const { trackedInventories, clearAll } = useTrackedInventories();
+  const toast = useToast();
 
   console.log("TrackedInventoryView - player:", player?.entityId);
   console.log("TrackedInventoryView - inventories:", inventories);
@@ -36,6 +37,17 @@ export function TrackedInventoryView() {
       </Box>
     );
   }
+
+  const handleClearAll = () => {
+    clearAll();
+    toast({
+      title: "Tracking Cleared",
+      description: "All inventory tracking has been removed",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
+  };
 
   if (trackedInventories.size === 0) {
     return (
@@ -90,6 +102,14 @@ export function TrackedInventoryView() {
               <Badge colorScheme="green" variant="subtle" fontSize="sm">
                 {totalItems} total items
               </Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                colorScheme="red"
+                onClick={handleClearAll}
+              >
+                Clear All Tracking
+              </Button>
             </HStack>
           </HStack>
           <Divider />
