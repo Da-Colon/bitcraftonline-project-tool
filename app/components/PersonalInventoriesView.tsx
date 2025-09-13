@@ -71,11 +71,7 @@ export function PersonalInventoriesView() {
         </Text>
       </Box>
       
-      {viewType === 'tier' ? (
-        <TierView inventories={tierData} />
-      ) : (
-        <InventoryList inventories={inventories} viewMode={viewType} />
-      )}
+      <InventoryList inventories={inventories} viewMode={viewType} />
     </VStack>
   );
 }

@@ -1,63 +1,11 @@
-import { Box, Text, VStack, SimpleGrid, Badge, HStack, Divider } from "@chakra-ui/react";
+import { Box, Text, VStack, Badge, HStack, Divider } from "@chakra-ui/react";
 import { usePlayerInventories } from "~/hooks/usePlayerInventories";
 import { useTrackedInventories } from "~/hooks/useTrackedInventories";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 import { combineTrackedInventories } from "~/utils/combineTrackedInventories";
+import { InventoryTierTable } from "~/components/InventoryTierTable";
 import type { CombinedInventoryItem } from "~/utils/combineTrackedInventories";
 
-interface TierGroupProps {
-  tier: number;
-  items: CombinedInventoryItem[];
-}
-
-function TierGroup({ tier, items }: TierGroupProps) {
-  return (
-    <Box>
-      <HStack spacing={2} mb={3}>
-        <Text fontSize="lg" fontWeight="semibold">
-          Tier {tier}
-        </Text>
-        <Badge colorScheme="blue" variant="subtle">
-          {items.length} items
-        </Badge>
-      </HStack>
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={3}>
-        {items.map((item) => (
-          <Box
-            key={item.itemId}
-            p={3}
-            bg="white"
-            borderRadius="md"
-            border="1px solid"
-            borderColor="gray.200"
-            _hover={{ borderColor: "blue.300", shadow: "sm" }}
-          >
-            <VStack align="start" spacing={1}>
-              <Text fontWeight="medium" fontSize="sm" noOfLines={2}>
-                {item.name || `Item ${item.itemId}`}
-              </Text>
-              <HStack spacing={2}>
-                <Badge colorScheme="green" variant="solid" fontSize="xs">
-                  {item.totalQuantity}
-                </Badge>
-                {item.tier && (
-                  <Badge colorScheme="purple" variant="outline" fontSize="xs">
-                    T{item.tier}
-                  </Badge>
-                )}
-              </HStack>
-              {item.category && (
-                <Text fontSize="xs" color="gray.600">
-                  {item.category}
-                </Text>
-              )}
-            </VStack>
-          </Box>
-        ))}
-      </SimpleGrid>
-    </Box>
-  );
-}
 
 export function TrackedInventoryView() {
   const { player } = useSelectedPlayer();
@@ -116,19 +64,14 @@ export function TrackedInventoryView() {
     );
   }
 
-  // Group items by tier
-  const itemsByTier = combinedItems.reduce((acc, item) => {
-    const tier = item.tier || 0;
-    if (!acc[tier]) {
-      acc[tier] = [];
-    }
-    acc[tier].push(item);
-    return acc;
-  }, {} as Record<number, CombinedInventoryItem[]>);
-
-  const tiers = Object.keys(itemsByTier)
-    .map(Number)
-    .sort((a, b) => b - a); // Sort tiers descending
+  // Convert combined items to format expected by InventoryTierTable
+  const inventoryItems = combinedItems.map(item => ({
+    itemId: item.itemId,
+    name: item.name,
+    category: item.category,
+    tier: item.tier,
+    quantity: item.totalQuantity
+  }));
 
   const totalItems = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0);
 
@@ -152,9 +95,7 @@ export function TrackedInventoryView() {
           <Divider />
         </Box>
 
-        {tiers.map((tier) => (
-          <TierGroup key={tier} tier={tier} items={itemsByTier[tier]} />
-        ))}
+        <InventoryTierTable items={inventoryItems} />
       </VStack>
     </Box>
   );

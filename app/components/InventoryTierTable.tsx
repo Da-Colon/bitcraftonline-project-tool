@@ -35,7 +35,6 @@ export function InventoryTierTable({ items }: InventoryTierTableProps) {
                 {tier >= 0 ? `Tier ${tier}` : 'No Tier'}
               </Th>
             ))}
-            <Th textAlign="center">Total</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -57,11 +56,6 @@ export function InventoryTierTable({ items }: InventoryTierTableProps) {
                     )}
                   </Td>
                 ))}
-                <Td textAlign="center">
-                  <Badge variant="solid" colorScheme="blue" fontSize="xs">
-                    {category.totalQuantity}
-                  </Badge>
-                </Td>
               </Tr>
             );
           })}
