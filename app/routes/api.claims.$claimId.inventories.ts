@@ -84,14 +84,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
         items: building.inventory?.map((slot: BitJitaInventorySlot) => {
           const itemData = itemsMap.get(slot.contents.item_id);
           return {
-            id: slot.contents.item_id,
+            itemId: slot.contents.item_id.toString(),
             name: itemData?.name || `Item ${slot.contents.item_id}`,
             quantity: slot.contents.quantity,
             tier: itemData?.tier || 0,
             category: itemData?.tag || 'Unknown',
-            iconAssetName: itemData?.iconAssetName,
-            rarity: itemData?.rarityStr || 'Common',
-            itemType: slot.contents.item_type
+            rarity: itemData?.rarityStr || 'Common'
           };
         }) || [],
         buildingName: building.buildingName,
