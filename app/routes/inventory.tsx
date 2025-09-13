@@ -1,14 +1,22 @@
 import { Box, Container, VStack } from "@chakra-ui/react";
+import { Suspense, lazy } from "react";
 import { PlayerHeader } from "~/components/PlayerHeader";
 import { PersonalInventoriesView } from "~/components/PersonalInventoriesView";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
-import { PlayerSelectionView } from "~/components/PlayerSelectionView";
+
+const PlayerSelectionView = lazy(() =>
+  import("~/components/PlayerSelectionView").then((m) => ({ default: m.PlayerSelectionView }))
+);
 
 export default function InventoryRoute() {
   const { player } = useSelectedPlayer();
 
   if (!player) {
-    return <PlayerSelectionView />;
+    return (
+      <Suspense fallback={null}>
+        <PlayerSelectionView />
+      </Suspense>
+    );
   }
 
   return (
