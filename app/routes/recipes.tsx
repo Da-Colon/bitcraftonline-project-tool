@@ -83,16 +83,6 @@ export default function RecipesRoute() {
     isPlayerDataStale,
   } = useRecipeInventoryData();
 
-  // Debug inventory data
-  useEffect(() => {
-    console.log("Recipe inventory debug:", {
-      combinedInventory,
-      inventoryMap,
-      hasInventoryData,
-      selectedPlayer,
-      selectedClaim
-    });
-  }, [combinedInventory, inventoryMap, hasInventoryData, selectedPlayer, selectedClaim]);
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");

@@ -21,18 +21,15 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       }
     });
 
-    console.log("Enhanced calculator - inventory map keys:", Array.from(inventoryMap.keys()).slice(0, 10));
 
     // Get base recipe breakdown
     const baseBreakdown = this.calculateItemBreakdown(targetItemId, targetQuantity);
-    console.log("Enhanced calculator - breakdown itemIds:", baseBreakdown.slice(0, 5).map(item => item.itemId));
     
     // Simple inventory application - just subtract what you have
     const adjustedBreakdown = baseBreakdown.map(item => {
       const currentInventory = inventoryMap.get(item.itemId) || 0;
       const actualRequired = Math.max(0, item.recipeRequired - currentInventory);
       
-      console.log(`Item ${item.itemId}: inventory=${currentInventory}, required=${item.recipeRequired}`);
       
       return {
         ...item,
@@ -127,133 +124,8 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     stack.delete(itemId);
   }
 
-  /**
-   * Apply tier-based inventory adjustments to the breakdown
-   */
-  private applyTierBasedInventoryAdjustments(
-    breakdown: RecipeBreakdownItem[],
-    inventoryMap: Map<string, number>
-  ): RecipeBreakdownItem[] {
-    console.log("applyTierBasedInventoryAdjustments - input breakdown:", breakdown);
-    console.log("applyTierBasedInventoryAdjustments - inventoryMap:", Array.from(inventoryMap.entries()));
-    
-    // Create a working copy of the breakdown
-    const adjustedBreakdown = breakdown.map(item => ({ ...item }));
 
-    // Set current inventory for each item
-    adjustedBreakdown.forEach(item => {
-      item.currentInventory = inventoryMap.get(item.itemId) || 0;
-    });
 
-    console.log("After setting currentInventory:", adjustedBreakdown.map(item => ({
-      itemId: item.itemId,
-      name: item.name,
-      currentInventory: item.currentInventory,
-      recipeRequired: item.recipeRequired,
-      actualRequired: item.actualRequired
-    })));
-
-    // Process from highest tier to lowest tier
-    // This ensures higher tier items reduce lower tier requirements first
-    const sortedByTier = adjustedBreakdown.sort((a, b) => b.tier - a.tier);
-    
-    for (const item of sortedByTier) {
-      // Apply inventory to this item
-      const availableInventory = Math.min(item.currentInventory, item.actualRequired);
-      item.actualRequired = Math.max(0, item.actualRequired - availableInventory);
-      item.deficit = item.actualRequired;
-
-      console.log(`Processing ${item.itemId}: availableInventory=${availableInventory}, actualRequired=${item.actualRequired}, deficit=${item.deficit}`);
-
-      // If we have inventory that satisfies this item's requirement,
-      // we need to reduce the requirements for its recipe inputs
-      if (availableInventory > 0) {
-        this.reduceInputRequirements(item.itemId, availableInventory, adjustedBreakdown);
-      }
-    }
-
-    console.log("Final adjustedBreakdown:", adjustedBreakdown.map(item => ({
-      itemId: item.itemId,
-      name: item.name,
-      currentInventory: item.currentInventory,
-      actualRequired: item.actualRequired,
-      deficit: item.deficit
-    })));
-
-    return adjustedBreakdown;
-  }
-
-  /**
-   * Reduce input requirements when we have inventory of a higher-tier item
-   */
-  private reduceInputRequirements(
-    itemId: string,
-    satisfiedQuantity: number,
-    breakdown: RecipeBreakdownItem[]
-  ): void {
-    const recipe = this.getRecipe(itemId);
-    if (!recipe) return;
-
-    // Calculate how many crafting batches we can skip
-    const skippedBatches = Math.floor(satisfiedQuantity / recipe.outputQuantity);
-    if (skippedBatches <= 0) return;
-
-    // Reduce requirements for each input
-    recipe.inputs.forEach(input => {
-      const reductionAmount = input.quantity * skippedBatches;
-      const inputItem = breakdown.find(b => b.itemId === input.itemId);
-      
-      if (inputItem) {
-        inputItem.actualRequired = Math.max(0, inputItem.actualRequired - reductionAmount);
-        inputItem.deficit = Math.max(0, inputItem.actualRequired - inputItem.currentInventory);
-        
-        // Recursively reduce requirements for this input's inputs
-        this.reduceInputRequirements(input.itemId, reductionAmount, breakdown);
-      }
-    });
-  }
-
-  /**
-   * Get recipe tree for visualization
-   */
-  getRecipeTree(itemId: string, quantity: number): RecipeTreeNode | null {
-    const item = this.getItem(itemId);
-    const recipe = this.getRecipe(itemId);
-    
-    if (!item) return null;
-
-    const node: RecipeTreeNode = {
-      itemId,
-      name: item.name,
-      tier: item.tier,
-      category: item.category,
-      quantity,
-      children: []
-    };
-
-    if (recipe) {
-      const craftingBatches = Math.ceil(quantity / recipe.outputQuantity);
-      
-      recipe.inputs.forEach(input => {
-        const requiredQuantity = input.quantity * craftingBatches;
-        const childNode = this.getRecipeTree(input.itemId, requiredQuantity);
-        if (childNode) {
-          node.children.push(childNode);
-        }
-      });
-    }
-
-    return node;
-  }
-}
-
-export interface RecipeTreeNode {
-  itemId: string;
-  name: string;
-  tier: number;
-  category: string;
-  quantity: number;
-  children: RecipeTreeNode[];
 }
 
 // Singleton instance

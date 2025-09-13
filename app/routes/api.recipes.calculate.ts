@@ -29,18 +29,20 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Handle enhanced recipe calculation (single item with inventory)
   if (itemId && quantity && inventoryJson) {
+    if (!itemId || isNaN(quantity) || quantity <= 0) {
+      return json({ error: "Invalid itemId or quantity" }, { status: 400 });
+    }
+
     try {
       const inventory: InventoryItem[] = JSON.parse(inventoryJson);
-      console.log("API received inventory:", inventory.slice(0, 5)); // Show first 5 items
+      
+      if (!Array.isArray(inventory)) {
+        return json({ error: "Inventory must be an array" }, { status: 400 });
+      }
       
       // Use the existing enhanced calculator method
       const calculator = getEnhancedRecipeCalculator();
       const result = calculator.calculateWithInventory(itemId, quantity, inventory);
-      console.log("API result breakdown sample:", result.breakdown.slice(0, 3).map(item => ({
-        name: item.name,
-        itemId: item.itemId,
-        currentInventory: item.currentInventory
-      })));
       const breakdown = result.breakdown;
       
       const response: EnhancedCalcResponse = {
@@ -53,7 +55,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       });
     } catch (error) {
-      console.error("API - Error processing inventory:", error);
+      console.error("Error processing inventory:", error);
       return json({ error: "Invalid inventory data" }, { status: 400 });
     }
   }
