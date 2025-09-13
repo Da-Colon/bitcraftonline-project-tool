@@ -59,15 +59,7 @@ export function useRecipeInventoryData() {
 
   // Combine all inventory data into a single inventory map
   const combinedInventory = useMemo((): InventoryItem[] => {
-    console.log("useRecipeInventoryData - combining inventory:", {
-      playerInventoryData,
-      claimInventories,
-      currentPlayerSelections,
-      firstPlayerWithSelections
-    });
-
     if (!playerInventoryData && !claimInventories) {
-      console.log("No inventory data available");
       return [];
     }
 
@@ -76,17 +68,13 @@ export function useRecipeInventoryData() {
     
     // Add selected player inventories
     if (currentPlayerSelections?.selectedInventories) {
-      console.log("Adding player inventories:", currentPlayerSelections.selectedInventories);
       currentPlayerSelections.selectedInventories.forEach(id => trackedInventoryIds.add(id));
     }
     
     // Add all claim inventories if we have them
     if (claimInventories) {
-      console.log("Adding claim inventories:", claimInventories.inventories.map(inv => inv.id));
       claimInventories.inventories.forEach(inv => trackedInventoryIds.add(inv.id));
     }
-
-    console.log("Tracked inventory IDs:", Array.from(trackedInventoryIds));
 
     const allInventories = combineAllTrackedInventories(
       playerInventoryData,
@@ -94,15 +82,12 @@ export function useRecipeInventoryData() {
       trackedInventoryIds
     );
 
-    console.log("Combined inventories result:", allInventories);
-
     // Convert to InventoryItem format expected by recipe calculator
     const result = allInventories.map(inv => ({
       itemId: inv.itemId,
       quantity: inv.totalQuantity,
     }));
 
-    console.log("Final inventory items for recipe calculator:", result);
     return result;
   }, [playerInventoryData, currentPlayerSelections, claimInventories, firstPlayerWithSelections]);
 

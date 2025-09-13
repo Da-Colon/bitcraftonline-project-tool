@@ -116,8 +116,6 @@ export default function RecipesRoute() {
     updateSelectedItem(item);
     setSearchQuery(item.name);
     
-    // Calculate recipe breakdown
-    console.log("Item select - sending inventory:", combinedInventory);
     const formData = new FormData();
     formData.append("itemId", item.id);
     formData.append("quantity", targetQuantity.toString());
@@ -133,7 +131,6 @@ export default function RecipesRoute() {
     updateTargetQuantity(newQuantity);
     
     if (selectedItem) {
-      console.log("Quantity change - sending inventory:", combinedInventory);
       const formData = new FormData();
       formData.append("itemId", selectedItem.id);
       formData.append("quantity", newQuantity.toString());
@@ -152,10 +149,9 @@ export default function RecipesRoute() {
   // Get search results from search fetcher
   const searchResults = searchFetcher.data?.items || items;
 
-  // Auto-calculate recipe when component loads with persisted selection
+  // Auto-calculate when component loads with persisted selection
   useEffect(() => {
     if (selectedItem && !calculationFetcher.data && calculationFetcher.state === "idle") {
-      console.log("Auto-calculating with inventory:", combinedInventory);
       const formData = new FormData();
       formData.append("itemId", selectedItem.id);
       formData.append("quantity", targetQuantity.toString());
@@ -166,7 +162,8 @@ export default function RecipesRoute() {
         action: "/api/recipes/calculate",
       });
     }
-  }, [selectedItem, targetQuantity, combinedInventory]);
+  }, [selectedItem, calculationFetcher.state]);
+
 
   return (
     <Box minH="100vh">
@@ -321,6 +318,7 @@ export default function RecipesRoute() {
 }
 
 function RecipeBreakdownTable({ breakdown }: { breakdown: RecipeBreakdownItem[] }) {
+  
   return (
     <TableContainer>
       <Table variant="simple" size="sm">

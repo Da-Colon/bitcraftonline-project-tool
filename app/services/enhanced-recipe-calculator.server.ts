@@ -11,24 +11,37 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     targetQuantity: number,
     inventory: InventoryItem[]
   ): TierCalculationResult {
-    // Create inventory map for quick lookup
+    // Create inventory map - handle both formats
     const inventoryMap = new Map<string, number>();
     inventory.forEach(item => {
+      // Try both the raw itemId and the "item_" prefixed version
       inventoryMap.set(item.itemId, item.quantity);
+      if (!item.itemId.startsWith("item_")) {
+        inventoryMap.set(`item_${item.itemId}`, item.quantity);
+      }
     });
+
+    console.log("Enhanced calculator - inventory map keys:", Array.from(inventoryMap.keys()).slice(0, 10));
 
     // Get base recipe breakdown
     const baseBreakdown = this.calculateItemBreakdown(targetItemId, targetQuantity);
+    console.log("Enhanced calculator - breakdown itemIds:", baseBreakdown.slice(0, 5).map(item => item.itemId));
     
-    // Apply inventory directly to breakdown items
-    const adjustedBreakdown = baseBreakdown.map(item => ({
-      ...item,
-      currentInventory: inventoryMap.get(item.itemId) || 0,
-      actualRequired: Math.max(0, item.recipeRequired - (inventoryMap.get(item.itemId) || 0)),
-      deficit: Math.max(0, item.recipeRequired - (inventoryMap.get(item.itemId) || 0))
-    }));
+    // Simple inventory application - just subtract what you have
+    const adjustedBreakdown = baseBreakdown.map(item => {
+      const currentInventory = inventoryMap.get(item.itemId) || 0;
+      const actualRequired = Math.max(0, item.recipeRequired - currentInventory);
+      
+      console.log(`Item ${item.itemId}: inventory=${currentInventory}, required=${item.recipeRequired}`);
+      
+      return {
+        ...item,
+        currentInventory,
+        actualRequired,
+        deficit: actualRequired
+      };
+    });
     
-    // Calculate total deficit
     const totalDeficit = new Map<string, number>();
     adjustedBreakdown.forEach(item => {
       if (item.deficit > 0) {

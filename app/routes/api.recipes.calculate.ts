@@ -31,17 +31,22 @@ export async function action({ request }: ActionFunctionArgs) {
   if (itemId && quantity && inventoryJson) {
     try {
       const inventory: InventoryItem[] = JSON.parse(inventoryJson);
-      console.log("API - Received inventory data:", inventory);
+      console.log("API received inventory:", inventory.slice(0, 5)); // Show first 5 items
+      
+      // Use the existing enhanced calculator method
       const calculator = getEnhancedRecipeCalculator();
       const result = calculator.calculateWithInventory(itemId, quantity, inventory);
-      console.log("API - Calculator result:", result);
+      console.log("API result breakdown sample:", result.breakdown.slice(0, 3).map(item => ({
+        name: item.name,
+        itemId: item.itemId,
+        currentInventory: item.currentInventory
+      })));
+      const breakdown = result.breakdown;
       
       const response: EnhancedCalcResponse = {
-        breakdown: result.breakdown,
-        totalDeficit: Array.from(result.totalDeficit.entries()),
+        breakdown,
+        totalDeficit: [],
       };
-      
-      console.log("API - Sending response:", response);
       return json(response, {
         headers: {
           "Cache-Control": "no-store",
