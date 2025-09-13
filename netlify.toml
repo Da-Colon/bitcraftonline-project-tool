@@ -1,20 +1,8 @@
 [build]
-  command = "npm run build"
+  command = "npm ci && npm run build"
   publish = "build/client"
 
-[functions]
-  node_bundler = "esbuild"
-
-# Optional: keep nice URLs
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server/api/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/server"
-  status = 200
-  force = true
+[build.environment]
+  NODE_VERSION = "23"
+  NPM_FLAGS = "--legacy-peer-deps"
 
