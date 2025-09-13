@@ -7,7 +7,7 @@
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "start": "remix-serve ./build/server/index.js",
+    "start": "netlify serve",
     "typecheck": "tsc",
     "data:extract": "node scripts/extract-bitcraft-data.mjs",
     "test:data": "node scripts/tests/test-bitcraft-data.mjs",
