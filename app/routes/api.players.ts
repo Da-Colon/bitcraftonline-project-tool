@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import { BitJita } from "~/utils/bitjita.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -10,30 +11,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   try {
-    const upstream = await fetch(
-      `https://bitjita.com/api/players?q=${encodeURIComponent(q)}`,
-      {
-        headers: { Accept: "application/json" },
-      }
-    );
-
-    if (!upstream.ok) {
-      const text = await upstream.text();
-      return json(
-        { error: "Upstream error", status: upstream.status, detail: text },
-        { status: upstream.status }
-      );
-    }
-
-    const data = await upstream.json();
-    return json(data, {
+    const players = await BitJita.searchPlayers(q);
+    return json({ players }, {
       headers: {
-        // small private cache to smooth typing bursts
-        "Cache-Control": "private, max-age=10",
+        // smooth typing bursts and allow short SWR
+        "Cache-Control": "private, max-age=10, stale-while-revalidate=30",
       },
     });
   } catch (err: any) {
-    return json({ error: err?.message || "Proxy error" }, { status: 500 });
+    return json({ error: err?.message || "Proxy error" }, { status: 503 });
   }
 }
-

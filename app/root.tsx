@@ -10,6 +10,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { useContext, useEffect } from "react";
 import { withEmotionCache } from "@emotion/react";
 import { ServerStyleContext, ClientStyleContext } from "./context";
+import { isRouteErrorResponse, useRouteError } from "@remix-run/react";
 
 interface DocumentProps {
   children: React.ReactNode;
@@ -92,6 +93,29 @@ export default function App() {
     <Document>
       <ChakraProvider>
         <Outlet />
+      </ChakraProvider>
+    </Document>
+  );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred.";
+  if (isRouteErrorResponse(error)) {
+    title = `Error ${error.status}`;
+    message = error.data || error.statusText;
+  } else if (error instanceof Error) {
+    message = error.message;
+  }
+
+  return (
+    <Document>
+      <ChakraProvider>
+        <div style={{ padding: 24 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700 }}>{title}</h1>
+          <p style={{ marginTop: 8, color: "#4a5568" }}>{message}</p>
+        </div>
       </ChakraProvider>
     </Document>
   );

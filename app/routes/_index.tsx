@@ -1,13 +1,18 @@
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
-import { PlayerSelectionView } from "~/components/PlayerSelectionView";
-import { PlayerDashboardView } from "~/components/PlayerDashboardView";
+import { Suspense, lazy } from "react";
+const PlayerSelectionView = lazy(() =>
+  import("~/components/PlayerSelectionView").then((m) => ({ default: m.PlayerSelectionView }))
+);
+const PlayerDashboardView = lazy(() =>
+  import("~/components/PlayerDashboardView").then((m) => ({ default: m.PlayerDashboardView }))
+);
 
 export default function Index() {
   const { player } = useSelectedPlayer();
 
-  if (player) {
-    return <PlayerDashboardView />;
-  }
-
-  return <PlayerSelectionView />;
+  return (
+    <Suspense fallback={null}>
+      {player ? <PlayerDashboardView /> : <PlayerSelectionView />}
+    </Suspense>
+  );
 }

@@ -1,4 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server";
 
 interface BitJitaInventorySlot {
   locked: boolean;
@@ -42,30 +43,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return json({ error: "Claim ID is required" }, { status: 400 });
   }
 
-  const bitjitaBaseUrl = process.env.BITJITA_BASE_URL;
-  if (!bitjitaBaseUrl) {
-    return json({ error: "BitJita API not configured" }, { status: 500 });
-  }
-
   try {
-    const response = await fetch(`${bitjitaBaseUrl}/api/claims/${claimId}/inventories`);
-    
-    if (!response.ok) {
-      if (response.status === 404) {
-        return json({ error: "Claim not found" }, { status: 404 });
-      }
-      return json(
-        { 
-          error: "Failed to fetch claim inventories", 
-          detail: response.statusText,
-          isExternalError: true,
-          service: "BitJita API"
-        }, 
-        { status: 503 }
-      );
-    }
-
-    const bitjitaData: BitJitaClaimInventoriesResponse = await response.json();
+    const bitjitaData: BitJitaClaimInventoriesResponse = await BitJita.getClaimInventories(claimId);
     
     // Create a lookup map for items by ID
     const itemsMap = new Map<number, BitJitaItem>();
@@ -101,17 +80,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
       })) || []
     };
 
-    return json(transformedData);
+    return json(transformedData, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=30" } });
   } catch (error) {
-    console.error("Error fetching claim inventories:", error);
-    return json(
-      { 
-        error: "External service unavailable", 
-        detail: error instanceof Error ? error.message : "Unknown error",
-        isExternalError: true,
-        service: "BitJita API"
-      }, 
-      { status: 503 }
-    );
+    if (error instanceof BitJitaHttpError && error.status === 404) {
+      return json({ error: "Claim not found" }, { status: 404 });
+    }
+    return json({
+      error: "External service unavailable",
+      detail: error instanceof Error ? error.message : "Unknown error",
+      isExternalError: true,
+      service: "BitJita API",
+    }, { status: 503 });
   }
 }

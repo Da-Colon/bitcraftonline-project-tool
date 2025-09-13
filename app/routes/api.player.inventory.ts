@@ -1,4 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { BitJita } from "~/utils/bitjita.server";
+import type { BitJitaInventoriesResponse } from "~/utils/bitjita.server";
 
 export interface PlayerInventoryItem {
   itemId: string;
@@ -30,38 +32,8 @@ interface BitJitaSearchResponse {
 }
 
 // BitJita inventory response structure
-interface BitJitaPocket {
-  locked: boolean;
-  volume: number;
-  contents: {
-    itemId: number;
-    itemType: number;
-    quantity: number;
-  };
-}
-
-interface BitJitaInventoryEntry {
-  entityId: string;
-  playerOwnerEntityId: string;
-  ownerEntityId: string;
-  pockets: BitJitaPocket[];
-  inventoryIndex: number;
-  cargoIndex: number;
-  buildingName: string | null;
-  claimEntityId: string | null;
-  claimName: string | null;
-  claimLocationX: number | null;
-  claimLocationZ: number | null;
-  claimLocationDimension: number | null;
-  regionId: number;
-  inventoryName: string;
-}
-
-interface BitJitaInventoryData {
-  inventories: BitJitaInventoryEntry[];
-  items: Record<string, any>;
-  cargos: Record<string, any>;
-}
+// Upstream inventory response (validated by zod in the client)
+type BitJitaInventoryData = BitJitaInventoriesResponse;
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -85,11 +57,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
           filteredInventories[type] = playerData.inventories[type];
         }
       }
-      return json({ ...playerData, inventories: filteredInventories });
+      return json({ ...playerData, inventories: filteredInventories }, {
+        headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=30" },
+      });
     }
 
     // Return all inventories if no specific types are requested
-    return json(playerData);
+    return json(playerData, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=30" },
+    });
 
   } catch (error) {
     console.error("Failed to fetch player inventory:", error);
@@ -105,38 +81,8 @@ async function fetchPlayerInventoryFromBitJita(
   playerName: string,
   inventoryTypes: string[]
 ): Promise<PlayerInventoryResponse> {
-  const bitJitaBaseUrl = process.env.BITJITA_BASE_URL || "https://bitjita.com";
-
   // Step 1: Search for player by name to get their ID
-  const searchResponse = await fetch(`${bitJitaBaseUrl}/api/players?q=${encodeURIComponent(playerName)}`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!searchResponse.ok) {
-    throw new Error(`BitJita search API error: ${searchResponse.status} ${searchResponse.statusText}`);
-  }
-
-  const searchData: BitJitaSearchResponse | BitJitaPlayerSearchResult[] = await searchResponse.json();
-  
-  // Debug logging to understand actual response structure
-  console.log('BitJita search response:', JSON.stringify(searchData, null, 2));
-  
-  // Handle different possible response structures
-  let searchResults: BitJitaPlayerSearchResult[];
-  if (Array.isArray(searchData)) {
-    searchResults = searchData;
-  } else if (searchData && typeof searchData === 'object' && 'players' in searchData && searchData.players) {
-    searchResults = searchData.players;
-  } else if (searchData && typeof searchData === 'object' && 'data' in searchData && searchData.data) {
-    searchResults = searchData.data;
-  } else {
-    console.error('Unexpected BitJita search response structure:', searchData);
-    throw new Error(`Unexpected response format from BitJita search API. Response type: ${typeof searchData}, keys: ${searchData && typeof searchData === 'object' ? Object.keys(searchData).join(', ') : 'none'}`);
-  }
+  const searchResults = await BitJita.searchPlayers(playerName);
   
   // Find exact match for player name
   const player = searchResults.find(p => p.username.toLowerCase() === playerName.toLowerCase());
@@ -145,21 +91,7 @@ async function fetchPlayerInventoryFromBitJita(
   }
 
   // Step 2: Fetch player inventories using their ID
-  const inventoryResponse = await fetch(`${bitJitaBaseUrl}/api/players/${player.entityId}/inventories`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!inventoryResponse.ok) {
-    throw new Error(`BitJita inventory API error: ${inventoryResponse.status} ${inventoryResponse.statusText}`);
-  }
-
-  const inventoryData: BitJitaInventoryData = await inventoryResponse.json();
-  // Debug log actual inventory response once to aid parsing adjustments
-  console.log('BitJita inventories response:', JSON.stringify(inventoryData, null, 2));
+  const inventoryData: BitJitaInventoryData = await BitJita.getPlayerInventories(player.entityId);
   
   const inventories: Record<string, PlayerInventoryItem[]> = {};
 
@@ -196,4 +128,3 @@ async function fetchPlayerInventoryFromBitJita(
     lastUpdated: new Date().toISOString(),
   };
 }
-

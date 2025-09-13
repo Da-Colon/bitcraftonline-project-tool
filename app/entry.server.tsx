@@ -1,139 +1,66 @@
-import { PassThrough } from "node:stream";
 import type { AppLoadContext, EntryContext } from "@remix-run/node";
-import { createReadableStreamFromReadable } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
-import { isbot } from "isbot";
-import { renderToPipeableStream } from "react-dom/server";
+import { renderToString } from "react-dom/server";
 import { CacheProvider } from "@emotion/react";
 import createEmotionServer from "@emotion/server/create-instance";
 import createEmotionCache from "./createEmotionCache";
-
-const ABORT_DELAY = 5_000;
+import { ServerStyleContext } from "./context";
 
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-  loadContext: AppLoadContext
+  _loadContext: AppLoadContext
 ) {
-  return isbot(request.headers.get("user-agent") || "")
-    ? handleBotRequest(
-        request,
-        responseStatusCode,
-        responseHeaders,
-        remixContext
-      )
-    : handleBrowserRequest(
-        request,
-        responseStatusCode,
-        responseHeaders,
-        remixContext
-      );
-}
+  // First render to string to collect Emotion styles
+  const cache = createEmotionCache();
+  const { extractCriticalToChunks } = createEmotionServer(cache);
 
-function handleBotRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext
-) {
-  return new Promise((resolve, reject) => {
-    const emotionCache = createEmotionCache();
-    const { extractCriticalToChunks } = createEmotionServer(emotionCache);
+  const initialMarkup = renderToString(
+    <CacheProvider value={cache}>
+      <RemixServer context={remixContext} url={request.url} />
+    </CacheProvider>
+  );
 
-    let shellRendered = false;
-    const { pipe, abort } = renderToPipeableStream(
-      <CacheProvider value={emotionCache}>
-        <RemixServer
-          context={remixContext}
-          url={request.url}
-          abortDelay={ABORT_DELAY}
-        />
-      </CacheProvider>,
-      {
-        onAllReady() {
-          shellRendered = true;
-          const body = new PassThrough();
-          const chunks = extractCriticalToChunks(body.read?.() || "");
-          
-          const stream = createReadableStreamFromReadable(body);
+  const chunks = extractCriticalToChunks(initialMarkup);
 
-          responseHeaders.set("Content-Type", "text/html");
+  // Second render with styles available via context so <Document> can inline them
+  const markup = renderToString(
+    <ServerStyleContext.Provider value={chunks.styles as any}>
+      <CacheProvider value={cache}>
+        <RemixServer context={remixContext} url={request.url} />
+      </CacheProvider>
+    </ServerStyleContext.Provider>
+  );
 
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            })
-          );
+  const headers = new Headers(responseHeaders);
+  headers.set("Content-Type", "text/html; charset=utf-8");
 
-          pipe(body);
-        },
-        onShellError(error: unknown) {
-          reject(error);
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500;
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
-      }
-    );
+  // Security headers
+  const csp = [
+    "default-src 'self'",
+    "base-uri 'self'",
+    // Emotion generates inline <style> tags during SSR
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    // Allow calling BitJita API
+    "connect-src 'self' https://bitjita.com ws: wss:",
+    "font-src 'self' data:",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    // Remix outputs external scripts; no inline scripts are used here
+    "script-src 'self' 'unsafe-inline'",
+  ].join("; ");
+  headers.set("Content-Security-Policy", csp);
+  headers.set("Referrer-Policy", "no-referrer");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
 
-    setTimeout(abort, ABORT_DELAY);
-  });
-}
-
-function handleBrowserRequest(
-  request: Request,
-  responseStatusCode: number,
-  responseHeaders: Headers,
-  remixContext: EntryContext
-) {
-  return new Promise((resolve, reject) => {
-    const emotionCache = createEmotionCache();
-    const { extractCriticalToChunks } = createEmotionServer(emotionCache);
-
-    let shellRendered = false;
-    const { pipe, abort } = renderToPipeableStream(
-      <CacheProvider value={emotionCache}>
-        <RemixServer
-          context={remixContext}
-          url={request.url}
-          abortDelay={ABORT_DELAY}
-        />
-      </CacheProvider>,
-      {
-        onShellReady() {
-          shellRendered = true;
-          const body = new PassThrough();
-          const stream = createReadableStreamFromReadable(body);
-
-          responseHeaders.set("Content-Type", "text/html");
-
-          resolve(
-            new Response(stream, {
-              headers: responseHeaders,
-              status: responseStatusCode,
-            })
-          );
-
-          pipe(body);
-        },
-        onShellError(error: unknown) {
-          reject(error);
-        },
-        onError(error: unknown) {
-          responseStatusCode = 500;
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
-      }
-    );
-
-    setTimeout(abort, ABORT_DELAY);
+  return new Response("<!DOCTYPE html>" + markup, {
+    status: responseStatusCode,
+    headers,
   });
 }

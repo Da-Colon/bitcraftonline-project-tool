@@ -13,9 +13,7 @@ export function InventoryList({ inventories, viewMode = 'list' }: InventoryListP
   const { isTracked, toggleTracking } = useTrackedInventories();
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set());
 
-  const handleTrackingChange = (inventoryId: string, checked: boolean) => {
-    console.log('handleTrackingChange called:', inventoryId, checked);
-    console.log('toggleTracking function:', toggleTracking);
+  const handleTrackingChange = (inventoryId: string, _checked: boolean) => {
     toggleTracking(inventoryId);
   };
 
@@ -49,10 +47,7 @@ export function InventoryList({ inventories, viewMode = 'list' }: InventoryListP
                 <HStack spacing={3}>
                   <Checkbox
                     isChecked={isTracked(inventory.id)}
-                    onChange={(e) => {
-                      console.log('Checkbox onChange fired:', inventory.id, e.target.checked);
-                      handleTrackingChange(inventory.id, e.target.checked);
-                    }}
+                    onChange={(e) => handleTrackingChange(inventory.id, e.target.checked)}
                   />
                   <Text fontWeight="medium">{inventory.name}</Text>
                   {inventory.claimName && title === "Banks" && (

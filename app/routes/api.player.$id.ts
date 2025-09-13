@@ -1,4 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server";
 
 type Cached<T> = { data: T; fetchedAt: number };
 const CACHE = new Map<string, Cached<any>>();
@@ -14,56 +15,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return json(cached.data, { headers: { "Cache-Control": "private, max-age=30" } });
   }
 
-  const base = process.env.BITJITA_BASE_URL || "https://bitjita.com";
-  
   try {
-    const upstream = await fetch(`${base}/api/players/${encodeURIComponent(id)}`, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
-
-    if (!upstream.ok) {
-      const text = await upstream.text();
-      console.error(`[EXTERNAL API ERROR] BitJita API failed for player ${id}:`, {
-        status: upstream.status,
-        statusText: upstream.statusText,
-        response: text,
-        url: `${base}/api/players/${encodeURIComponent(id)}`,
-        timestamp: new Date().toISOString()
-      });
-      
-      // All upstream errors are external API issues, not our fault
-      return json({ 
-        error: "External API Error", 
-        service: "BitJita API",
-        status: upstream.status, 
-        detail: upstream.status >= 500 
-          ? "The BitJita API is currently experiencing issues. This is not a problem with our application."
-          : upstream.status === 404 
-            ? "Player not found in BitJita database"
-            : `BitJita API returned ${upstream.status}: ${upstream.statusText}`,
-        isExternalError: true
-      }, { status: 503 }); // Always return 503 for external API issues
-    }
-
-    const data = await upstream.json();
+    const data = await BitJita.getPlayerById(id);
     CACHE.set(id, { data, fetchedAt: now });
-    console.log(`[API SUCCESS] BitJita API responded successfully for player ${id}`);
-    return json(data, { headers: { "Cache-Control": "private, max-age=30" } });
-    
+    return json(data, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=30" } });
   } catch (error) {
-    console.error(`[NETWORK ERROR] Failed to connect to BitJita API for player ${id}:`, {
-      error: error instanceof Error ? error.message : String(error),
-      url: `${base}/api/players/${encodeURIComponent(id)}`,
-      timestamp: new Date().toISOString()
-    });
-    
-    return json({ 
-      error: "Network Error", 
+    const detail = error instanceof BitJitaHttpError ? error.body || error.message : String(error);
+    return json({
+      error: "External API Error",
       service: "BitJita API",
-      detail: "Unable to connect to BitJita API. This could be a network issue or the external service may be down.",
-      isExternalError: true
+      detail,
+      isExternalError: true,
     }, { status: 503 });
   }
 }
-
