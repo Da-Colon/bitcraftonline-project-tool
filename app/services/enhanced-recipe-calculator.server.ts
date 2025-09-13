@@ -11,19 +11,24 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     targetQuantity: number,
     inventory: InventoryItem[]
   ): TierCalculationResult {
-    // First, get the basic recipe breakdown without inventory
-    const baseBreakdown = this.calculateItemBreakdown(targetItemId, targetQuantity);
-    
-    // Convert inventory to a map for efficient lookups
+    // Create inventory map for quick lookup
     const inventoryMap = new Map<string, number>();
     inventory.forEach(item => {
       inventoryMap.set(item.itemId, item.quantity);
     });
 
-    // Apply tier-based inventory adjustments
-    const adjustedBreakdown = this.applyTierBasedInventoryAdjustments(baseBreakdown, inventoryMap);
+    // Get base recipe breakdown
+    const baseBreakdown = this.calculateItemBreakdown(targetItemId, targetQuantity);
     
-    // Calculate final deficits
+    // Apply inventory directly to breakdown items
+    const adjustedBreakdown = baseBreakdown.map(item => ({
+      ...item,
+      currentInventory: inventoryMap.get(item.itemId) || 0,
+      actualRequired: Math.max(0, item.recipeRequired - (inventoryMap.get(item.itemId) || 0)),
+      deficit: Math.max(0, item.recipeRequired - (inventoryMap.get(item.itemId) || 0))
+    }));
+    
+    // Calculate total deficit
     const totalDeficit = new Map<string, number>();
     adjustedBreakdown.forEach(item => {
       if (item.deficit > 0) {
@@ -43,11 +48,15 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
   private calculateItemBreakdown(itemId: string, quantity: number): RecipeBreakdownItem[] {
     const breakdown = new Map<string, RecipeBreakdownItem>();
     
-    // Recursively calculate all requirements
-    this.calculateItemRequirementsDetailed(itemId, quantity, breakdown);
+    this.calculateItemRequirementsDetailed(itemId, quantity, breakdown, new Set());
     
-    // Convert to array and sort by tier (highest first for processing)
-    return Array.from(breakdown.values()).sort((a, b) => b.tier - a.tier);
+    // Initialize currentInventory to 0 for all items
+    const result = Array.from(breakdown.values()).map(item => ({
+      ...item,
+      currentInventory: 0
+    }));
+    
+    return result;
   }
 
   /**
@@ -106,20 +115,30 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
   }
 
   /**
-   * Apply tier-based inventory adjustments from highest to lowest tier
-   * This is where the magic happens - higher tier items reduce lower tier requirements
+   * Apply tier-based inventory adjustments to the breakdown
    */
   private applyTierBasedInventoryAdjustments(
     breakdown: RecipeBreakdownItem[],
     inventoryMap: Map<string, number>
   ): RecipeBreakdownItem[] {
-    // Create a working copy
-    const adjustedBreakdown = breakdown.map(item => ({ ...item }));
+    console.log("applyTierBasedInventoryAdjustments - input breakdown:", breakdown);
+    console.log("applyTierBasedInventoryAdjustments - inventoryMap:", Array.from(inventoryMap.entries()));
     
-    // Set current inventory for all items
+    // Create a working copy of the breakdown
+    const adjustedBreakdown = breakdown.map(item => ({ ...item }));
+
+    // Set current inventory for each item
     adjustedBreakdown.forEach(item => {
       item.currentInventory = inventoryMap.get(item.itemId) || 0;
     });
+
+    console.log("After setting currentInventory:", adjustedBreakdown.map(item => ({
+      itemId: item.itemId,
+      name: item.name,
+      currentInventory: item.currentInventory,
+      recipeRequired: item.recipeRequired,
+      actualRequired: item.actualRequired
+    })));
 
     // Process from highest tier to lowest tier
     // This ensures higher tier items reduce lower tier requirements first
@@ -131,12 +150,22 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       item.actualRequired = Math.max(0, item.actualRequired - availableInventory);
       item.deficit = item.actualRequired;
 
+      console.log(`Processing ${item.itemId}: availableInventory=${availableInventory}, actualRequired=${item.actualRequired}, deficit=${item.deficit}`);
+
       // If we have inventory that satisfies this item's requirement,
       // we need to reduce the requirements for its recipe inputs
       if (availableInventory > 0) {
         this.reduceInputRequirements(item.itemId, availableInventory, adjustedBreakdown);
       }
     }
+
+    console.log("Final adjustedBreakdown:", adjustedBreakdown.map(item => ({
+      itemId: item.itemId,
+      name: item.name,
+      currentInventory: item.currentInventory,
+      actualRequired: item.actualRequired,
+      deficit: item.deficit
+    })));
 
     return adjustedBreakdown;
   }

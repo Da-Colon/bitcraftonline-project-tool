@@ -31,20 +31,24 @@ export async function action({ request }: ActionFunctionArgs) {
   if (itemId && quantity && inventoryJson) {
     try {
       const inventory: InventoryItem[] = JSON.parse(inventoryJson);
+      console.log("API - Received inventory data:", inventory);
       const calculator = getEnhancedRecipeCalculator();
       const result = calculator.calculateWithInventory(itemId, quantity, inventory);
+      console.log("API - Calculator result:", result);
       
       const response: EnhancedCalcResponse = {
         breakdown: result.breakdown,
         totalDeficit: Array.from(result.totalDeficit.entries()),
       };
       
+      console.log("API - Sending response:", response);
       return json(response, {
         headers: {
           "Cache-Control": "no-store",
         },
       });
     } catch (error) {
+      console.error("API - Error processing inventory:", error);
       return json({ error: "Invalid inventory data" }, { status: 400 });
     }
   }

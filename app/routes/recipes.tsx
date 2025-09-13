@@ -39,6 +39,8 @@ import {
 } from "@chakra-ui/react";
 import { PlayerHeader } from "~/components/PlayerHeader";
 import { useDebounce } from "~/hooks/useDebounce";
+import { useRecipeSelection } from "~/hooks/useRecipeSelection";
+import { useRecipeInventoryData } from "~/hooks/useRecipeInventoryData";
 import type { Item, RecipeBreakdownItem, InventoryItem } from "~/types/recipes";
 import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server";
 
@@ -62,11 +64,38 @@ export default function RecipesRoute() {
   const calculationFetcher = useFetcher<{ breakdown: RecipeBreakdownItem[] }>();
   
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [targetQuantity, setTargetQuantity] = useState(1);
+  
+  // Use persistent recipe selection
+  const {
+    selectedItem,
+    targetQuantity,
+    isStale: isRecipeStale,
+    updateSelectedItem,
+    updateTargetQuantity,
+    clearSelection,
+  } = useRecipeSelection();
 
-  // For now, use empty inventory - will be enhanced with real inventory integration
-  const currentInventory: InventoryItem[] = [];
+  // Get combined inventory data
+  const {
+    combinedInventory,
+    inventoryMap,
+    hasInventoryData,
+    isLoading: isInventoryLoading,
+    selectedPlayer,
+    selectedClaim,
+    isPlayerDataStale,
+  } = useRecipeInventoryData();
+
+  // Debug inventory data
+  useEffect(() => {
+    console.log("Recipe inventory debug:", {
+      combinedInventory,
+      inventoryMap,
+      hasInventoryData,
+      selectedPlayer,
+      selectedClaim
+    });
+  }, [combinedInventory, inventoryMap, hasInventoryData, selectedPlayer, selectedClaim]);
 
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -84,14 +113,15 @@ export default function RecipesRoute() {
   }, [debouncedSearchQuery]); // Only depend on the debounced query, not the fetcher
 
   const handleItemSelect = (item: Item) => {
-    setSelectedItem(item);
+    updateSelectedItem(item);
     setSearchQuery(item.name);
     
     // Calculate recipe breakdown
+    console.log("Item select - sending inventory:", combinedInventory);
     const formData = new FormData();
     formData.append("itemId", item.id);
     formData.append("quantity", targetQuantity.toString());
-    formData.append("inventory", JSON.stringify(currentInventory));
+    formData.append("inventory", JSON.stringify(combinedInventory));
     
     calculationFetcher.submit(formData, {
       method: "post",
@@ -100,13 +130,14 @@ export default function RecipesRoute() {
   };
 
   const handleQuantityChange = (newQuantity: number) => {
-    setTargetQuantity(newQuantity);
+    updateTargetQuantity(newQuantity);
     
     if (selectedItem) {
+      console.log("Quantity change - sending inventory:", combinedInventory);
       const formData = new FormData();
       formData.append("itemId", selectedItem.id);
       formData.append("quantity", newQuantity.toString());
-      formData.append("inventory", JSON.stringify(currentInventory));
+      formData.append("inventory", JSON.stringify(combinedInventory));
       
       calculationFetcher.submit(formData, {
         method: "post",
@@ -121,6 +152,22 @@ export default function RecipesRoute() {
   // Get search results from search fetcher
   const searchResults = searchFetcher.data?.items || items;
 
+  // Auto-calculate recipe when component loads with persisted selection
+  useEffect(() => {
+    if (selectedItem && !calculationFetcher.data && calculationFetcher.state === "idle") {
+      console.log("Auto-calculating with inventory:", combinedInventory);
+      const formData = new FormData();
+      formData.append("itemId", selectedItem.id);
+      formData.append("quantity", targetQuantity.toString());
+      formData.append("inventory", JSON.stringify(combinedInventory));
+      
+      calculationFetcher.submit(formData, {
+        method: "post",
+        action: "/api/recipes/calculate",
+      });
+    }
+  }, [selectedItem, targetQuantity, combinedInventory]);
+
   return (
     <Box minH="100vh">
       <PlayerHeader />
@@ -131,6 +178,7 @@ export default function RecipesRoute() {
           <Text color="gray.600">
             Search for an item to see its complete recipe breakdown with tier-based inventory calculations.
           </Text>
+          
         </Box>
 
         {/* Item Search */}
@@ -214,7 +262,7 @@ export default function RecipesRoute() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setSelectedItem(null);
+                    clearSelection();
                     setSearchQuery("");
                   }}
                 >
@@ -304,7 +352,7 @@ function RecipeBreakdownTable({ breakdown }: { breakdown: RecipeBreakdownItem[] 
               <Td isNumeric>{item.recipeRequired.toLocaleString()}</Td>
               <Td isNumeric>
                 <Text color={item.currentInventory > 0 ? "green.500" : "gray.500"}>
-                  {item.currentInventory.toLocaleString()}
+                  {(item.currentInventory || 0).toLocaleString()}
                 </Text>
               </Td>
               <Td isNumeric>{item.actualRequired.toLocaleString()}</Td>
