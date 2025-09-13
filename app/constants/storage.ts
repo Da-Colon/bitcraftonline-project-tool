@@ -1,5 +1,6 @@
 export const RECIPE_PROJECTS_KEY = "recipeProjects" as const;
 export const SELECTED_PLAYER_KEY = "selectedPlayer" as const;
+export const PLAYER_INVENTORY_SELECTIONS_KEY = "playerInventorySelections" as const;
 
 export type LocalRecipeProject = {
   id: string;
@@ -12,4 +13,12 @@ export type LocalRecipeProject = {
 export type SelectedPlayer = {
   entityId: string;
   username: string;
+};
+
+export type PlayerInventorySelections = {
+  [playerName: string]: {
+    availableInventories: string[];
+    selectedInventories: string[];
+    lastUpdated: string; // ISO string
+  };
 };

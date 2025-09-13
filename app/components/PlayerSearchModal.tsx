@@ -1,12 +1,13 @@
 import {
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
   Button, FormControl, FormLabel, Input, VStack, Checkbox, useToast, Divider,
-  Spinner, Text, useDisclosure
+  Spinner, Text, useDisclosure, Alert, AlertIcon
 } from "@chakra-ui/react";
 import { useState, useCallback, useEffect } from "react";
 import type { Item } from "~/types/recipes";
 import type { PlayerInventoryResponse } from "~/routes/api.player.inventory";
 import { InventoryReviewModal } from "./InventoryReviewModal";
+import { usePlayerInventorySelections } from "~/hooks/usePlayerInventorySelections";
 
 interface PlayerSearchModalProps {
   isOpen: boolean;
@@ -29,6 +30,13 @@ export function PlayerSearchModal({
   const [selectedInventories, setSelectedInventories] = useState<Set<string>>(new Set());
   const [fetchedInventory, setFetchedInventory] = useState<PlayerInventoryResponse | null>(null);
   const { isOpen: isReviewOpen, onOpen: onOpenReview, onClose: onReviewClose } = useDisclosure();
+  
+  // Persistent inventory selections
+  const { 
+    getPlayerSelections, 
+    updatePlayerSelections, 
+    areSelectionsStale 
+  } = usePlayerInventorySelections();
 
   const handleFetchSources = useCallback(async () => {
     if (!playerName) return;
@@ -43,13 +51,31 @@ export function PlayerSearchModal({
       const data: PlayerInventoryResponse = await response.json();
       const sources = Object.keys(data.inventories).sort();
       setAvailableInventories(sources);
-      setSelectedInventories(new Set(sources)); // Select all by default
+      
+      // Check for existing selections or use defaults
+      const existingSelections = getPlayerSelections(playerName);
+      if (existingSelections && !areSelectionsStale(playerName)) {
+        // Use saved selections if they're not stale and match available sources
+        const validSelections = existingSelections.selectedInventories.filter(inv => sources.includes(inv));
+        setSelectedInventories(new Set(validSelections.length > 0 ? validSelections : sources));
+      } else {
+        // Select all by default for new/stale selections
+        setSelectedInventories(new Set(sources));
+      }
+      
+      // Update stored selections with fresh data
+      updatePlayerSelections(playerName, {
+        availableInventories: sources,
+        selectedInventories: existingSelections && !areSelectionsStale(playerName) 
+          ? existingSelections.selectedInventories.filter(inv => sources.includes(inv))
+          : sources
+      });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, status: "error", duration: 5000, isClosable: true });
     } finally {
       setIsFetchingSources(false);
     }
-  }, [playerName, toast]);
+  }, [playerName, toast, getPlayerSelections, areSelectionsStale, updatePlayerSelections]);
 
   const handleApplySelected = useCallback(async () => {
     if (!playerName || selectedInventories.size === 0) return;
@@ -64,13 +90,19 @@ export function PlayerSearchModal({
       }
       const data: PlayerInventoryResponse = await response.json();
       setFetchedInventory(data);
+      
+      // Save current selections to localStorage
+      updatePlayerSelections(playerName, {
+        selectedInventories: Array.from(selectedInventories)
+      });
+      
       onOpenReview();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, status: "error", duration: 5000, isClosable: true });
     } finally {
       setIsLoading(false);
     }
-  }, [playerName, selectedInventories, toast, onOpenReview]);
+  }, [playerName, selectedInventories, toast, onOpenReview, updatePlayerSelections]);
 
   const handleApplyFromReview = (inventory: PlayerInventoryResponse) => {
     onApplyInventory(inventory);
@@ -82,7 +114,19 @@ export function PlayerSearchModal({
     onClose();
   }
 
-  // Reset state when modal opens/closes or player name changes
+  // Load saved selections when player name changes
+  useEffect(() => {
+    if (playerName && availableInventories.length === 0) {
+      // Check if we have saved selections for this player
+      const existingSelections = getPlayerSelections(playerName);
+      if (existingSelections && !areSelectionsStale(playerName)) {
+        setAvailableInventories(existingSelections.availableInventories);
+        setSelectedInventories(new Set(existingSelections.selectedInventories));
+      }
+    }
+  }, [playerName, availableInventories.length, getPlayerSelections, areSelectionsStale]);
+
+  // Reset state when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setPlayerName("");
@@ -91,6 +135,27 @@ export function PlayerSearchModal({
       setFetchedInventory(null);
     }
   }, [isOpen]);
+
+  // Handle inventory selection changes and persist them
+  const handleInventorySelectionChange = useCallback((inventory: string, checked: boolean) => {
+    const newSelection = new Set(selectedInventories);
+    if (checked) {
+      newSelection.add(inventory);
+    } else {
+      newSelection.delete(inventory);
+    }
+    setSelectedInventories(newSelection);
+    
+    // Persist selection change immediately
+    if (playerName && availableInventories.length > 0) {
+      updatePlayerSelections(playerName, {
+        selectedInventories: Array.from(newSelection)
+      });
+    }
+  }, [selectedInventories, playerName, availableInventories.length, updatePlayerSelections]);
+
+  // Check if selections are stale for UI feedback
+  const selectionsAreStale = playerName ? areSelectionsStale(playerName) : false;
 
   return (
     <>
@@ -116,6 +181,12 @@ export function PlayerSearchModal({
               <Divider />
               <FormControl>
                 <FormLabel>Inventory Sources</FormLabel>
+                {selectionsAreStale && availableInventories.length > 0 && (
+                  <Alert status="warning" size="sm" mb={2}>
+                    <AlertIcon />
+                    <Text fontSize="sm">Saved selections are over 24 hours old. Consider refreshing.</Text>
+                  </Alert>
+                )}
                 {isFetchingSources ? (
                   <Spinner />
                 ) : availableInventories.length > 0 ? (
@@ -124,11 +195,7 @@ export function PlayerSearchModal({
                       <Checkbox
                         key={inv}
                         isChecked={selectedInventories.has(inv)}
-                        onChange={(e) => {
-                          const newSelection = new Set(selectedInventories);
-                          if (e.target.checked) newSelection.add(inv); else newSelection.delete(inv);
-                          setSelectedInventories(newSelection);
-                        }}
+                        onChange={(e) => handleInventorySelectionChange(inv, e.target.checked)}
                       >
                         {inv}
                       </Checkbox>
