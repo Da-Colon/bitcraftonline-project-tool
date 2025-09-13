@@ -37,6 +37,8 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
         return 'Manage Personal Inventories';
       case '/claim-inventories':
         return 'Manage Claim Inventories';
+      case '/recipes':
+        return 'Recipe Calculator';
       default:
         return 'Dashboard';
     }
@@ -71,6 +73,9 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
               <MenuList>
                 <MenuItem as={RemixLink} to="/">
                   Dashboard
+                </MenuItem>
+                <MenuItem as={RemixLink} to="/recipes">
+                  Recipe Calculator
                 </MenuItem>
                 <MenuItem as={RemixLink} to="/inventory">
                   Manage Personal Inventories

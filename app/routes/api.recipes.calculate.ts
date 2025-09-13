@@ -1,6 +1,7 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
-import type { ProjectItem, Item, Recipe } from "~/types/recipes";
+import type { ProjectItem, Item, Recipe, RecipeBreakdownItem, InventoryItem } from "~/types/recipes";
 import { RecipeCalculator } from "~/services/recipe-calculator.server";
+import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server";
 
 type CalcResponse = {
   rawMaterials: Array<[string, number]>;
@@ -11,11 +12,44 @@ type CalcResponse = {
   recipes: Record<string, Recipe>;
 };
 
+type EnhancedCalcResponse = {
+  breakdown: RecipeBreakdownItem[];
+  totalDeficit: Array<[string, number]>;
+};
+
 export async function action({ request }: ActionFunctionArgs) {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed" }, { status: 405 });
   }
 
+  const formData = await request.formData();
+  const itemId = formData.get("itemId") as string;
+  const quantity = parseInt(formData.get("quantity") as string);
+  const inventoryJson = formData.get("inventory") as string;
+
+  // Handle enhanced recipe calculation (single item with inventory)
+  if (itemId && quantity && inventoryJson) {
+    try {
+      const inventory: InventoryItem[] = JSON.parse(inventoryJson);
+      const calculator = getEnhancedRecipeCalculator();
+      const result = calculator.calculateWithInventory(itemId, quantity, inventory);
+      
+      const response: EnhancedCalcResponse = {
+        breakdown: result.breakdown,
+        totalDeficit: Array.from(result.totalDeficit.entries()),
+      };
+      
+      return json(response, {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      });
+    } catch (error) {
+      return json({ error: "Invalid inventory data" }, { status: 400 });
+    }
+  }
+
+  // Handle legacy project calculation (multiple items, no inventory)
   let body: unknown;
   try {
     body = await request.json();

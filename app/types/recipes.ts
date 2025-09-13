@@ -30,6 +30,27 @@ export interface ProjectBreakdown {
   totalItems: Map<string, number>;
 }
 
+export interface InventoryItem {
+  itemId: string;
+  quantity: number;
+}
+
+export interface RecipeBreakdownItem {
+  itemId: string;
+  name: string;
+  tier: number;
+  category: string;
+  recipeRequired: number;  // Total needed by recipe
+  actualRequired: number;  // Needed after inventory adjustments
+  currentInventory: number; // Available in inventory
+  deficit: number;         // Still needed after inventory
+}
+
+export interface TierCalculationResult {
+  breakdown: RecipeBreakdownItem[];
+  totalDeficit: Map<string, number>;
+}
+
 export interface Project {
   id: string;
   name: string;
