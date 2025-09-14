@@ -32,7 +32,7 @@ export function TrackedInventoryView() {
 
   if (loading) {
     return (
-      <Box p={6} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
+      <Box p={4} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
         <Text color="gray.600" textAlign="center">
           Loading tracked inventories...
         </Text>
@@ -42,7 +42,7 @@ export function TrackedInventoryView() {
 
   if (error) {
     return (
-      <Box p={6} bg="red.50" borderRadius="md" border="1px solid" borderColor="red.200">
+      <Box p={4} bg="red.50" borderRadius="md" border="1px solid" borderColor="red.200">
         <Text color="red.600" textAlign="center">
           Error loading inventories: {error}
         </Text>
@@ -64,29 +64,29 @@ export function TrackedInventoryView() {
   if (trackedInventories.size === 0) {
     return (
       <Box
-        p={8}
+        p={6}
         bg="gray.50"
         borderRadius="lg"
         border="1px solid"
         borderColor="gray.200"
         textAlign="center"
       >
-        <VStack spacing={4}>
-          <Text fontSize="2xl" mb={2}>
+        <VStack spacing={3}>
+          <Text fontSize="2xl" mb={1}>
             📦
           </Text>
-          <Text color="gray.600" fontSize="xl" fontWeight="semibold">
+          <Text color="gray.600" fontSize="lg" fontWeight="semibold">
             No Inventories Tracked Yet
           </Text>
-          <Text color="gray.500" fontSize="md" maxW="md">
+          <Text color="gray.500" fontSize="sm" maxW="md">
             Start tracking your personal inventories and claim storages to see a unified view of all
             your items organized by tier.
           </Text>
-          <VStack spacing={2} mt={4}>
+          <VStack spacing={2} mt={3}>
             <Text color="gray.400" fontSize="sm" fontWeight="medium">
               Quick Actions:
             </Text>
-            <HStack spacing={3}>
+            <HStack spacing={2}>
               <Button as="a" href="/inventory" size="sm" colorScheme="blue" variant="outline">
                 Track Personal Inventories
               </Button>
@@ -114,7 +114,7 @@ export function TrackedInventoryView() {
 
   if (combinedItems.length === 0) {
     return (
-      <Box p={6} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
+      <Box p={4} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
         <Text color="gray.600" textAlign="center">
           No items found in tracked inventories
         </Text>
@@ -138,17 +138,15 @@ export function TrackedInventoryView() {
 
   return (
     <Box>
-      <VStack spacing={6} align="stretch">
-        <Box>
-          <HStack justify="space-between" align="center" mb={4}>
-            <Text fontSize="xl" fontWeight="bold">
-              Detailed Inventory Breakdown
-            </Text>
-            <Button size="sm" variant="outline" colorScheme="red" onClick={handleClearAll}>
-              Clear All Tracking
-            </Button>
-          </HStack>
-        </Box>
+      <VStack spacing={3} align="stretch">
+        <HStack justify="space-between" align="center" mb={2}>
+          <Text fontSize="xl" fontWeight="bold">
+            Detailed Inventory Breakdown
+          </Text>
+          <Button size="sm" variant="outline" colorScheme="red" onClick={handleClearAll}>
+            Clear All Tracking
+          </Button>
+        </HStack>
 
         <InventoryTierTable items={inventoryItems} />
       </VStack>
