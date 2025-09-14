@@ -142,19 +142,35 @@ export default function RecipesRoute() {
     : breakdown;
 
   // Auto-calculate when component loads with persisted selection
+  // Use a ref to track if we've already calculated for the current selection
+  const [hasCalculated, setHasCalculated] = useState(false);
+  
+  // Create a stable reference for inventory to prevent unnecessary recalculations
+  const inventoryString = JSON.stringify(combinedInventory);
+  const [lastInventoryString, setLastInventoryString] = useState(inventoryString);
+  
   useEffect(() => {
-    if (selectedItem && calculationFetcher.state === "idle" && combinedInventory.length >= 0) {
+    if (selectedItem && calculationFetcher.state === "idle" && combinedInventory.length >= 0 && !hasCalculated) {
       const formData = new FormData();
       formData.append("itemId", selectedItem.id);
       formData.append("quantity", targetQuantity.toString());
-      formData.append("inventory", JSON.stringify(combinedInventory));
+      formData.append("inventory", inventoryString);
       
       calculationFetcher.submit(formData, {
         method: "post",
         action: "/api/recipes/calculate",
       });
+      setHasCalculated(true);
+      setLastInventoryString(inventoryString);
     }
-  }, [selectedItem, calculationFetcher.state, combinedInventory, targetQuantity]);
+  }, [selectedItem, calculationFetcher.state, inventoryString, targetQuantity, hasCalculated]);
+
+  // Reset calculation flag when selection or inventory changes
+  useEffect(() => {
+    if (selectedItem?.id && (inventoryString !== lastInventoryString)) {
+      setHasCalculated(false);
+    }
+  }, [selectedItem?.id, targetQuantity, inventoryString, lastInventoryString]);
 
 
   return (
