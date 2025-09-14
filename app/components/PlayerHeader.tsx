@@ -21,7 +21,7 @@ import {
 } from "@chakra-ui/react"
 import { CopyIcon, ExternalLinkIcon, ChevronDownIcon } from "@chakra-ui/icons"
 import { useCallback } from "react"
-import { Link as RemixLink, useLocation } from "@remix-run/react"
+import { Link as RemixLink, useLocation, useNavigate } from "@remix-run/react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { usePlayerDetails } from "~/hooks/usePlayerDetails"
 
@@ -30,6 +30,7 @@ interface PlayerHeaderProps {}
 export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const toast = useToast()
   const location = useLocation()
+  const navigate = useNavigate()
   const { player, clearPlayer } = useSelectedPlayer()
   const { detail, loading, derived } = usePlayerDetails(player?.entityId)
 
@@ -48,6 +49,18 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
       toast({ title: "Copy failed", status: "error", duration: 2000, isClosable: true })
     }
   }, [player?.entityId, toast])
+
+  const handleChangePlayer = useCallback(() => {
+    clearPlayer()
+    navigate("/")
+    toast({
+      title: "Player Cleared",
+      description: "Redirected to home page",
+      status: "info",
+      duration: 2000,
+      isClosable: true,
+    })
+  }, [clearPlayer, navigate, toast])
 
   if (!player) return null
 
@@ -107,7 +120,7 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
             <Badge variant="status" colorScheme={signedIn ? "green" : "gray"}>
               {signedIn ? "Online" : "Offline"}
             </Badge>
-            <Button size="sm" variant="outline" onClick={clearPlayer}>
+            <Button size="sm" variant="outline" onClick={handleChangePlayer}>
               Change Player
             </Button>
           </HStack>
