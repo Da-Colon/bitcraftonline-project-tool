@@ -176,22 +176,6 @@ npm run test:search        # Test search functionality
 npm run test:recipes       # Test recipe calculations
 ```
 
-## 📊 Performance
-
-- **Smart Caching**: Player data cached for 5 minutes
-- **Debounced Search**: Reduces API calls during typing
-- **Lazy Loading**: Route components loaded on demand
-- **Optimized Aggregation**: Efficient inventory combining algorithms
-
-## 🎯 Roadmap
-
-- [ ] Tier substitution optimization (upgrade/downgrade materials)
-- [ ] Batch crafting calculator
-- [ ] Guild inventory sharing
-- [ ] Market price integration
-- [ ] Mobile-responsive design improvements
-- [ ] Export to CSV/spreadsheet
-
 ## 🙏 Acknowledgments
 
 - **Clockwork Labs** for creating BitCraft Online and open-sourcing their vision
