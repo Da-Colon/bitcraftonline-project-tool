@@ -1,17 +1,29 @@
-import { Box, Container, Heading, Input, Text, InputGroup, InputLeftElement, VStack, Icon, Flex, Badge } from "@chakra-ui/react";
-import { SearchIcon } from "@chakra-ui/icons";
-import { useState } from "react";
-import { usePlayerSearch } from "~/hooks/usePlayerSearch";
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
-import { PlayerResults } from "~/components/PlayerResults";
+import {
+  Box,
+  Container,
+  Heading,
+  Input,
+  Text,
+  InputGroup,
+  InputLeftElement,
+  VStack,
+  Icon,
+  Flex,
+  Badge,
+} from "@chakra-ui/react"
+import { SearchIcon } from "@chakra-ui/icons"
+import { useState } from "react"
+import { usePlayerSearch } from "~/hooks/usePlayerSearch"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import { PlayerResults } from "~/components/PlayerResults"
 
 export function PlayerSelectionView() {
-  const { savePlayer } = useSelectedPlayer();
-  const [query, setQuery] = useState("");
-  const { results, loading, error } = usePlayerSearch(query, { minLength: 3, delay: 300 });
+  const { savePlayer } = useSelectedPlayer()
+  const [query, setQuery] = useState("")
+  const { results, loading, error } = usePlayerSearch(query, { minLength: 3, delay: 300 })
 
   return (
-    <Box h="100vh" bg="gradient-to-br from-blue.50 to-purple.50" position="relative" overflow="hidden">
+    <Box bg="gradient-to-br from-blue.50 to-purple.50" position="relative" overflow="hidden">
       {/* Background decoration */}
       <Box
         position="absolute"
@@ -24,10 +36,18 @@ export function PlayerSelectionView() {
         borderRadius="0 0 50% 50%"
         transform="scale(1.5)"
       />
-      
-      <Container maxW="container.md" h="100vh" display="flex" alignItems="center" justifyContent="center" position="relative" zIndex="1" py={4} px={4}>
-        <Box w="100%" maxW="500px">
 
+      <Container
+        maxW="container.md"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        position="relative"
+        zIndex="1"
+        py={4}
+        px={4}
+      >
+        <Box w="100%" maxW="500px">
           {/* Search Card */}
           <Box
             w="100%"
@@ -41,14 +61,16 @@ export function PlayerSelectionView() {
             <Box p={4} borderBottom="1px solid" borderColor="gray.100">
               <VStack spacing={3} align="stretch">
                 <Flex align="center" justify="space-between">
-                  <Heading size="md" color="gray.800">Find Your Player</Heading>
+                  <Heading size="md" color="gray.800">
+                    Find Your Player
+                  </Heading>
                   {results.length > 0 && (
                     <Badge colorScheme="blue" variant="subtle" fontSize="sm">
                       {results.length} found
                     </Badge>
                   )}
                 </Flex>
-                
+
                 <InputGroup size="lg">
                   <InputLeftElement pointerEvents="none">
                     <Icon as={SearchIcon} color="gray.400" />
@@ -62,11 +84,15 @@ export function PlayerSelectionView() {
                     border="2px solid"
                     borderColor="gray.200"
                     _hover={{ borderColor: "blue.300", bg: "white" }}
-                    _focus={{ borderColor: "blue.500", bg: "white", boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)" }}
+                    _focus={{
+                      borderColor: "blue.500",
+                      bg: "white",
+                      boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                    }}
                     borderRadius="lg"
                   />
                 </InputGroup>
-                
+
                 {(!query || query.trim().length < 3) && (
                   <Text color="gray.500" fontSize="sm" textAlign="center">
                     Start typing to search for players...
@@ -88,5 +114,5 @@ export function PlayerSelectionView() {
         </Box>
       </Container>
     </Box>
-  );
+  )
 }

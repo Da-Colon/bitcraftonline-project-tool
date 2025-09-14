@@ -1,5 +1,5 @@
-import { PlayerDashboardView } from "~/components/PlayerDashboardView"
+import { Dashboard } from "~/components/Dashboard"
 
-export default function Dashboard() {
-  return <PlayerDashboardView />
+export default function DashboardRoute() {
+  return <Dashboard />
 }
