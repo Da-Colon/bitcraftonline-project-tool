@@ -6,22 +6,21 @@ import {
   VStack,
   HStack,
   SimpleGrid,
-  Badge,
-  Card,
-  CardBody,
   Icon,
   Button,
   Divider,
   useColorModeValue,
 } from "@chakra-ui/react"
 import { SettingsIcon, StarIcon, InfoIcon, CheckCircleIcon } from "@chakra-ui/icons"
+import { useNavigate } from "@remix-run/react"
 
 export function AboutPage() {
   const bgGradient = useColorModeValue(
     "linear(to-br, blue.50, purple.50)",
     "linear(to-br, gray.900, purple.900)"
   )
-  const cardBg = useColorModeValue("white", "gray.800")
+
+  const navigate = useNavigate()
 
   return (
     <Box minH="100vh" bgGradient={bgGradient}>
@@ -50,7 +49,12 @@ export function AboutPage() {
           </Text>
 
           <HStack spacing={4}>
-            <Button colorScheme="blue" size="lg" leftIcon={<StarIcon />}>
+            <Button
+              colorScheme="blue"
+              size="lg"
+              leftIcon={<StarIcon />}
+              onClick={() => navigate("/")}
+            >
               Get Started
             </Button>
           </HStack>
