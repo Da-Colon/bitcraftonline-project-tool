@@ -226,6 +226,16 @@ export function InventoryOverview({
                   </HStack>
                 )}
 
+                {inventories.housing && inventories.housing.length > 0 && (
+                  <HStack justify="space-between">
+                    <HStack>
+                      <Icon as={ExternalLinkIcon} color="teal.500" />
+                      <Text fontSize="sm">Housing</Text>
+                    </HStack>
+                    <Badge colorScheme="teal">{inventories.housing.length} containers</Badge>
+                  </HStack>
+                )}
+
                 {mostValuableInventory && (
                   <>
                     <Divider />

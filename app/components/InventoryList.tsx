@@ -150,6 +150,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
     inventories.banks,
     inventories.storage,
     inventories.recovery,
+    inventories.housing,
   ].some((section) => section && section.length > 0)
 
   if (!hasAnyInventories) {
@@ -191,6 +192,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
       {renderInventorySection("Banks", inventories.banks)}
       {renderInventorySection("Storage", inventories.storage)}
       {renderInventorySection("Recovery Chests", inventories.recovery)}
+      {renderInventorySection("Housing Inventories", inventories.housing)}
     </VStack>
   )
 }

@@ -55,8 +55,8 @@ export function PersonalInventoriesView() {
             Personal Inventories
           </Heading>
           <Text color="gray.600">
-            Manage and track your personal inventories, banks, storage containers, and recovery
-            chests.
+            Manage and track your personal inventories, banks, storage containers, recovery chests,
+            and housing inventories.
           </Text>
         </Box>
         <Box
@@ -88,6 +88,7 @@ export function PersonalInventoriesView() {
     ...(inventories.banks || []),
     ...(inventories.storage || []),
     ...(inventories.recovery || []),
+    ...(inventories.housing || []),
   ]
   const trackedCount = allInventories.filter((inv) => trackedInventories.has(inv.id)).length
 
@@ -122,9 +123,9 @@ export function PersonalInventoriesView() {
           Personal Inventories
         </Heading>
         <Text color="gray.600">
-          Manage and track your personal inventories, banks, storage containers, and recovery
-          chests. Tracked inventories appear in your dashboard and can be used for recipe
-          calculations.
+          Manage and track your personal inventories, banks, storage containers, recovery chests,
+          and housing inventories. Tracked inventories appear in your dashboard and can be used for
+          recipe calculations.
         </Text>
       </Box>
 
