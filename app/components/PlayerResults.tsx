@@ -1,4 +1,4 @@
-import { VStack, Text, Box, Spinner, Flex, Icon, Center } from "@chakra-ui/react";
+import { VStack, Text, Box, Spinner, Icon, Center } from "@chakra-ui/react";
 import { SearchIcon, WarningIcon } from "@chakra-ui/icons";
 import type { Player } from "~/types/player";
 import { PlayerCard } from "./PlayerCard";

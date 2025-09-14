@@ -13,7 +13,7 @@ export function ClaimInventoryList({ inventories, viewMode = 'list' }: ClaimInve
   const { isTracked, toggleTracking } = useTrackedInventories();
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set());
 
-  const handleTrackingChange = (inventoryId: string, checked: boolean) => {
+  const handleTrackingChange = (inventoryId: string) => {
     toggleTracking(inventoryId);
   };
 
@@ -57,9 +57,7 @@ export function ClaimInventoryList({ inventories, viewMode = 'list' }: ClaimInve
                 <HStack spacing={3}>
                   <Checkbox
                     isChecked={isTracked(inventory.id)}
-                    onChange={(e) => {
-                      handleTrackingChange(inventory.id, e.target.checked);
-                    }}
+                    onChange={() => handleTrackingChange(inventory.id)}
                   />
                   <Text fontWeight="medium">{inventory.name}</Text>
                   {inventory.buildingName && (

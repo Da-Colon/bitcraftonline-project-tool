@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 import { usePlayerInventories } from "~/hooks/usePlayerInventories";
 import { InventoryList } from "~/components/InventoryList";
-import { TierView } from "~/components/TierView";
-import { aggregateInventoriesByTier } from "~/utils/tierAggregation";
 
 type InventoryViewType = 'list' | 'tier';
 
@@ -38,8 +36,6 @@ export function PersonalInventoriesView() {
       </Box>
     );
   }
-
-  const tierData = aggregateInventoriesByTier(inventories);
 
   return (
     <VStack spacing={6} align="stretch">

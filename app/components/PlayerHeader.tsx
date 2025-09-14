@@ -11,7 +11,7 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const toast = useToast();
   const location = useLocation();
   const { player, clearPlayer } = useSelectedPlayer();
-  const { detail, loading, error, derived } = usePlayerDetails(player?.entityId);
+  const { detail, loading, derived } = usePlayerDetails(player?.entityId);
 
   const copyId = useCallback(async () => {
     if (!player?.entityId) return;

@@ -1,4 +1,4 @@
-import { Box, Container, Grid, GridItem, Heading, Input, Text, InputGroup, InputLeftElement, VStack, Icon, Flex, Badge } from "@chakra-ui/react";
+import { Box, Container, Heading, Input, Text, InputGroup, InputLeftElement, VStack, Icon, Flex, Badge } from "@chakra-ui/react";
 import { SearchIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { usePlayerSearch } from "~/hooks/usePlayerSearch";
