@@ -11,14 +11,26 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
+  Heading,
+  Divider,
 } from "@chakra-ui/react"
 import { PlayerHeader } from "~/components/PlayerHeader"
 import { TrackedInventoryView } from "~/components/TrackedInventoryView"
+import { DashboardOverview } from "~/components/DashboardOverview"
 import { PlayerSelectionView } from "~/components/PlayerSelectionView"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import { usePlayerInventories } from "~/hooks/usePlayerInventories"
+import { useClaimInventories } from "~/hooks/useClaimInventories"
+import { useTrackedInventories } from "~/hooks/useTrackedInventories"
+import { useSelectedClaim } from "~/hooks/useSelectedClaim"
+import { combineAllTrackedInventories } from "~/utils/combineAllTrackedInventories"
 
 export function Dashboard() {
   const { player } = useSelectedPlayer()
+  const { claim } = useSelectedClaim()
+  const { inventories: playerInventories } = usePlayerInventories(player?.entityId)
+  const { inventories: claimInventories } = useClaimInventories(claim?.claimId)
+  const { trackedInventories } = useTrackedInventories()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   if (!player) {
@@ -56,11 +68,41 @@ export function Dashboard() {
     )
   }
 
+  // Calculate combined inventory data for overview
+  const combinedItems = combineAllTrackedInventories(
+    playerInventories || { personal: [], banks: [], storage: [], recovery: [] },
+    claimInventories,
+    trackedInventories
+  )
+
+  const totalItems = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0)
+
   return (
     <Box minH="100vh">
       <PlayerHeader />
       <Container maxW="container.xl" py={6}>
-        <VStack spacing={6} align="stretch">
+        <VStack spacing={8} align="stretch">
+          {/* Page Header */}
+          <Box>
+            <Heading size="lg" mb={2}>
+              Dashboard
+            </Heading>
+            <Text color="gray.600">
+              Overview of your tracked inventories and quick access to key features.
+            </Text>
+          </Box>
+
+          {/* Dashboard Overview */}
+          <DashboardOverview
+            trackedInventoriesCount={trackedInventories.size}
+            totalItems={totalItems}
+            combinedItems={combinedItems}
+          />
+
+          {/* Divider */}
+          <Divider />
+
+          {/* Tracked Inventory Table */}
           <TrackedInventoryView />
         </VStack>
       </Container>
