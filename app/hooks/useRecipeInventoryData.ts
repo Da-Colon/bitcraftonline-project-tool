@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
 import { usePlayerInventorySelections } from "./usePlayerInventorySelections"
+import { useSelectedPlayer } from "./useSelectedPlayer"
 import { useSelectedClaim } from "./useSelectedClaim"
 import { useClaimInventories } from "./useClaimInventories"
 import type { InventoryItem } from "~/types/recipes"
@@ -15,11 +16,13 @@ export function useRecipeInventoryData() {
   const { claim } = useSelectedClaim()
   const { inventories: claimInventories } = useClaimInventories(claim?.claimId)
 
-  // For now, we'll use a simple approach - get the first player with selections
+  // Prefer the first player that has saved selections; otherwise fall back to the currently selected player
+  const { player } = useSelectedPlayer()
   const firstPlayerWithSelections = useMemo(() => {
     const playerNames = Object.keys(playerSelections.selections)
     return playerNames.length > 0 ? playerNames[0] : null
   }, [playerSelections.selections])
+  const activePlayerName = firstPlayerWithSelections || player?.username || null
 
   const currentPlayerSelections = useMemo(() => {
     if (!firstPlayerWithSelections) return null
@@ -28,14 +31,14 @@ export function useRecipeInventoryData() {
 
   // Load player inventory data when player is selected
   useEffect(() => {
-    if (!firstPlayerWithSelections) {
+    if (!activePlayerName) {
       setPlayerInventoryData(null)
       return
     }
 
     const fetchPlayerData = async () => {
       try {
-        const params = new URLSearchParams({ playerName: firstPlayerWithSelections })
+        const params = new URLSearchParams({ playerName: activePlayerName })
         const response = await fetch(`/api/player/inventory?${params.toString()}`)
         if (response.ok) {
           const data = await response.json()
@@ -50,7 +53,7 @@ export function useRecipeInventoryData() {
     }
 
     fetchPlayerData()
-  }, [firstPlayerWithSelections])
+  }, [activePlayerName])
 
   // Combine all inventory data into a single inventory list for calculator
   const combinedInventory = useMemo((): InventoryItem[] => {
@@ -64,8 +67,12 @@ export function useRecipeInventoryData() {
     }
 
     // From player inventories: include only selected inventory categories
-    if (playerInventoryData && currentPlayerSelections?.selectedInventories?.length) {
-      for (const source of currentPlayerSelections.selectedInventories) {
+    if (playerInventoryData) {
+      const selected = currentPlayerSelections?.selectedInventories
+      const sources = Array.isArray(selected) && selected.length > 0
+        ? selected
+        : Object.keys(playerInventoryData.inventories)
+      for (const source of sources) {
         const items = playerInventoryData.inventories[source]
         if (!items) continue
         for (const it of items) {
