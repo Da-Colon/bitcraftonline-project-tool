@@ -8,14 +8,19 @@ import {
   CardBody,
   CardHeader,
   Heading,
-} from "@chakra-ui/react";
-import type { Item } from "~/types/recipes";
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+} from "@chakra-ui/react"
+import type { Item } from "~/types/recipes"
 
 interface SelectedItemCardProps {
-  selectedItem: Item;
-  targetQuantity: number;
-  onQuantityChange: (quantity: number) => void;
-  onClear: () => void;
+  selectedItem: Item
+  targetQuantity: number
+  onQuantityChange: (quantity: number) => void
+  onClear: () => void
 }
 
 export function SelectedItemCard({
@@ -25,50 +30,93 @@ export function SelectedItemCard({
   onClear,
 }: SelectedItemCardProps) {
   return (
-    <Card>
-      <CardHeader pb={2}>
-        <Heading size="md">Selected Item</Heading>
-      </CardHeader>
-      <CardBody pt={0}>
-        <HStack spacing={4} align="center">
-          <VStack align="start" spacing={1}>
-            <Text fontSize="lg" fontWeight="bold">{selectedItem.name}</Text>
-            <HStack>
-              <Badge colorScheme="blue" size="sm">Tier {selectedItem.tier}</Badge>
-              <Badge variant="outline" size="sm">{selectedItem.category}</Badge>
-            </HStack>
-          </VStack>
-          
-          <HStack spacing={2}>
-            <Text>Quantity:</Text>
-            <Button
-              size="sm"
-              onClick={() => onQuantityChange(Math.max(1, targetQuantity - 1))}
-              disabled={targetQuantity <= 1}
-            >
-              -
-            </Button>
-            <Text minW="40px" textAlign="center" fontWeight="bold">
-              {targetQuantity}
-            </Text>
-            <Button
-              size="sm"
-              onClick={() => onQuantityChange(targetQuantity + 1)}
-            >
-              +
-            </Button>
-          </HStack>
-          
+    <Card variant="elevated" size="lg">
+      <CardHeader pb={3}>
+        <HStack justify="space-between" align="center">
+          <Heading size="md" color="gray.700">
+            Selected Item
+          </Heading>
           <Button
             colorScheme="red"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={onClear}
+            _hover={{ bg: "red.50" }}
           >
-            Clear
+            Clear Selection
           </Button>
         </HStack>
+      </CardHeader>
+      <CardBody pt={0}>
+        <VStack spacing={6} align="stretch">
+          {/* Item Info Section */}
+          <HStack spacing={4} align="center">
+            <VStack align="start" spacing={2} flex={1}>
+              <Text fontSize="xl" fontWeight="bold" color="gray.800">
+                {selectedItem.name}
+              </Text>
+              <HStack spacing={3}>
+                <Badge
+                  colorScheme="blue"
+                  variant="solid"
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="sm"
+                >
+                  Tier {selectedItem.tier}
+                </Badge>
+                <Badge
+                  colorScheme="gray"
+                  variant="outline"
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="sm"
+                >
+                  {selectedItem.category}
+                </Badge>
+              </HStack>
+            </VStack>
+          </HStack>
+
+          {/* Quantity Section */}
+          <VStack spacing={3} align="stretch">
+            <Text fontSize="md" fontWeight="semibold" color="gray.700">
+              Target Quantity
+            </Text>
+            <HStack spacing={4} align="center">
+              <NumberInput
+                value={targetQuantity}
+                onChange={(valueString, valueNumber) => {
+                  // Handle manual input: if user types a valid number >= 1, use it
+                  // If they clear the field or type invalid input, keep current value
+                  if (!isNaN(valueNumber) && valueNumber >= 1) {
+                    onQuantityChange(valueNumber)
+                  } else if (valueString === "" || valueString === "0") {
+                    // Allow temporary empty/zero state while typing
+                    onQuantityChange(1)
+                  }
+                }}
+                min={1}
+                max={999999}
+                size="md"
+                width="150px"
+                allowMouseWheel
+              >
+                <NumberInputField textAlign="center" fontSize="lg" fontWeight="bold" />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+              <Text color="gray.500" fontSize="sm">
+                items needed
+              </Text>
+            </HStack>
+          </VStack>
+        </VStack>
       </CardBody>
     </Card>
-  );
+  )
 }
