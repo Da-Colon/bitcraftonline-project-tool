@@ -2,12 +2,11 @@ import { useState, useEffect, useMemo } from "react"
 import { usePlayerInventorySelections } from "./usePlayerInventorySelections"
 import { useSelectedClaim } from "./useSelectedClaim"
 import { useClaimInventories } from "./useClaimInventories"
-import { combineAllTrackedInventories } from "~/utils/combineAllTrackedInventories"
 import type { InventoryItem } from "~/types/recipes"
-import type { PlayerInventories } from "~/types/inventory"
+import type { PlayerInventoryResponse } from "~/routes/api.player.inventory"
 
 export function useRecipeInventoryData() {
-  const [playerInventoryData, setPlayerInventoryData] = useState<PlayerInventories | null>(null)
+  const [playerInventoryData, setPlayerInventoryData] = useState<PlayerInventoryResponse | null>(null)
 
   // Get player inventory selections
   const playerSelections = usePlayerInventorySelections()
@@ -36,7 +35,8 @@ export function useRecipeInventoryData() {
 
     const fetchPlayerData = async () => {
       try {
-        const response = await fetch(`/api/player/${firstPlayerWithSelections}`)
+        const params = new URLSearchParams({ playerName: firstPlayerWithSelections })
+        const response = await fetch(`/api/player/inventory?${params.toString()}`)
         if (response.ok) {
           const data = await response.json()
           setPlayerInventoryData(data)
@@ -52,39 +52,39 @@ export function useRecipeInventoryData() {
     fetchPlayerData()
   }, [firstPlayerWithSelections])
 
-  // Combine all inventory data into a single inventory map
+  // Combine all inventory data into a single inventory list for calculator
   const combinedInventory = useMemo((): InventoryItem[] => {
-    if (!playerInventoryData && !claimInventories) {
-      return []
+    const totals = new Map<string, number>()
+
+    // Helper to add to totals with normalized ID
+    const add = (rawId: string, qty: number) => {
+      const id = rawId.startsWith("item_") ? rawId : `item_${rawId}`
+      if (!qty || qty <= 0) return
+      totals.set(id, (totals.get(id) || 0) + qty)
     }
 
-    // Create set of tracked inventory IDs
-    const trackedInventoryIds = new Set<string>()
-
-    // Add selected player inventories
-    if (currentPlayerSelections?.selectedInventories) {
-      currentPlayerSelections.selectedInventories.forEach((id) => trackedInventoryIds.add(id))
+    // From player inventories: include only selected inventory categories
+    if (playerInventoryData && currentPlayerSelections?.selectedInventories?.length) {
+      for (const source of currentPlayerSelections.selectedInventories) {
+        const items = playerInventoryData.inventories[source]
+        if (!items) continue
+        for (const it of items) {
+          add(it.itemId, it.quantity)
+        }
+      }
     }
 
-    // Add all claim inventories if we have them
+    // From claim inventories: include all items if we have a claim selected
     if (claimInventories) {
-      claimInventories.inventories.forEach((inv) => trackedInventoryIds.add(inv.id))
+      for (const inv of claimInventories.inventories) {
+        for (const it of inv.items) {
+          add(it.itemId, it.quantity)
+        }
+      }
     }
 
-    const allInventories = combineAllTrackedInventories(
-      playerInventoryData,
-      claimInventories,
-      trackedInventoryIds
-    )
-
-    // Convert to InventoryItem format expected by recipe calculator
-    const result = allInventories.map((inv) => ({
-      itemId: inv.itemId,
-      quantity: inv.totalQuantity,
-    }))
-
-    return result
-  }, [playerInventoryData, currentPlayerSelections, claimInventories, firstPlayerWithSelections])
+    return Array.from(totals.entries()).map(([itemId, quantity]) => ({ itemId, quantity }))
+  }, [playerInventoryData, currentPlayerSelections, claimInventories])
 
   return {
     combinedInventory,

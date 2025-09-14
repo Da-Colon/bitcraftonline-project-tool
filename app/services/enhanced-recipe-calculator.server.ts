@@ -11,6 +11,10 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     targetQuantity: number,
     inventory: InventoryItem[]
   ): TierCalculationResult {
+    const DEBUG =
+      typeof process !== "undefined" &&
+      (process.env.RECIPE_DEBUG === "1" || process.env.NODE_ENV === "development")
+
     // Create inventory map - handle both formats
     const inventoryMap = new Map<string, number>()
     inventory.forEach((item) => {
@@ -20,6 +24,23 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         inventoryMap.set(`item_${item.itemId}`, item.quantity)
       }
     })
+
+    if (DEBUG) {
+      try {
+        const sampleKeys = Array.from(inventoryMap.keys()).slice(0, 10)
+        const direct = inventoryMap.get(targetItemId)
+        const fallback = targetItemId.startsWith("item_")
+          ? inventoryMap.get(targetItemId.replace(/^item_/, ""))
+          : inventoryMap.get(`item_${targetItemId}`)
+        console.debug(
+          `[EnhancedRecipeCalculator] calc start: target=${targetItemId} qty=${targetQuantity} invCount=${inventory.length} mapSize=${inventoryMap.size} match=${direct ?? fallback ?? 0} sampleKeys=${JSON.stringify(
+            sampleKeys,
+          )}`,
+        )
+      } catch {
+        // ignore debug errors
+      }
+    }
 
     // Get base recipe breakdown
     const baseBreakdown = this.calculateItemBreakdown(targetItemId, targetQuantity)
@@ -44,10 +65,24 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       }
     })
 
-    return {
+    const result = {
       breakdown: adjustedBreakdown,
       totalDeficit,
     }
+
+    if (DEBUG) {
+      try {
+        const matched = adjustedBreakdown
+          .filter((b) => (inventoryMap.get(b.itemId) || 0) > 0)
+          .slice(0, 10)
+          .map((b) => ({ id: b.itemId, have: inventoryMap.get(b.itemId)!, need: b.recipeRequired }))
+        console.debug(`[EnhancedRecipeCalculator] calc end: matchedItemsSample=${JSON.stringify(matched)}`)
+      } catch {
+        // ignore debug errors
+      }
+    }
+
+    return result
   }
 
   /**

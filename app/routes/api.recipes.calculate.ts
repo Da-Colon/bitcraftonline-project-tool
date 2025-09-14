@@ -40,10 +40,34 @@ export async function action({ request }: ActionFunctionArgs) {
         return json({ error: "Inventory must be an array" }, { status: 400 });
       }
       
+      const DEBUG =
+        typeof process !== "undefined" &&
+        (process.env.RECIPE_DEBUG === "1" || process.env.NODE_ENV === "development");
+      if (DEBUG) {
+        try {
+          const sample = inventory.slice(0, 5).map((i) => i.itemId);
+          console.debug(
+            `[api.recipes.calculate] request: target=${itemId} qty=${quantity} invCount=${inventory.length} invSample=${JSON.stringify(
+              sample,
+            )}`,
+          );
+        } catch {/* ignore */}
+      }
+
       // Use the existing enhanced calculator method
       const calculator = getEnhancedRecipeCalculator();
       const result = calculator.calculateWithInventory(itemId, quantity, inventory);
       const breakdown = result.breakdown;
+      if (DEBUG) {
+        try {
+          const top = breakdown.find((b) => b.itemId === itemId);
+          const matched = breakdown.filter((b) => b.currentInventory > 0).slice(0, 5)
+            .map((b) => ({ id: b.itemId, have: b.currentInventory, need: b.recipeRequired }));
+          console.debug(
+            `[api.recipes.calculate] result: topItemInv=${top?.currentInventory ?? 0} matchedSample=${JSON.stringify(matched)}`,
+          );
+        } catch {/* ignore */}
+      }
       
       const response: EnhancedCalcResponse = {
         breakdown,
@@ -108,4 +132,3 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 }
-
