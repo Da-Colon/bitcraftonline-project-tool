@@ -11,15 +11,14 @@ import {
   Tag,
   TagLabel,
   Circle,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Button,
+  Text,
+  VStack,
+  Flex,
 } from "@chakra-ui/react"
-import { CopyIcon, ExternalLinkIcon, ChevronDownIcon } from "@chakra-ui/icons"
+import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons"
 import { useCallback } from "react"
-import { Link as RemixLink, useLocation, useNavigate } from "@remix-run/react"
+import { useNavigate } from "@remix-run/react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { usePlayerDetails } from "~/hooks/usePlayerDetails"
 
@@ -27,7 +26,6 @@ interface PlayerHeaderProps {}
 
 export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const toast = useToast()
-  const location = useLocation()
   const navigate = useNavigate()
   const { player, clearPlayer } = useSelectedPlayer()
   const { detail, loading, derived } = usePlayerDetails(player?.entityId)
@@ -38,13 +36,19 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
       await navigator.clipboard.writeText(player.entityId)
       toast({
         title: "Copied",
-        description: "Player ID copied",
+        description: "Player ID copied to clipboard",
         status: "success",
         duration: 1500,
         isClosable: true,
       })
     } catch {
-      toast({ title: "Copy failed", status: "error", duration: 2000, isClosable: true })
+      toast({
+        title: "Copy failed",
+        description: "Could not copy player ID",
+        status: "error",
+        duration: 2000,
+        isClosable: true,
+      })
     }
   }, [player?.entityId, toast])
 
@@ -63,104 +67,103 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
   if (!player) return null
 
   const signedIn = detail?.player?.signedIn ?? false
-  const locationName = derived?.locationName || "Unknown"
+  const locationName = derived?.locationName || "Unknown Location"
   const highest = derived?.highestSkill
-
-  const getCurrentPageName = () => {
-    switch (location.pathname) {
-      case "/":
-        return "Home"
-      case "/inventory":
-        return "Manage Personal Inventories"
-      case "/claim-inventories":
-        return "Manage Claim Inventories"
-      case "/recipes":
-        return "Recipe Calculator"
-      default:
-        return "Dashboard"
-    }
-  }
 
   return (
     <Box
       as="header"
-      borderBottom="1px solid"
-      borderColor="gray.200"
-      py={3}
-      bg="gray.50"
+      borderBottom="2px solid"
+      borderColor="gray.100"
+      py={4}
+      bg="white"
+      boxShadow="sm"
       position="sticky"
       top={0}
       zIndex={10}
     >
       <Container maxW="container.xl">
-        <HStack justify="space-between" align="center" spacing={4} wrap="wrap">
-          <HStack spacing={3} align="center">
-            <Circle size="10px" bg={signedIn ? "green.400" : "gray.500"} />
-            <Link
-              href={`https://bitjita.com/players/${player.entityId}`}
-              isExternal
-              fontWeight="bold"
+        <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
+          {/* Player Info Section */}
+          <Flex align="center" gap={4}>
+            <HStack spacing={3} align="center">
+              <Circle size="12px" bg={signedIn ? "green.400" : "gray.400"} />
+              <VStack spacing={0} align="start">
+                <HStack spacing={2} align="center">
+                  <Link
+                    href={`https://bitjita.com/players/${player.entityId}`}
+                    isExternal
+                    fontWeight="bold"
+                    fontSize="lg"
+                    color="gray.800"
+                    _hover={{ color: "blue.600", textDecoration: "none" }}
+                  >
+                    {player.username}
+                  </Link>
+                  <ExternalLinkIcon boxSize={3} color="gray.500" />
+                  <Tooltip label="Copy player ID" placement="bottom">
+                    <IconButton
+                      aria-label="Copy player ID"
+                      size="xs"
+                      variant="ghost"
+                      icon={<CopyIcon />}
+                      onClick={copyId}
+                      color="gray.500"
+                      _hover={{ color: "blue.600", bg: "gray.50" }}
+                    />
+                  </Tooltip>
+                </HStack>
+                <Text fontSize="xs" color="gray.600">
+                  {player.entityId}
+                </Text>
+              </VStack>
+            </HStack>
+
+            <Badge
+              variant="subtle"
+              colorScheme={signedIn ? "green" : "gray"}
+              px={3}
+              py={1}
+              borderRadius="full"
             >
-              {player.username}
-              <ExternalLinkIcon ml={2} />
-            </Link>
-            <Tooltip label="Copy player ID" placement="bottom">
-              <IconButton
-                aria-label="Copy ID"
-                size="sm"
-                variant="outline"
-                icon={<CopyIcon />}
-                onClick={copyId}
-              />
-            </Tooltip>
-            <Badge variant="status" colorScheme={signedIn ? "green" : "gray"}>
               {signedIn ? "Online" : "Offline"}
             </Badge>
-            <Button size="sm" variant="outline" onClick={handleChangePlayer}>
+          </Flex>
+
+          {/* Player Stats & Actions */}
+          <HStack spacing={4} align="center">
+            {loading ? (
+              <HStack spacing={2}>
+                <Spinner size="sm" color="blue.500" />
+                <Text fontSize="sm" color="gray.600">
+                  Loading...
+                </Text>
+              </HStack>
+            ) : (
+              <HStack spacing={3}>
+                <Tag size="lg" variant="subtle" colorScheme="purple" borderRadius="full">
+                  <TagLabel fontWeight="medium">
+                    {highest ? `${highest.name} Lv ${highest.level}` : "No Skills"}
+                  </TagLabel>
+                </Tag>
+                <Tag size="lg" variant="subtle" colorScheme="blue" borderRadius="full">
+                  <TagLabel fontWeight="medium">{locationName}</TagLabel>
+                </Tag>
+              </HStack>
+            )}
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleChangePlayer}
+              colorScheme="gray"
+              borderRadius="full"
+              px={4}
+            >
               Change Player
             </Button>
           </HStack>
-
-          <HStack spacing={3} align="center">
-            <Menu>
-              <MenuButton as={Button} rightIcon={<ChevronDownIcon />} variant="outline" size="sm">
-                {getCurrentPageName()}
-              </MenuButton>
-              <MenuList>
-                <MenuItem as={RemixLink} to="/">
-                  Home
-                </MenuItem>
-                <MenuItem as={RemixLink} to="/dashboard">
-                  Dashboard
-                </MenuItem>
-                <MenuItem as={RemixLink} to="/recipes">
-                  Recipe Calculator
-                </MenuItem>
-                <MenuItem as={RemixLink} to="/inventory">
-                  Manage Personal Inventories
-                </MenuItem>
-                <MenuItem as={RemixLink} to="/claim-inventories">
-                  Manage Claim Inventories
-                </MenuItem>
-              </MenuList>
-            </Menu>
-
-            {loading ? (
-              <Spinner size="sm" />
-            ) : (
-              <>
-                <Tag size="md" variant="subtle" colorScheme="purple">
-                  <TagLabel>
-                    {highest ? `${highest.name} Lv ${highest.level}` : "No skills"}
-                  </TagLabel>
-                </Tag>
-                <Tag size="md" variant="subtle" colorScheme="blue">
-                  <TagLabel>{locationName || "Unknown"}</TagLabel>
-                </Tag>
-              </>
-            )}
-          </HStack>
-        </HStack>
+        </Flex>
       </Container>
     </Box>
   )
