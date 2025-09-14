@@ -52,12 +52,6 @@ export default function RecipesRoute() {
   // Get combined inventory data
   const {
     combinedInventory,
-    inventoryMap,
-    hasInventoryData,
-    isLoading: isInventoryLoading,
-    selectedPlayer,
-    selectedClaim,
-    isPlayerDataStale,
   } = useRecipeInventoryData();
 
 
