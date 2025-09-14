@@ -21,11 +21,12 @@ export function transformBitJitaInventories(response: BitJitaInventoriesResponse
     };
 
     // Categorize inventories based on name and type
-    if (inv.inventoryName.toLowerCase().includes('bank')) {
+    const inventoryName = inv.inventoryName?.toLowerCase() || '';
+    if (inventoryName.includes('bank')) {
       banks.push(transformedInventory);
-    } else if (inv.inventoryName.toLowerCase().includes('recovery')) {
+    } else if (inventoryName.includes('recovery')) {
       recovery.push(transformedInventory);
-    } else if (inv.inventoryName.toLowerCase().includes('cache') || inv.inventoryName.toLowerCase().includes('storage')) {
+    } else if (inventoryName.includes('cache') || inventoryName.includes('storage')) {
       storage.push(transformedInventory);
     } else {
       personal.push(transformedInventory);
@@ -63,12 +64,13 @@ function transformPockets(
 }
 
 function getInventoryType(inv: BitJitaInventory): string {
-  if (inv.inventoryName.toLowerCase().includes('bank')) return 'bank';
-  if (inv.inventoryName.toLowerCase().includes('recovery')) return 'recovery';
-  if (inv.inventoryName.toLowerCase().includes('cache')) return 'storage';
-  if (inv.inventoryName.toLowerCase().includes('storage')) return 'storage';
-  if (inv.inventoryName.toLowerCase().includes('toolbelt')) return 'toolbelt';
-  if (inv.inventoryName.toLowerCase().includes('wallet')) return 'wallet';
-  if (inv.inventoryName.toLowerCase().includes('inventory')) return 'inventory';
+  const inventoryName = inv.inventoryName?.toLowerCase() || '';
+  if (inventoryName.includes('bank')) return 'bank';
+  if (inventoryName.includes('recovery')) return 'recovery';
+  if (inventoryName.includes('cache')) return 'storage';
+  if (inventoryName.includes('storage')) return 'storage';
+  if (inventoryName.includes('toolbelt')) return 'toolbelt';
+  if (inventoryName.includes('wallet')) return 'wallet';
+  if (inventoryName.includes('inventory')) return 'inventory';
   return 'personal';
 }
