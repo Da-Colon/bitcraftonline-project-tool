@@ -44,7 +44,6 @@ export default function RecipesRoute() {
   const {
     selectedItem,
     targetQuantity,
-    isStale: isRecipeStale,
     updateSelectedItem,
     updateTargetQuantity,
     clearSelection,
