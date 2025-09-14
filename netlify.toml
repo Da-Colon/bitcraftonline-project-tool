@@ -4,5 +4,5 @@
 
 [redirects]
   from = "/*"
-  to = "/.netlify/functions/remix-server"
+  to = "/.netlify/functions/server"
   status = 200
