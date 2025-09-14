@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
@@ -39,6 +39,7 @@ export default function RecipesRoute() {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [hideCompleted, setHideCompleted] = useState(false);
+  const [searchResults, setSearchResults] = useState<Item[]>(items);
   
   // Use persistent recipe selection
   const {
@@ -58,6 +59,10 @@ export default function RecipesRoute() {
 
   // Debounce search query to prevent excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const debouncedQuantity = useDebounce(targetQuantity, 200);
+
+  // Create a stable key for inventory to avoid triggering recalcs on referential changes
+  const inventoryKey = useMemo(() => JSON.stringify(combinedInventory), [combinedInventory]);
 
   // Fetch search results when debounced query changes
   useEffect(() => {
@@ -70,59 +75,44 @@ export default function RecipesRoute() {
   const handleItemSelect = (item: Item) => {
     updateSelectedItem(item);
     setSearchQuery(item.name);
-    
-    const formData = new FormData();
-    formData.append("itemId", item.id);
-    formData.append("quantity", targetQuantity.toString());
-    formData.append("inventory", JSON.stringify(combinedInventory));
-    
-    calculationFetcher.submit(formData, {
-      method: "post",
-      action: "/api/recipes/calculate",
-    });
+    // Calculation is triggered by the effect that watches selectedItem/id, debouncedQuantity, and inventoryKey
   };
 
   const handleQuantityChange = (newQuantity: number) => {
     updateTargetQuantity(newQuantity);
-    
-    if (selectedItem) {
-      const formData = new FormData();
-      formData.append("itemId", selectedItem.id);
-      formData.append("quantity", newQuantity.toString());
-      formData.append("inventory", JSON.stringify(combinedInventory));
-      
-      calculationFetcher.submit(formData, {
-        method: "post",
-        action: "/api/recipes/calculate",
-      });
-    }
+    // Calculation is triggered by the effect
   };
 
   const breakdown = (calculationFetcher.data as any)?.breakdown || [];
-  const isLoading = calculationFetcher.state === "loading";
-  
-  // Get search results from search fetcher
-  const searchResults = (searchFetcher.data as any)?.items || items;
+  const isLoading = calculationFetcher.state !== "idle";
 
   // Filter breakdown based on hideCompleted state
   const filteredBreakdown = hideCompleted 
     ? breakdown.filter((item: RecipeBreakdownItem) => item.deficit > 0)
     : breakdown;
 
-  // Auto-calculate when component loads with persisted selection
+  // Auto-calculate when inputs change (debounced) to avoid duplicate submits
   useEffect(() => {
-    if (selectedItem && calculationFetcher.state === "idle" && combinedInventory.length >= 0) {
-      const formData = new FormData();
-      formData.append("itemId", selectedItem.id);
-      formData.append("quantity", targetQuantity.toString());
-      formData.append("inventory", JSON.stringify(combinedInventory));
-      
-      calculationFetcher.submit(formData, {
-        method: "post",
-        action: "/api/recipes/calculate",
-      });
+    if (!selectedItem) return;
+    const formData = new FormData();
+    formData.append("itemId", selectedItem.id);
+    formData.append("quantity", String(debouncedQuantity));
+    formData.append("inventory", inventoryKey);
+    calculationFetcher.submit(formData, {
+      method: "post",
+      action: "/api/recipes/calculate",
+    });
+  }, [selectedItem?.id, debouncedQuantity, inventoryKey]);
+
+  // Keep last good search results to prevent flicker during fetcher transitions
+  useEffect(() => {
+    const data = (searchFetcher.data as any)?.items as Item[] | undefined;
+    if (data) {
+      setSearchResults(data);
+    } else if (debouncedSearchQuery.length <= 2) {
+      setSearchResults(items);
     }
-  }, [selectedItem, calculationFetcher.state, combinedInventory, targetQuantity]);
+  }, [searchFetcher.data, debouncedSearchQuery, items]);
 
 
   return (

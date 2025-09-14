@@ -8,7 +8,6 @@ interface RecipeSelection {
 }
 
 const RECIPE_SELECTION_KEY = "recipeSelection"
-const STALENESS_THRESHOLD = 24 * 60 * 60 * 1000 // 24 hours
 
 export function useRecipeSelection() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
@@ -20,8 +19,6 @@ export function useRecipeSelection() {
       const saved = localStorage.getItem(RECIPE_SELECTION_KEY)
       if (saved) {
         const selection: RecipeSelection = JSON.parse(saved)
-        const now = Date.now()
-
         setSelectedItem(selection.selectedItem)
         setTargetQuantity(selection.targetQuantity)
       }
