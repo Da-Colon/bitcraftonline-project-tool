@@ -151,7 +151,7 @@ export function RecipeOverview({
                 </Button>
                 <Button
                   as={RemixLink}
-                  to="/dashboard"
+                  to="/"
                   leftIcon={<Icon as={CheckCircleIcon} />}
                   variant="outline"
                   colorScheme="green"

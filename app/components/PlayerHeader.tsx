@@ -5,13 +5,11 @@ import {
   HStack,
   Link,
   Spinner,
-  Text,
   Tooltip,
   useToast,
   IconButton,
   Tag,
   TagLabel,
-  TagLeftIcon,
   Circle,
   Menu,
   MenuButton,
@@ -72,8 +70,6 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
     switch (location.pathname) {
       case "/":
         return "Home"
-      case "/dashboard":
-        return "Dashboard"
       case "/inventory":
         return "Manage Personal Inventories"
       case "/claim-inventories":

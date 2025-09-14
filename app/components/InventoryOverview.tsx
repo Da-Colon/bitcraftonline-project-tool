@@ -152,7 +152,7 @@ export function InventoryOverview({
 
                 <Button
                   as={RemixLink}
-                  to="/dashboard"
+                  to="/"
                   leftIcon={<Icon as={SettingsIcon} />}
                   variant="outline"
                   colorScheme="blue"

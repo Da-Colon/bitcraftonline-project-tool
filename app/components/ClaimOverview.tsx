@@ -45,9 +45,7 @@ export function ClaimOverview({
 
   // Calculate building types
   const buildingTypes = new Set(
-    claimData.inventories
-      .map(inv => inv.buildingName)
-      .filter(Boolean)
+    claimData.inventories.map((inv) => inv.buildingName).filter(Boolean)
   ).size
 
   // Calculate tracking progress
@@ -79,9 +77,7 @@ export function ClaimOverview({
             <Stat>
               <StatLabel>Total Buildings</StatLabel>
               <StatNumber color="purple.500">{totalInventories}</StatNumber>
-              <StatHelpText>
-                {trackedCount} tracked
-              </StatHelpText>
+              <StatHelpText>{trackedCount} tracked</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
@@ -91,9 +87,7 @@ export function ClaimOverview({
             <Stat>
               <StatLabel>Total Items</StatLabel>
               <StatNumber color="green.500">{totalItems.toLocaleString()}</StatNumber>
-              <StatHelpText>
-                {totalUniqueItems} unique types
-              </StatHelpText>
+              <StatHelpText>{totalUniqueItems} unique types</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
@@ -103,9 +97,7 @@ export function ClaimOverview({
             <Stat>
               <StatLabel>High Tier Items</StatLabel>
               <StatNumber color="orange.500">{highTierItems.toLocaleString()}</StatNumber>
-              <StatHelpText>
-                Tier 4 & 5 materials
-              </StatHelpText>
+              <StatHelpText>Tier 4 & 5 materials</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
@@ -132,7 +124,7 @@ export function ClaimOverview({
               <Text fontSize="lg" fontWeight="bold">
                 Quick Actions
               </Text>
-              
+
               <VStack spacing={3} align="stretch">
                 <HStack spacing={3}>
                   <Button
@@ -156,7 +148,7 @@ export function ClaimOverview({
                     Untrack All
                   </Button>
                 </HStack>
-                
+
                 <Button
                   size="sm"
                   colorScheme="purple"
@@ -166,12 +158,12 @@ export function ClaimOverview({
                 >
                   Change Claim
                 </Button>
-                
+
                 <Divider />
-                
+
                 <Button
                   as={RemixLink}
-                  to="/dashboard"
+                  to="/"
                   leftIcon={<Icon as={SettingsIcon} />}
                   variant="outline"
                   colorScheme="blue"
@@ -203,7 +195,7 @@ export function ClaimOverview({
               <Text fontSize="lg" fontWeight="bold">
                 Claim Information
               </Text>
-              
+
               <VStack spacing={3} align="stretch">
                 <Box>
                   <Text fontSize="sm" color="gray.500" mb={1}>
@@ -213,15 +205,15 @@ export function ClaimOverview({
                     {claimData.claimName}
                   </Text>
                 </Box>
-                
+
                 <Box>
                   <Text fontSize="sm" color="gray.500" mb={1}>
                     Claim ID:
                   </Text>
                   <Tooltip label="Click to copy" placement="top">
-                    <Text 
-                      fontSize="sm" 
-                      fontFamily="mono" 
+                    <Text
+                      fontSize="sm"
+                      fontFamily="mono"
                       color="blue.600"
                       cursor="pointer"
                       _hover={{ textDecoration: "underline" }}
@@ -238,18 +230,14 @@ export function ClaimOverview({
                   <Text fontSize="sm" color="gray.600">
                     Building Types:
                   </Text>
-                  <Badge colorScheme="purple">
-                    {buildingTypes} types
-                  </Badge>
+                  <Badge colorScheme="purple">{buildingTypes} types</Badge>
                 </HStack>
 
                 <HStack justify="space-between">
                   <Text fontSize="sm" color="gray.600">
                     Storage Buildings:
                   </Text>
-                  <Badge colorScheme="blue">
-                    {totalInventories} buildings
-                  </Badge>
+                  <Badge colorScheme="blue">{totalInventories} buildings</Badge>
                 </HStack>
 
                 {mostValuableBuilding && (
@@ -285,7 +273,8 @@ export function ClaimOverview({
                   Tracking {trackedCount} of {totalInventories} claim buildings
                 </Text>
                 <Text fontSize="sm" color="purple.600">
-                  Tracked buildings will appear in your dashboard and can be used for recipe calculations.
+                  Tracked buildings will appear in your dashboard and can be used for recipe
+                  calculations.
                 </Text>
               </VStack>
             </HStack>
