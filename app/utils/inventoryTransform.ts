@@ -69,6 +69,7 @@ function transformPockets(
         tier: gameItem?.tier,
         category: gameItem?.tag,
         rarity: gameItem?.rarityStr,
+        iconAssetName: gameItem?.iconAssetName,
       }
     })
 }

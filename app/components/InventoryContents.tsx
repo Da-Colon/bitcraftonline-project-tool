@@ -1,23 +1,24 @@
-import { SimpleGrid, Box, Text, HStack, Badge } from "@chakra-ui/react";
-import type { InventoryItem } from "~/types/inventory";
-import { InventoryTierTable } from "~/components/InventoryTierTable";
+import { SimpleGrid, Box, Text, HStack, Badge } from "@chakra-ui/react"
+import type { InventoryItem } from "~/types/inventory"
+import { InventoryTierTable } from "~/components/InventoryTierTable"
+import { GameDataIcon } from "~/components/GameDataIcon"
 
 interface InventoryContentsProps {
-  items: InventoryItem[];
-  viewMode?: 'list' | 'tier';
+  items: InventoryItem[]
+  viewMode?: "list" | "tier"
 }
 
-export function InventoryContents({ items, viewMode = 'list' }: InventoryContentsProps) {
+export function InventoryContents({ items, viewMode = "list" }: InventoryContentsProps) {
   if (items.length === 0) {
     return (
       <Text color="text.muted" textAlign="center" py={4}>
         This inventory is empty
       </Text>
-    );
+    )
   }
 
-  if (viewMode === 'tier') {
-    return <InventoryTierTable items={items} />;
+  if (viewMode === "tier") {
+    return <InventoryTierTable items={items} />
   }
 
   return (
@@ -33,9 +34,16 @@ export function InventoryContents({ items, viewMode = 'list' }: InventoryContent
             borderColor="border.secondary"
           >
             <HStack justify="space-between" align="center">
-              <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
-                {item.name || item.itemId}
-              </Text>
+              <HStack spacing={2} flex={1} minW={0}>
+                <GameDataIcon
+                  iconAssetName={item.iconAssetName}
+                  alt={item.name || item.itemId}
+                  size="20px"
+                />
+                <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                  {item.name || item.itemId}
+                </Text>
+              </HStack>
               <Badge variant="solid" colorScheme="green" fontSize="xs">
                 {item.quantity}
               </Badge>
@@ -55,8 +63,8 @@ export function InventoryContents({ items, viewMode = 'list' }: InventoryContent
               </HStack>
             )}
           </Box>
-        );
+        )
       })}
     </SimpleGrid>
-  );
+  )
 }

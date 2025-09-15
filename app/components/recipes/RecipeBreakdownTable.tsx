@@ -8,11 +8,13 @@ import {
   TableContainer,
   Badge,
   Text,
-} from "@chakra-ui/react";
-import type { RecipeBreakdownItem } from "~/types/recipes";
+  HStack,
+} from "@chakra-ui/react"
+import type { RecipeBreakdownItem } from "~/types/recipes"
+import { GameDataIcon } from "~/components/GameDataIcon"
 
 interface RecipeBreakdownTableProps {
-  breakdown: RecipeBreakdownItem[];
+  breakdown: RecipeBreakdownItem[]
 }
 
 export function RecipeBreakdownTable({ breakdown }: RecipeBreakdownTableProps) {
@@ -33,7 +35,12 @@ export function RecipeBreakdownTable({ breakdown }: RecipeBreakdownTableProps) {
         <Tbody>
           {breakdown.map((item) => (
             <Tr key={item.itemId}>
-              <Td fontWeight="medium">{item.name}</Td>
+              <Td>
+                <HStack spacing={2}>
+                  <GameDataIcon iconAssetName={item.iconAssetName} alt={item.name} size="16px" />
+                  <Text fontWeight="medium">{item.name}</Text>
+                </HStack>
+              </Td>
               <Td>
                 <Badge colorScheme="blue" size="sm">
                   T{item.tier}
@@ -61,5 +68,5 @@ export function RecipeBreakdownTable({ breakdown }: RecipeBreakdownTableProps) {
         </Tbody>
       </Table>
     </TableContainer>
-  );
+  )
 }

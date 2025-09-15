@@ -33,9 +33,11 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
           ? inventoryMap.get(targetItemId.replace(/^item_/, ""))
           : inventoryMap.get(`item_${targetItemId}`)
         console.debug(
-          `[EnhancedRecipeCalculator] calc start: target=${targetItemId} qty=${targetQuantity} invCount=${inventory.length} mapSize=${inventoryMap.size} match=${direct ?? fallback ?? 0} sampleKeys=${JSON.stringify(
-            sampleKeys,
-          )}`,
+          `[EnhancedRecipeCalculator] calc start: target=${targetItemId} qty=${targetQuantity} invCount=${
+            inventory.length
+          } mapSize=${inventoryMap.size} match=${
+            direct ?? fallback ?? 0
+          } sampleKeys=${JSON.stringify(sampleKeys)}`
         )
       } catch {
         // ignore debug errors
@@ -76,7 +78,9 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
           .filter((b) => (inventoryMap.get(b.itemId) || 0) > 0)
           .slice(0, 10)
           .map((b) => ({ id: b.itemId, have: inventoryMap.get(b.itemId)!, need: b.recipeRequired }))
-        console.debug(`[EnhancedRecipeCalculator] calc end: matchedItemsSample=${JSON.stringify(matched)}`)
+        console.debug(
+          `[EnhancedRecipeCalculator] calc end: matchedItemsSample=${JSON.stringify(matched)}`
+        )
       } catch {
         // ignore debug errors
       }
@@ -135,6 +139,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         actualRequired: quantity,
         currentInventory: 0,
         deficit: quantity,
+        iconAssetName: item.iconAssetName,
       })
     }
 

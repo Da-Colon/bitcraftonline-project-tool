@@ -53,6 +53,7 @@ export interface InventoryItem {
   tier?: number
   category?: string
   rarity?: string
+  iconAssetName?: string
 }
 
 export interface Inventory {

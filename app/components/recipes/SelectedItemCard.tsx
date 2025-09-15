@@ -15,6 +15,7 @@ import {
   NumberDecrementStepper,
 } from "@chakra-ui/react"
 import type { Item } from "~/types/recipes"
+import { GameDataIcon } from "~/components/GameDataIcon"
 
 interface SelectedItemCardProps {
   selectedItem: Item
@@ -51,6 +52,11 @@ export function SelectedItemCard({
         <VStack spacing={6} align="stretch">
           {/* Item Info Section */}
           <HStack spacing={4} align="center">
+            <GameDataIcon
+              iconAssetName={selectedItem.iconAssetName}
+              alt={selectedItem.name}
+              size="40px"
+            />
             <VStack align="start" spacing={2} flex={1}>
               <Text fontSize="xl" fontWeight="bold" color="gray.800">
                 {selectedItem.name}
