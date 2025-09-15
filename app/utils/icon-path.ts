@@ -5,12 +5,11 @@
 /**
  * Converts a GameData icon_asset_name to a usable asset path
  *
- * Handles various patterns (all assets are flattened to /assets/ root):
- * - "GeneratedIcons/Items/AncientGear" -> "/assets/AncientGear.png"
- * - "GeneratedIcons/Other/Buildings/Stockpile/StockpileSmallT1" -> "/assets/StockpileSmallT1.png"
- * - "Items/HexCoin[,3,10,500]" -> "/assets/HexCoin.png"
- * - "GeneratedIcons/Cargo/Animals/GrassBird" -> "/assets/GrassBird.png"
- * - "GeneratedIcons/Other/GeneratedIcons/Items/Tools/FerralithAxe" -> "/assets/FerralithAxe.png"
+ * Handles various patterns (assets maintain directory structure):
+ * - "GeneratedIcons/Items/AncientGear" -> "/assets/GeneratedIcons/Items/AncientGear.png"
+ * - "GeneratedIcons/Other/GeneratedIcons/Items/Tools/LuminiteAxe" -> "/assets/GeneratedIcons/Items/Tools/LuminiteAxe.png" (cleans duplicated paths)
+ * - "Items/HexCoin[,3,10,500]" -> "/assets/GeneratedIcons/Items/HexCoin.png" (removes brackets, adds GeneratedIcons prefix)
+ * - "GeneratedIcons/Cargo/Animals/GrassBird" -> "/assets/GeneratedIcons/Cargo/GrassBird.png"
  * - "\\u0018" -> null (invalid/empty)
  * - "" -> null (empty)
  * - undefined/null -> null
@@ -30,16 +29,6 @@ export function convertIconAssetNameToPath(
 
   let cleanPath = iconAssetName.trim()
 
-  // Remove all instances of "GeneratedIcons/" from anywhere in the path
-  while (cleanPath.includes("GeneratedIcons/")) {
-    cleanPath = cleanPath.replace("GeneratedIcons/", "")
-  }
-
-  // Remove all directory paths - we only want the filename since all assets are flattened
-  // Handle paths like "Other/Items/Tools/FerralithAxe" -> "FerralithAxe"
-  const pathParts = cleanPath.split("/")
-  cleanPath = pathParts[pathParts.length - 1] // Get the last part (filename)
-
   // Handle special cases with brackets (like "HexCoin[,3,10,500]")
   // Remove everything from the first '[' onwards
   const bracketIndex = cleanPath.indexOf("[")
@@ -47,12 +36,30 @@ export function convertIconAssetNameToPath(
     cleanPath = cleanPath.substring(0, bracketIndex)
   }
 
+  // Clean up duplicated "GeneratedIcons/" paths that appear in the GameData
+  // Handle cases like "GeneratedIcons/Other/GeneratedIcons/Items/Tools/T1_FlintAxe"
+  // This should become "GeneratedIcons/Items/Tools/T1_FlintAxe"
+  while (cleanPath.includes("GeneratedIcons/Other/GeneratedIcons/")) {
+    cleanPath = cleanPath.replace("GeneratedIcons/Other/GeneratedIcons/", "GeneratedIcons/")
+  }
+
+  // Also handle cases where there are multiple GeneratedIcons without the "Other" part
+  while (cleanPath.includes("GeneratedIcons/GeneratedIcons/")) {
+    cleanPath = cleanPath.replace("GeneratedIcons/GeneratedIcons/", "GeneratedIcons/")
+  }
+
+  // Handle paths that don't start with "GeneratedIcons/" but should be in GeneratedIcons/Items/
+  // This handles cases like "Items/HexCoin" -> "GeneratedIcons/Items/HexCoin"
+  if (!cleanPath.startsWith("GeneratedIcons/") && cleanPath.startsWith("Items/")) {
+    cleanPath = `GeneratedIcons/${cleanPath}`
+  }
+
   // Add .png extension if not already present
   if (!cleanPath.endsWith(".png")) {
     cleanPath += ".png"
   }
 
-  // Return the full asset path (all files are now in the root of /assets/)
+  // Return the full asset path maintaining directory structure
   return `/assets/${cleanPath}`
 }
 
@@ -64,8 +71,31 @@ export function isValidIconAssetName(iconAssetName: string | undefined | null): 
 }
 
 /**
+ * Gets alternative icon paths to try when the primary path doesn't exist
+ * This handles the case where some icons might be in OldGeneratedIcons instead of GeneratedIcons
+ */
+export function getAlternativeIconPaths(iconAssetName: string | undefined | null): string[] {
+  const primaryPath = convertIconAssetNameToPath(iconAssetName)
+  if (!primaryPath) return []
+
+  const alternatives: string[] = []
+
+  // If the primary path uses GeneratedIcons, try OldGeneratedIcons
+  if (primaryPath.includes("/GeneratedIcons/")) {
+    alternatives.push(primaryPath.replace("/GeneratedIcons/", "/OldGeneratedIcons/"))
+  }
+
+  // If the primary path uses OldGeneratedIcons, try GeneratedIcons
+  if (primaryPath.includes("/OldGeneratedIcons/")) {
+    alternatives.push(primaryPath.replace("/OldGeneratedIcons/", "/GeneratedIcons/"))
+  }
+
+  return alternatives
+}
+
+/**
  * Gets a fallback icon path for when the main icon is not available
  */
 export function getFallbackIconPath(): string {
-  return "/assets/IconsAtlas.png" // Use the atlas as fallback (served from public/assets folder)
+  return "/assets/Unknown.png" // Use the Unknown icon as fallback
 }

@@ -9,7 +9,6 @@
     "dev": "remix vite:dev",
     "start": "netlify serve",
     "typecheck": "tsc",
-    "data:extract": "node scripts/extract-bitcraft-data.mjs",
     "test:data": "node scripts/tests/test-bitcraft-data.mjs",
     "test:search": "node scripts/tests/test-search.mjs",
     "test:recipes": "node scripts/tests/test-recipe-calculator.mjs"

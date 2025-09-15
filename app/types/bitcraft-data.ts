@@ -56,7 +56,7 @@ export interface ParsedItem {
   category: string // Mapped category
   tier: number // Item tier
   stackSize: number // Stack size (defaulted since not in BitCraft data)
-  iconAssetName?: string // Icon asset name from GameData
+  iconAssetName: string // Icon asset name
 }
 
 export interface ParsedRecipeInput {

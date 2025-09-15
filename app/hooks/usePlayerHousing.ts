@@ -115,6 +115,7 @@ function transformHousingToInventories(
           tier: itemInfo?.tier,
           category: itemInfo?.tag,
           rarity: itemInfo?.rarityStr,
+          iconAssetName: itemInfo?.iconAssetName,
         }
       })
 

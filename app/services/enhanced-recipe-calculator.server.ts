@@ -1,5 +1,6 @@
 import type { RecipeBreakdownItem, TierCalculationResult, InventoryItem } from "~/types/recipes"
 import { RecipeCalculator } from "./recipe-calculator.server"
+import { enhanceItemWithIcon } from "~/services/gamedata-icon-lookup.server"
 
 export class EnhancedRecipeCalculator extends RecipeCalculator {
   /**
@@ -130,16 +131,19 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     if (existing) {
       existing.recipeRequired += quantity
     } else {
+      // Enhance the item to ensure it has iconAssetName
+      const enhancedItem = enhanceItemWithIcon(item)
+
       breakdown.set(itemId, {
         itemId,
-        name: item.name,
-        tier: item.tier,
-        category: item.category,
+        name: enhancedItem.name,
+        tier: enhancedItem.tier,
+        category: enhancedItem.category,
         recipeRequired: quantity,
         actualRequired: quantity,
         currentInventory: 0,
         deficit: quantity,
-        iconAssetName: item.iconAssetName,
+        iconAssetName: enhancedItem.iconAssetName,
       })
     }
 

@@ -1,8 +1,12 @@
-import { Image, Box, type ImageProps, type BoxProps } from "@chakra-ui/react"
-import { useState } from "react"
-import { convertIconAssetNameToPath, getFallbackIconPath } from "~/utils/icon-path"
+import { Box, Image, type BoxProps } from "@chakra-ui/react"
+import { useState, useMemo, useEffect } from "react"
+import {
+  convertIconAssetNameToPath,
+  getFallbackIconPath,
+  getAlternativeIconPaths,
+} from "~/utils/icon-path"
 
-interface GameDataIconProps extends Omit<ImageProps, "src" | "alt" | "fallback"> {
+interface GameDataIconProps {
   /**
    * The icon_asset_name from GameData JSON files
    */
@@ -48,46 +52,55 @@ export function GameDataIcon({
   showFallback = true,
   fallback,
   boxProps,
-  ...imageProps
 }: GameDataIconProps) {
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [currentPathIndex, setCurrentPathIndex] = useState(0)
 
-  const iconPath = convertIconAssetNameToPath(iconAssetName)
+  const allPaths = useMemo(() => {
+    const iconPath = convertIconAssetNameToPath(iconAssetName)
+    const alternativePaths = getAlternativeIconPaths(iconAssetName)
+    const paths = iconPath ? [iconPath, ...alternativePaths] : []
+
+    return paths
+  }, [iconAssetName])
+
   const fallbackPath = getFallbackIconPath()
+  const currentPath = allPaths[currentPathIndex]
 
-  // Debug logging for missing files
-  if (iconPath && typeof window !== "undefined" && hasError) {
-    console.warn(`Failed to load icon: ${iconPath}`)
-  }
+  // Reset state when iconAssetName changes
+  useEffect(() => {
+    setCurrentPathIndex(0)
+    setHasError(false)
+    setIsLoading(true)
+  }, [iconAssetName])
+
+  // Shared placeholder component
+  const PlaceholderIcon = () => (
+    <Box
+      display="inline-flex"
+      alignItems="center"
+      justifyContent="center"
+      width={size}
+      height={size}
+      bg="gray.100"
+      borderRadius="md"
+      fontSize="xs"
+      color="gray.500"
+      {...boxProps}
+    >
+      ?
+    </Box>
+  )
 
   // If no valid icon path and no fallback, return null
-  if (!iconPath && !showFallback) {
+  if (allPaths.length === 0 && !showFallback) {
     return null
   }
 
   // If no valid icon path, show fallback immediately
-  if (!iconPath) {
-    if (fallback) {
-      return <>{fallback}</>
-    }
-
-    return (
-      <Box
-        display="inline-flex"
-        alignItems="center"
-        justifyContent="center"
-        width={size}
-        height={size}
-        bg="gray.100"
-        borderRadius="md"
-        fontSize="xs"
-        color="gray.500"
-        {...boxProps}
-      >
-        ?
-      </Box>
-    )
+  if (allPaths.length === 0) {
+    return fallback ? <>{fallback}</> : <PlaceholderIcon />
   }
 
   const handleLoad = () => {
@@ -97,6 +110,15 @@ export function GameDataIcon({
 
   const handleError = () => {
     setIsLoading(false)
+
+    // Try the next alternative path if available
+    if (currentPathIndex < allPaths.length - 1) {
+      setCurrentPathIndex(currentPathIndex + 1)
+      setHasError(false) // Reset error state to try the next path
+      setIsLoading(true)
+      return
+    }
+
     setHasError(true)
   }
 
@@ -115,42 +137,30 @@ export function GameDataIcon({
         height={size}
         objectFit="contain"
         onError={() => {
-          // If even the fallback fails, we'll show a placeholder
+          // If even the fallback fails, the Image component will show its fallback
         }}
-        fallback={
-          <Box
-            display="inline-flex"
-            alignItems="center"
-            justifyContent="center"
-            width={size}
-            height={size}
-            bg="gray.100"
-            borderRadius="md"
-            fontSize="xs"
-            color="gray.500"
-            {...boxProps}
-          >
-            ?
-          </Box>
-        }
-        {...imageProps}
+        fallback={<PlaceholderIcon />}
       />
     )
   }
 
   return (
-    <Image
-      src={iconPath}
-      alt={alt || "Icon"}
-      width={size}
-      height={size}
-      objectFit="contain"
-      onLoad={handleLoad}
-      onError={handleError}
-      opacity={isLoading ? 0.7 : 1}
-      transition="opacity 0.2s"
-      loading="lazy"
-      {...imageProps}
-    />
+    <Box display="inline-block" width={size} height={size} {...boxProps}>
+      <Image
+        key={`${iconAssetName}-${currentPathIndex}`}
+        src={currentPath}
+        alt={alt || "Icon"}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+          opacity: isLoading ? 0.7 : 1,
+          transition: "opacity 0.2s",
+          display: "block",
+        }}
+        onLoad={handleLoad}
+        onError={handleError}
+      />
+    </Box>
   )
 }
