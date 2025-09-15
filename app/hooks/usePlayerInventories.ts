@@ -55,13 +55,21 @@ export function usePlayerInventories(playerId?: string) {
   }, [playerId])
 
   // Combine regular inventories with housing inventories
-  const combinedInventories: PlayerInventories | null =
-    inventories && housingInventories
-      ? {
-          ...inventories,
-          housing: housingInventories.housing,
-        }
-      : inventories
+  const combinedInventories: PlayerInventories | null = (() => {
+    if (!inventories && !housingInventories) return null
+    
+    const base: PlayerInventories = inventories || {
+      personal: [],
+      banks: [],
+      storage: [],
+      recovery: [],
+    }
+    
+    return {
+      ...base,
+      housing: housingInventories?.housing || [],
+    }
+  })()
 
   // Combine loading states and errors
   const combinedLoading = loading || housingLoading
