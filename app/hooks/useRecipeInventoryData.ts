@@ -3,6 +3,7 @@ import { usePlayerInventorySelections } from "./usePlayerInventorySelections"
 import { useSelectedPlayer } from "./useSelectedPlayer"
 import { useSelectedClaim } from "./useSelectedClaim"
 import { useClaimInventories } from "./useClaimInventories"
+import { usePlayerInventories } from "./usePlayerInventories"
 import type { InventoryItem } from "~/types/recipes"
 import type { PlayerInventoryResponse } from "~/routes/api.player.inventory"
 
@@ -16,8 +17,11 @@ export function useRecipeInventoryData() {
   const { claim } = useSelectedClaim()
   const { inventories: claimInventories } = useClaimInventories(claim?.claimId)
 
-  // Prefer the first player that has saved selections; otherwise fall back to the currently selected player
+  // Get selected player and their inventories (including housing)
   const { player } = useSelectedPlayer()
+  const { inventories: playerInventories } = usePlayerInventories(player?.entityId)
+
+  // Prefer the first player that has saved selections; otherwise fall back to the currently selected player
   const firstPlayerWithSelections = useMemo(() => {
     const playerNames = Object.keys(playerSelections.selections)
     return playerNames.length > 0 ? playerNames[0] : null
@@ -29,10 +33,13 @@ export function useRecipeInventoryData() {
     return playerSelections.getPlayerSelections(firstPlayerWithSelections)
   }, [firstPlayerWithSelections, playerSelections])
 
-  // Load player inventory data when player is selected
+  // Load player inventory data when player is selected (fallback for legacy API)
   useEffect(() => {
-    if (!activePlayerName) {
-      setPlayerInventoryData(null)
+    if (!activePlayerName || playerInventories) {
+      // If we have playerInventories from the new hook, don't fetch from legacy API
+      if (playerInventories) {
+        setPlayerInventoryData(null)
+      }
       return
     }
 
@@ -53,7 +60,7 @@ export function useRecipeInventoryData() {
     }
 
     fetchPlayerData()
-  }, [activePlayerName])
+  }, [activePlayerName, playerInventories])
 
   // Combine all inventory data into a single inventory list for calculator
   const combinedInventory = useMemo((): InventoryItem[] => {
@@ -66,8 +73,26 @@ export function useRecipeInventoryData() {
       totals.set(id, (totals.get(id) || 0) + qty)
     }
 
-    // From player inventories: include only selected inventory categories
-    if (playerInventoryData) {
+    // From player inventories: use new hook data (includes housing) if available, otherwise fallback to legacy API
+    if (playerInventories) {
+      // Use the new playerInventories hook that includes housing
+      const selected = currentPlayerSelections?.selectedInventories
+      const allInventoryTypes = ['personal', 'banks', 'storage', 'recovery', 'housing']
+      const sources = Array.isArray(selected) && selected.length > 0
+        ? selected
+        : allInventoryTypes
+
+      for (const source of sources) {
+        const inventoryList = playerInventories[source as keyof typeof playerInventories]
+        if (!inventoryList) continue
+        for (const inventory of inventoryList) {
+          for (const item of inventory.items) {
+            add(item.itemId, item.quantity)
+          }
+        }
+      }
+    } else if (playerInventoryData) {
+      // Fallback to legacy API data (doesn't include housing)
       const selected = currentPlayerSelections?.selectedInventories
       const sources = Array.isArray(selected) && selected.length > 0
         ? selected
@@ -91,7 +116,7 @@ export function useRecipeInventoryData() {
     }
 
     return Array.from(totals.entries()).map(([itemId, quantity]) => ({ itemId, quantity }))
-  }, [playerInventoryData, currentPlayerSelections, claimInventories])
+  }, [playerInventories, playerInventoryData, currentPlayerSelections, claimInventories])
 
   return {
     combinedInventory,
