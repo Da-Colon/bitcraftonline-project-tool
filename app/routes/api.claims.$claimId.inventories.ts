@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
 import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server"
+import { normalizeItemId } from "~/utils/itemId"
 
 interface BitJitaInventorySlot {
   locked: boolean
@@ -66,7 +67,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
             building.inventory?.map((slot: BitJitaInventorySlot) => {
               const itemData = itemsMap.get(slot.contents.item_id)
               return {
-                itemId: slot.contents.item_id.toString(),
+                itemId: normalizeItemId(slot.contents.item_id),
                 name: itemData?.name || `Item ${slot.contents.item_id}`,
                 quantity: slot.contents.quantity,
                 tier: itemData?.tier || 0,

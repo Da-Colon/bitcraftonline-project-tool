@@ -1,34 +1,21 @@
-import { Box, Text, VStack, Badge, HStack, Divider, Button, useToast } from "@chakra-ui/react"
-import { usePlayerInventories } from "~/hooks/usePlayerInventories"
-import { useClaimInventories } from "~/hooks/useClaimInventories"
-import { useTrackedInventories } from "~/hooks/useTrackedInventories"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { useSelectedClaim } from "~/hooks/useSelectedClaim"
-import { combineAllTrackedInventories } from "~/utils/combineAllTrackedInventories"
+import { Box, Text, VStack, HStack, Button, useToast } from "@chakra-ui/react"
+import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
 import { InventoryTierTable } from "~/components/InventoryTierTable"
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 
 export function TrackedInventoryView() {
-  const { player } = useSelectedPlayer()
-  const { claim } = useSelectedClaim()
   const {
-    inventories: playerInventories,
-    loading: playerLoading,
-    error: playerError,
-  } = usePlayerInventories(player?.entityId)
-  const {
-    inventories: claimInventories,
-    loading: claimLoading,
-    error: claimError,
-  } = useClaimInventories(claim?.claimId)
-  const { trackedInventories, clearAll } = useTrackedInventories()
+    player,
+    loading,
+    error,
+    trackedInventoryIds,
+    combinedItems,
+    clearAll,
+  } = useTrackedInventorySummary()
   const toast = useToast()
 
   // Don't render if no player is selected
   if (!player) return null
-
-  const loading = playerLoading || claimLoading
-  const error = playerError || claimError
 
   if (loading) {
     return (
@@ -61,7 +48,7 @@ export function TrackedInventoryView() {
     })
   }
 
-  if (trackedInventories.size === 0) {
+  if (trackedInventoryIds.size === 0) {
     return (
       <Box
         p={6}
@@ -106,12 +93,6 @@ export function TrackedInventoryView() {
     )
   }
 
-  const combinedItems = combineAllTrackedInventories(
-    playerInventories || { personal: [], banks: [], storage: [], recovery: [] },
-    claimInventories,
-    trackedInventories
-  )
-
   if (combinedItems.length === 0) {
     return (
       <Box p={4} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
@@ -130,11 +111,6 @@ export function TrackedInventoryView() {
     tier: item.tier,
     quantity: item.totalQuantity,
   }))
-
-  const totalItems = combinedItems.reduce(
-    (sum: number, item: CombinedInventoryItem) => sum + item.totalQuantity,
-    0
-  )
 
   return (
     <Box>

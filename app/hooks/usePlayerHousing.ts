@@ -6,6 +6,7 @@ import type {
   Inventory,
   InventoryItem,
 } from "~/types/inventory"
+import { normalizeItemId } from "~/utils/itemId"
 
 export function usePlayerHousing(playerId?: string) {
   const [housingData, setHousingData] = useState<BitJitaHousingResponse | null>(null)
@@ -109,7 +110,7 @@ function transformHousingToInventories(
         const itemInfo = housing.items.find((i) => i.id === item.contents.item_id)
 
         return {
-          itemId: String(item.contents.item_id),
+          itemId: normalizeItemId(item.contents.item_id),
           quantity: item.contents.quantity,
           name: itemInfo?.name,
           tier: itemInfo?.tier,

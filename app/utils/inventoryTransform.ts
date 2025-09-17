@@ -5,6 +5,7 @@ import type {
   Inventory,
   InventoryItem,
 } from "~/types/inventory"
+import { normalizeItemId } from "~/utils/itemId"
 
 export function transformBitJitaInventories(
   response: BitJitaInventoriesResponse
@@ -59,7 +60,7 @@ function transformPockets(
   return pockets
     .filter((pocket) => pocket.contents) // Only include pockets with contents
     .map((pocket) => {
-      const itemId = pocket.contents.itemId.toString()
+      const itemId = normalizeItemId(pocket.contents.itemId)
       const gameItem = items[itemId] || cargos?.[itemId]
 
       return {

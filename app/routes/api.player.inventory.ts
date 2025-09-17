@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node"
 import { BitJita } from "~/utils/bitjita.server"
 import type { BitJitaInventoriesResponse } from "~/utils/bitjita.server"
 import { getGameDataIconLookup } from "~/services/gamedata-icon-lookup.server"
+import { normalizeItemId } from "~/utils/itemId"
 
 export interface PlayerInventoryItem {
   itemId: string
@@ -123,11 +124,8 @@ async function fetchPlayerInventoryFromBitJita(
     for (const pocket of inventory.pockets) {
       if (!pocket.contents) continue
 
-      const itemId = String(pocket.contents.itemId)
-      const internalId = itemId.startsWith("item_") ? itemId : `item_${itemId}`
-
       const item: PlayerInventoryItem = {
-        itemId: internalId,
+        itemId: normalizeItemId(pocket.contents.itemId),
         quantity: pocket.contents.quantity,
         location: category,
       }

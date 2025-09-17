@@ -18,19 +18,10 @@ import { PlayerHeader } from "~/components/PlayerHeader"
 import { TrackedInventoryView } from "~/components/TrackedInventoryView"
 import { DashboardOverview } from "~/components/DashboardOverview"
 import { PlayerSelectionView } from "~/components/PlayerSelectionView"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { usePlayerInventories } from "~/hooks/usePlayerInventories"
-import { useClaimInventories } from "~/hooks/useClaimInventories"
-import { useTrackedInventories } from "~/hooks/useTrackedInventories"
-import { useSelectedClaim } from "~/hooks/useSelectedClaim"
-import { combineAllTrackedInventories } from "~/utils/combineAllTrackedInventories"
+import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
 
 export function Dashboard() {
-  const { player } = useSelectedPlayer()
-  const { claim } = useSelectedClaim()
-  const { inventories: playerInventories } = usePlayerInventories(player?.entityId)
-  const { inventories: claimInventories } = useClaimInventories(claim?.claimId)
-  const { trackedInventories } = useTrackedInventories()
+  const { player, combinedItems, trackedCount, totalQuantity } = useTrackedInventorySummary()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   if (!player) {
@@ -68,15 +59,6 @@ export function Dashboard() {
     )
   }
 
-  // Calculate combined inventory data for overview
-  const combinedItems = combineAllTrackedInventories(
-    playerInventories || { personal: [], banks: [], storage: [], recovery: [] },
-    claimInventories,
-    trackedInventories
-  )
-
-  const totalItems = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0)
-
   return (
     <Box minH="100vh">
       <PlayerHeader />
@@ -94,8 +76,8 @@ export function Dashboard() {
 
           {/* Dashboard Overview */}
           <DashboardOverview
-            trackedInventoriesCount={trackedInventories.size}
-            totalItems={totalItems}
+            trackedInventoriesCount={trackedCount}
+            totalItems={totalQuantity}
             combinedItems={combinedItems}
           />
 
