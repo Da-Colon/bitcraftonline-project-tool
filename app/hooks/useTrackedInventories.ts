@@ -4,46 +4,59 @@ const TRACKED_INVENTORIES_KEY = "bitcraft-tracked-inventories"
 
 export function useTrackedInventories() {
   const [trackedInventories, setTrackedInventories] = useState<Set<string>>(new Set())
+  const [isLoaded, setIsLoaded] = useState(false)
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem(TRACKED_INVENTORIES_KEY)
-        if (stored && stored !== "[]") {
-          const parsed = JSON.parse(stored)
+    if (typeof window === "undefined") return
+
+    let storedValue: string | null = null
+    try {
+      storedValue = window.localStorage.getItem(TRACKED_INVENTORIES_KEY)
+      if (storedValue && storedValue !== "[]") {
+        const parsed = JSON.parse(storedValue)
+        if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) {
           setTrackedInventories(new Set(parsed))
+        } else {
+          console.warn("Invalid tracked inventories payload found in localStorage — resetting state", parsed)
+          window.localStorage.removeItem(TRACKED_INVENTORIES_KEY)
         }
-      } catch (error) {
-        // ignore
       }
+    } catch (error) {
+      console.warn("Failed to load tracked inventories from localStorage — clearing saved value", error)
+      if (storedValue !== null) {
+        window.localStorage.removeItem(TRACKED_INVENTORIES_KEY)
+      }
+    } finally {
+      setIsLoaded(true)
     }
   }, [])
 
   // Save to localStorage whenever trackedInventories changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const arrayToSave = Array.from(trackedInventories)
-        localStorage.setItem(TRACKED_INVENTORIES_KEY, JSON.stringify(arrayToSave))
-      } catch (error) {
-        // ignore
-      }
+    if (typeof window === "undefined" || !isLoaded) return
+
+    try {
+      const arrayToSave = Array.from(trackedInventories)
+      window.localStorage.setItem(TRACKED_INVENTORIES_KEY, JSON.stringify(arrayToSave))
+    } catch (error) {
+      console.warn("Failed to persist tracked inventories to localStorage", error)
     }
-  }, [trackedInventories])
+  }, [trackedInventories, isLoaded])
 
   const toggleTracking = useCallback((inventoryId: string) => {
     setTrackedInventories((prev) => {
       const newSet = new Set(prev)
-      if (newSet.has(inventoryId)) newSet.delete(inventoryId)
-      else newSet.add(inventoryId)
+      const id = String(inventoryId)
+      if (newSet.has(id)) newSet.delete(id)
+      else newSet.add(id)
       return newSet
     })
   }, [])
 
   const isTracked = useCallback(
     (inventoryId: string) => {
-      return trackedInventories.has(inventoryId)
+      return trackedInventories.has(String(inventoryId))
     },
     [trackedInventories]
   )
@@ -53,7 +66,7 @@ export function useTrackedInventories() {
   }, [])
 
   const trackAll = useCallback((inventoryIds: string[]) => {
-    setTrackedInventories(new Set(inventoryIds))
+    setTrackedInventories(new Set(inventoryIds.map(String)))
   }, [])
 
   const untrackAll = useCallback(() => {
@@ -67,5 +80,6 @@ export function useTrackedInventories() {
     clearAll,
     trackAll,
     untrackAll,
+    isLoaded,
   }
 }
