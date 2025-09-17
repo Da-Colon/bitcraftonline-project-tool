@@ -60,8 +60,9 @@ function transformPockets(
   return pockets
     .filter((pocket) => pocket.contents) // Only include pockets with contents
     .map((pocket) => {
+      const rawId = pocket.contents.itemId.toString()
       const itemId = normalizeItemId(pocket.contents.itemId)
-      const gameItem = items[itemId] || cargos?.[itemId]
+      const gameItem = items[rawId] || cargos?.[rawId]
 
       return {
         itemId,
