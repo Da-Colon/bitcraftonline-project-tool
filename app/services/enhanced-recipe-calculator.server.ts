@@ -53,7 +53,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     this.buildCompleteRecipeTree(targetItemId, targetQuantity, breakdown, dependencies, new Set())
     
     // Pass 2: Apply inventory reductions with dependency awareness
-    this.applyInventoryReductions(breakdown, dependencies, inventoryMap)
+    this.applyInventoryReductions(targetItemId, breakdown, dependencies, inventoryMap)
     
     if (DEBUG) {
       const duration = Date.now() - startTime
@@ -175,13 +175,46 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
    * Apply inventory reductions with dependency awareness (Pass 2)
    */
   private applyInventoryReductions(
+    rootItemId: string,
     breakdown: Map<string, RecipeBreakdownItem>,
     dependencies: Map<string, Set<string>>,
     inventoryMap: Map<string, number>
   ): void {
-    // Process items by tier (highest first) to ensure parent reductions propagate to children
-    const sortedItems = Array.from(breakdown.values()).sort((a, b) => b.tier - a.tier)
-    
+    // Track outstanding requirements per item; start with full recipe requirements
+    const remainingRequirements = new Map<string, number>()
+    for (const item of breakdown.values()) {
+      remainingRequirements.set(item.itemId, item.recipeRequired)
+    }
+
+    // Build a processing order where parents are handled before their children
+    const visited = new Set<string>()
+    const orderedIds: string[] = []
+
+    const visit = (itemId: string) => {
+      if (visited.has(itemId)) return
+      visited.add(itemId)
+      const children = dependencies.get(itemId)
+      if (children) {
+        for (const childId of children) {
+          visit(childId)
+        }
+      }
+      orderedIds.push(itemId)
+    }
+
+    visit(rootItemId)
+    // Cover any remaining nodes (in case of disconnected graphs due to merged items)
+    for (const itemId of breakdown.keys()) {
+      if (!visited.has(itemId)) {
+        visit(itemId)
+      }
+    }
+
+    const sortedItems = orderedIds
+      .reverse()
+      .map((itemId) => breakdown.get(itemId))
+      .filter((item): item is RecipeBreakdownItem => Boolean(item))
+
     for (const item of sortedItems) {
       // Get current inventory for this item (with fallback key handling)
       let currentInventory = inventoryMap.get(item.itemId) || 0
@@ -192,34 +225,58 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         currentInventory = inventoryMap.get(item.itemId.replace(/^item_/, "")) || 0
       }
 
-      // Update inventory and calculate actual requirements
-      item.currentInventory = currentInventory
-      item.actualRequired = Math.max(0, item.recipeRequired - currentInventory)
-      item.deficit = item.actualRequired
+      const originalRequired = item.recipeRequired
+      const parentAdjustedRequired = remainingRequirements.get(item.itemId) ?? originalRequired
+      const inventoryUsed = Math.min(parentAdjustedRequired, currentInventory)
+      const remainingRequired = Math.max(0, parentAdjustedRequired - inventoryUsed)
 
-      // If this item is satisfied by inventory, reduce children requirements
-      if (item.actualRequired === 0 && dependencies.has(item.itemId)) {
-        const children = dependencies.get(item.itemId)!
-        for (const childId of children) {
-          const childItem = breakdown.get(childId)
-          if (childItem) {
-            // Calculate how much of this child was needed for the parent
-            const recipe = this.getRecipe(item.itemId)
-            if (recipe) {
-              const input = recipe.inputs.find(inp => inp.itemId === childId)
-              if (input) {
-                const batchesNeeded = Math.ceil(item.recipeRequired / recipe.outputQuantity)
-                const childQuantityForParent = input.quantity * batchesNeeded
-                
-                // Reduce child's requirements by the amount no longer needed
-                childItem.recipeRequired = Math.max(0, childItem.recipeRequired - childQuantityForParent)
-                childItem.actualRequired = Math.max(0, childItem.recipeRequired - childItem.currentInventory)
-                childItem.deficit = childItem.actualRequired
-              }
-            }
-          }
-        }
+      remainingRequirements.set(item.itemId, remainingRequired)
+
+      item.currentInventory = currentInventory
+      item.actualRequired = remainingRequired
+      item.deficit = remainingRequired
+
+      const recipe = this.getRecipe(item.itemId)
+      if (!recipe || recipe.outputQuantity <= 0) {
+        continue
       }
+
+      if (!dependencies.has(item.itemId)) {
+        continue
+      }
+
+      const originalBatches = Math.ceil(originalRequired / recipe.outputQuantity)
+      const remainingBatches = Math.ceil(remainingRequired / recipe.outputQuantity)
+      const batchesReduction = Math.max(0, originalBatches - remainingBatches)
+
+      if (batchesReduction === 0 && remainingRequired === parentAdjustedRequired) {
+        continue
+      }
+
+      const children = dependencies.get(item.itemId)!
+      for (const childId of children) {
+        const childItem = breakdown.get(childId)
+        if (!childItem) continue
+
+        const input = recipe.inputs.find((inp) => inp.itemId === childId)
+        if (!input) continue
+
+        if (batchesReduction > 0) {
+          const currentChildRequirement = remainingRequirements.get(childId) ?? childItem.recipeRequired
+          const childReduction = input.quantity * batchesReduction
+          const updatedChildRequirement = Math.max(0, currentChildRequirement - childReduction)
+          remainingRequirements.set(childId, updatedChildRequirement)
+        }
+
+        // Child inventory adjustments will be handled when the child item is processed.
+      }
+    }
+
+    // After propagating reductions, ensure actual/deficit reflect final remaining requirements
+    for (const item of breakdown.values()) {
+      const remaining = remainingRequirements.get(item.itemId) ?? item.actualRequired
+      item.actualRequired = remaining
+      item.deficit = remaining
     }
   }
 
