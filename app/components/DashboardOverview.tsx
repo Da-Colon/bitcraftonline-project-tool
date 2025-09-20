@@ -1,19 +1,18 @@
 import {
-  Box,
-  SimpleGrid,
+  Badge,
   Card,
   CardBody,
+  Divider,
+  HStack,
+  SimpleGrid,
   Stat,
+  StatHelpText,
   StatLabel,
   StatNumber,
-  StatHelpText,
-  HStack,
-  VStack,
   Text,
-  Badge,
+  VStack,
   Button,
   Icon,
-  Divider,
 } from "@chakra-ui/react"
 import { ExternalLinkIcon, SettingsIcon, StarIcon } from "@chakra-ui/icons"
 import { Link as RemixLink } from "@remix-run/react"
@@ -30,7 +29,6 @@ export function DashboardOverview({
   totalItems,
   combinedItems,
 }: DashboardOverviewProps) {
-  // Calculate overview stats
   const uniqueItemTypes = combinedItems.length
   const tierCounts = combinedItems.reduce((acc, item) => {
     const tier = item.tier ?? -1
@@ -45,62 +43,65 @@ export function DashboardOverview({
     .slice(0, 3)
 
   return (
-    <VStack spacing={6} align="stretch">
-      {/* Overview Stats Cards */}
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
-        <Card>
+    <VStack spacing={{ base: 8, md: 10 }} align="stretch">
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={5}>
+        <Card bg="rgba(29, 42, 72, 0.85)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="xl">
           <CardBody>
             <Stat>
-              <StatLabel>Tracked Inventories</StatLabel>
-              <StatNumber color="blue.500">{trackedInventoriesCount}</StatNumber>
-              <StatHelpText>
-                {trackedInventoriesCount === 0 ? "No inventories tracked" : "Active tracking"}
+              <StatLabel color="whiteAlpha.900">Tracked Inventories</StatLabel>
+              <StatNumber color="white">{trackedInventoriesCount}</StatNumber>
+              <StatHelpText color="whiteAlpha.800">
+                {trackedInventoriesCount === 0 ? "Nothing synced yet" : "Personal + claim storage"}
               </StatHelpText>
             </Stat>
           </CardBody>
         </Card>
 
-        <Card>
+        <Card bg="rgba(29, 42, 72, 0.85)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="xl">
           <CardBody>
             <Stat>
-              <StatLabel>Total Items</StatLabel>
-              <StatNumber color="green.500">{totalItems.toLocaleString()}</StatNumber>
-              <StatHelpText>{uniqueItemTypes} unique types</StatHelpText>
+              <StatLabel color="whiteAlpha.900">Total Materials</StatLabel>
+              <StatNumber color="teal.100">{totalItems.toLocaleString()}</StatNumber>
+              <StatHelpText color="whiteAlpha.800">{uniqueItemTypes} unique types</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
 
-        <Card>
+        <Card bg="rgba(29, 42, 72, 0.85)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="xl">
           <CardBody>
             <Stat>
-              <StatLabel>Tier 5 Items</StatLabel>
-              <StatNumber color="purple.500">{tierCounts[5]?.toLocaleString() || 0}</StatNumber>
-              <StatHelpText>Highest tier materials</StatHelpText>
+              <StatLabel color="whiteAlpha.900">Tier 5 Stash</StatLabel>
+              <StatNumber color="purple.100">{tierCounts[5]?.toLocaleString() || 0}</StatNumber>
+              <StatHelpText color="whiteAlpha.800">
+                {highestTierItems.length} high-tier entries
+              </StatHelpText>
             </Stat>
           </CardBody>
         </Card>
 
-        <Card>
+        <Card bg="rgba(29, 42, 72, 0.85)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="xl">
           <CardBody>
             <Stat>
-              <StatLabel>Storage Efficiency</StatLabel>
-              <StatNumber color="teal.500">
+              <StatLabel color="whiteAlpha.900">Storage Efficiency</StatLabel>
+              <StatNumber color="teal.100">
                 {trackedInventoriesCount > 0 ? Math.round(totalItems / trackedInventoriesCount) : 0}
               </StatNumber>
-              <StatHelpText>Avg items per inventory</StatHelpText>
+              <StatHelpText color="whiteAlpha.800">Avg items per tracked spot</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
       </SimpleGrid>
 
-      {/* Quick Actions and Valuable Items */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-        {/* Quick Actions Card */}
-        <Card>
+        <Card bg="rgba(24, 35, 60, 0.9)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="2xl">
           <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold" mb={2}>
-                Quick Actions
+            <VStack align="stretch" spacing={5}>
+              <Text fontSize="lg" fontWeight="bold" color="white">
+                Session Planner
+              </Text>
+              <Text color="whiteAlpha.900" fontSize="sm">
+                Line up your next BitCraft play session with quick jumps into the tools you need.
+                Follow the loop: track → aggregate → craft.
               </Text>
               <VStack spacing={3} align="stretch">
                 <Button
@@ -111,7 +112,7 @@ export function DashboardOverview({
                   colorScheme="blue"
                   justifyContent="flex-start"
                 >
-                  Manage Personal Inventories
+                  Tune Personal Inventories
                 </Button>
                 <Button
                   as={RemixLink}
@@ -121,7 +122,7 @@ export function DashboardOverview({
                   colorScheme="purple"
                   justifyContent="flex-start"
                 >
-                  Manage Claim Inventories
+                  Sync Claim Storage
                 </Button>
                 <Button
                   as={RemixLink}
@@ -131,26 +132,25 @@ export function DashboardOverview({
                   colorScheme="green"
                   justifyContent="flex-start"
                 >
-                  Calculate Recipes
+                  Launch Recipe Calculator
                 </Button>
               </VStack>
             </VStack>
           </CardBody>
         </Card>
 
-        {/* Most Valuable Items Card */}
-        <Card>
+        <Card bg="rgba(24, 35, 60, 0.9)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="2xl">
           <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold" mb={2}>
-                High-Value Items
+            <VStack align="stretch" spacing={5}>
+              <Text fontSize="lg" fontWeight="bold" color="white">
+                High-Tier Highlights
               </Text>
               {mostValuableItems.length > 0 ? (
-                <VStack spacing={3} align="stretch">
+                <VStack spacing={4} align="stretch">
                   {mostValuableItems.map((item, index) => (
-                    <HStack key={`${item.itemId}-${index}`} justify="space-between">
-                      <VStack align="start" spacing={0} flex={1}>
-                        <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                    <HStack key={`${item.itemId}-${index}`} justify="space-between" align="flex-start">
+                      <VStack align="start" spacing={1} flex={1}>
+                        <Text fontSize="sm" fontWeight="medium" color="white">
                           {item.name || item.itemId}
                         </Text>
                         <HStack spacing={2}>
@@ -173,47 +173,14 @@ export function DashboardOverview({
                   ))}
                 </VStack>
               ) : (
-                <Text color="gray.500" fontSize="sm" textAlign="center" py={4}>
-                  No high-tier items tracked yet
+                <Text color="whiteAlpha.700" fontSize="sm" textAlign="center" py={4}>
+                  As you gather higher tiers, they will surface here for quick planning.
                 </Text>
               )}
             </VStack>
           </CardBody>
         </Card>
       </SimpleGrid>
-
-      {/* Tier Distribution */}
-      {Object.keys(tierCounts).length > 0 && (
-        <Card>
-          <CardBody>
-            <Text fontSize="lg" fontWeight="bold" mb={4}>
-              Tier Distribution
-            </Text>
-            <SimpleGrid columns={{ base: 2, md: 4, lg: 6 }} spacing={4}>
-              {Object.entries(tierCounts)
-                .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                .map(([tier, count]) => (
-                  <VStack key={tier} spacing={2}>
-                    <Badge
-                      size="lg"
-                      colorScheme={
-                        parseInt(tier) >= 4 ? "purple" : parseInt(tier) >= 2 ? "blue" : "gray"
-                      }
-                      variant="solid"
-                      px={3}
-                      py={1}
-                    >
-                      {parseInt(tier) >= 0 ? `Tier ${tier}` : "No Tier"}
-                    </Badge>
-                    <Text fontSize="sm" fontWeight="bold">
-                      {count.toLocaleString()}
-                    </Text>
-                  </VStack>
-                ))}
-            </SimpleGrid>
-          </CardBody>
-        </Card>
-      )}
     </VStack>
   )
 }
