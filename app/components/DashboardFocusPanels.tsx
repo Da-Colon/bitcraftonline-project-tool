@@ -92,12 +92,66 @@ export function DashboardFocusPanels({
               as={RemixLink}
               to="/claim-inventories"
               size="sm"
-              variant="ghost"
-              colorScheme="whiteAlpha"
+              colorScheme="teal"
+              bg="teal.400"
+              _hover={{ bg: "teal.500" }}
+              _active={{ bg: "teal.600" }}
               rightIcon={<Icon as={ExternalLinkIcon} />}
-              justifyContent="flex-start"
+              justifyContent="center"
             >
               Manage Claim Inventories
+            </Button>
+          </VStack>
+        </CardBody>
+      </Card>
+
+      <Card bg="rgba(24, 35, 60, 0.9)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="2xl" h="full">
+        <CardBody>
+          <VStack align="stretch" spacing={4} h="full">
+            <HStack justify="space-between">
+              <Text fontSize="lg" fontWeight="bold" color="white">
+                Inventory Coverage
+              </Text>
+              <Icon as={InfoOutlineIcon} color="whiteAlpha.700" boxSize={4} />
+            </HStack>
+
+            <VStack align="stretch" spacing={3} flex={1}>
+              <Text color="whiteAlpha.900" fontSize="sm">
+                {totalInventories > 0
+                  ? `Tracking ${trackedCount} of ${totalInventories} known inventories.`
+                  : "Once inventories load in, you can decide which ones to follow."}
+              </Text>
+
+              {totalInventories > 0 && (
+                <VStack align="stretch" spacing={2}>
+                  <Progress value={coveragePercent} colorScheme="teal" size="sm" borderRadius="full" />
+                  <HStack justify="space-between">
+                    <Badge colorScheme="teal" variant="subtle">
+                      {coveragePercent}% coverage
+                    </Badge>
+                    {highTierItem && (
+                      <Badge colorScheme="purple" variant="subtle">
+                        Highlight: {highTierItem.name || highTierItem.itemId}
+                      </Badge>
+                    )}
+                  </HStack>
+                </VStack>
+              )}
+            </VStack>
+
+            <Divider borderColor="whiteAlpha.300" />
+
+            <Button
+              as={RemixLink}
+              to="/inventory"
+              size="sm"
+              colorScheme="teal"
+              bg="teal.400"
+              _hover={{ bg: "teal.500" }}
+              _active={{ bg: "teal.600" }}
+              justifyContent="center"
+            >
+              Manage Personal Inventories
             </Button>
           </VStack>
         </CardBody>
@@ -150,60 +204,12 @@ export function DashboardFocusPanels({
               to="/recipes"
               size="sm"
               colorScheme="teal"
-              variant="solid"
-              justifyContent="flex-start"
+              bg="teal.400"
+              _hover={{ bg: "teal.500" }}
+              _active={{ bg: "teal.600" }}
+              justifyContent="center"
             >
               Open Recipe Calculator
-            </Button>
-          </VStack>
-        </CardBody>
-      </Card>
-
-      <Card bg="rgba(24, 35, 60, 0.9)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="2xl" h="full">
-        <CardBody>
-          <VStack align="stretch" spacing={4} h="full">
-            <HStack justify="space-between">
-              <Text fontSize="lg" fontWeight="bold" color="white">
-                Inventory Coverage
-              </Text>
-              <Icon as={InfoOutlineIcon} color="whiteAlpha.700" boxSize={4} />
-            </HStack>
-
-            <VStack align="stretch" spacing={3} flex={1}>
-              <Text color="whiteAlpha.900" fontSize="sm">
-                {totalInventories > 0
-                  ? `Tracking ${trackedCount} of ${totalInventories} known inventories.`
-                  : "Once inventories load in, you can decide which ones to follow."}
-              </Text>
-
-              {totalInventories > 0 && (
-                <VStack align="stretch" spacing={2}>
-                  <Progress value={coveragePercent} colorScheme="teal" size="sm" borderRadius="full" />
-                  <HStack justify="space-between">
-                    <Badge colorScheme="teal" variant="subtle">
-                      {coveragePercent}% coverage
-                    </Badge>
-                    {highTierItem && (
-                      <Badge colorScheme="purple" variant="subtle">
-                        Highlight: {highTierItem.name || highTierItem.itemId}
-                      </Badge>
-                    )}
-                  </HStack>
-                </VStack>
-              )}
-            </VStack>
-
-            <Divider borderColor="whiteAlpha.300" />
-
-            <Button
-              as={RemixLink}
-              to="/inventory"
-              size="sm"
-              variant="ghost"
-              colorScheme="whiteAlpha"
-              justifyContent="flex-start"
-            >
-              Manage Personal Inventories
             </Button>
           </VStack>
         </CardBody>
