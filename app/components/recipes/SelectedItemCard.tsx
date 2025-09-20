@@ -31,18 +31,27 @@ export function SelectedItemCard({
   onClear,
 }: SelectedItemCardProps) {
   return (
-    <Card variant="elevated" size="lg">
+    <Card
+      variant="elevated"
+      size="lg"
+      bg="rgba(24,35,60,0.9)"
+      border="1px solid rgba(148, 163, 184, 0.35)"
+      borderRadius="2xl"
+      boxShadow="xl"
+      backdropFilter="blur(12px)"
+    >
       <CardHeader pb={3}>
         <HStack justify="space-between" align="center">
-          <Heading size="md" color="gray.700">
+          <Heading size="md" color="white">
             Selected Item
           </Heading>
           <Button
-            colorScheme="red"
+            colorScheme="whiteAlpha"
             variant="ghost"
             size="sm"
             onClick={onClear}
-            _hover={{ bg: "red.50" }}
+            color="whiteAlpha.800"
+            _hover={{ bg: "whiteAlpha.200" }}
           >
             Clear Selection
           </Button>
@@ -58,12 +67,12 @@ export function SelectedItemCard({
               size="40px"
             />
             <VStack align="start" spacing={2} flex={1}>
-              <Text fontSize="xl" fontWeight="bold" color="gray.800">
+              <Text fontSize="xl" fontWeight="bold" color="white">
                 {selectedItem.name}
               </Text>
               <HStack spacing={3}>
                 <Badge
-                  colorScheme="blue"
+                  colorScheme="teal"
                   variant="solid"
                   px={3}
                   py={1}
@@ -73,8 +82,8 @@ export function SelectedItemCard({
                   Tier {selectedItem.tier}
                 </Badge>
                 <Badge
-                  colorScheme="gray"
-                  variant="outline"
+                  colorScheme="purple"
+                  variant="subtle"
                   px={3}
                   py={1}
                   borderRadius="full"
@@ -88,7 +97,7 @@ export function SelectedItemCard({
 
           {/* Quantity Section */}
           <VStack spacing={3} align="stretch">
-            <Text fontSize="md" fontWeight="semibold" color="gray.700">
+            <Text fontSize="md" fontWeight="semibold" color="whiteAlpha.900">
               Target Quantity
             </Text>
             <HStack spacing={4} align="center">
@@ -109,14 +118,26 @@ export function SelectedItemCard({
                 size="md"
                 width="150px"
                 allowMouseWheel
+                bg="rgba(15,23,42,0.8)"
+                borderColor="whiteAlpha.200"
+                color="white"
+                _hover={{ borderColor: "whiteAlpha.300" }}
+                _focus={{ borderColor: "teal.400", boxShadow: "0 0 0 1px rgba(56,189,248,0.45)" }}
               >
-                <NumberInputField textAlign="center" fontSize="lg" fontWeight="bold" />
+                <NumberInputField
+                  textAlign="center"
+                  fontSize="lg"
+                  fontWeight="bold"
+                  bg="transparent"
+                  color="white"
+                  _placeholder={{ color: "whiteAlpha.500" }}
+                />
                 <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
+                  <NumberIncrementStepper color="white" _active={{ bg: "whiteAlpha.200" }} />
+                  <NumberDecrementStepper color="white" _active={{ bg: "whiteAlpha.200" }} />
                 </NumberInputStepper>
               </NumberInput>
-              <Text color="gray.500" fontSize="sm">
+              <Text color="whiteAlpha.700" fontSize="sm">
                 items needed
               </Text>
             </HStack>

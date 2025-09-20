@@ -35,30 +35,46 @@ export function RecipeBreakdownCard({
   isLoading,
 }: RecipeBreakdownCardProps) {
   return (
-    <Card>
+    <Card
+      bg="rgba(24,35,60,0.9)"
+      border="1px solid rgba(148, 163, 184, 0.35)"
+      borderRadius="2xl"
+      boxShadow="xl"
+      backdropFilter="blur(12px)"
+    >
       <CardHeader pb={2}>
         <HStack justify="space-between" align="center">
-          <Heading size="md">Recipe Breakdown</Heading>
+          <Heading size="md" color="white">
+            Recipe Breakdown
+          </Heading>
           <HStack spacing={4}>
-            <Checkbox 
+            <Checkbox
               isChecked={hideCompleted}
               onChange={(e) => onHideCompletedChange(e.target.checked)}
+              colorScheme="teal"
+              color="whiteAlpha.900"
             >
               Hide completed items
             </Checkbox>
-            {isLoading && <Spinner size="sm" />}
+            {isLoading && <Spinner size="sm" color="teal.300" />}
           </HStack>
         </HStack>
       </CardHeader>
       <CardBody pt={0}>
         {breakdown.length > 0 ? (
-          <Tabs variant="enclosed">
-            <TabList>
-              <Tab>Detailed Breakdown</Tab>
-              <Tab>Summary by Tier</Tab>
-              <Tab>Raw Materials Only</Tab>
+          <Tabs variant="soft-rounded" colorScheme="teal">
+            <TabList borderBottom="1px solid rgba(148, 163, 184, 0.2)" pb={2}>
+              <Tab color="whiteAlpha.800" _selected={{ bg: "teal.500", color: "gray.900" }}>
+                Detailed Breakdown
+              </Tab>
+              <Tab color="whiteAlpha.800" _selected={{ bg: "teal.500", color: "gray.900" }}>
+                Summary by Tier
+              </Tab>
+              <Tab color="whiteAlpha.800" _selected={{ bg: "teal.500", color: "gray.900" }}>
+                Raw Materials Only
+              </Tab>
             </TabList>
-            
+
             <TabPanels>
               <TabPanel px={0}>
                 <RecipeBreakdownTable breakdown={filteredBreakdown} />
@@ -74,7 +90,13 @@ export function RecipeBreakdownCard({
             </TabPanels>
           </Tabs>
         ) : !isLoading ? (
-          <Alert status="info">
+          <Alert
+            status="info"
+            bg="rgba(59, 130, 246, 0.12)"
+            borderRadius="xl"
+            border="1px solid rgba(59, 130, 246, 0.3)"
+            color="whiteAlpha.900"
+          >
             <AlertIcon />
             Select an item and quantity to see the recipe breakdown.
           </Alert>

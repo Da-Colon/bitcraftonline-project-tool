@@ -27,14 +27,24 @@ export function TierSummaryView({ breakdown }: TierSummaryViewProps) {
     .map(Number)
     .sort((a, b) => b - a); // Highest tier first
 
+  const cardStyles = {
+    bg: "rgba(24,35,60,0.9)",
+    border: "1px solid rgba(148, 163, 184, 0.35)",
+    borderRadius: "2xl",
+    boxShadow: "xl",
+    backdropFilter: "blur(12px)",
+  } as const;
+
   return (
     <VStack spacing={3} align="stretch">
       {sortedTiers.map((tier) => (
-        <Card key={tier} variant="outline">
+        <Card key={tier} {...cardStyles}>
           <CardHeader pb={1}>
             <HStack justify="space-between">
-              <Heading size="sm">Tier {tier}</Heading>
-              <Badge colorScheme="blue" size="sm">
+              <Heading size="sm" color="white">
+                Tier {tier}
+              </Heading>
+              <Badge colorScheme="teal" size="sm" borderRadius="full" px={2}>
                 {tierGroups[tier].length} items
               </Badge>
             </HStack>
@@ -45,17 +55,22 @@ export function TierSummaryView({ breakdown }: TierSummaryViewProps) {
                 <Box
                   key={item.itemId}
                   p={2}
-                  border="1px"
-                  borderColor="gray.200"
-                  borderRadius="md"
-                  bg={item.deficit > 0 ? "red.50" : "green.50"}
+                  border="1px solid rgba(148, 163, 184, 0.2)"
+                  borderRadius="xl"
+                  bg={
+                    item.deficit > 0
+                      ? "rgba(190, 24, 93, 0.18)"
+                      : "rgba(45, 212, 191, 0.18)"
+                  }
                 >
-                  <Text fontWeight="medium" fontSize="sm">{item.name}</Text>
+                  <Text fontWeight="medium" fontSize="sm" color="white">
+                    {item.name}
+                  </Text>
                   <HStack justify="space-between" mt={1}>
-                    <Text fontSize="xs" color="gray.600">
+                    <Text fontSize="xs" color="whiteAlpha.800">
                       Need: {item.deficit.toLocaleString()}
                     </Text>
-                    <Text fontSize="xs" color="gray.600">
+                    <Text fontSize="xs" color="whiteAlpha.800">
                       Have: {item.currentInventory.toLocaleString()}
                     </Text>
                   </HStack>
