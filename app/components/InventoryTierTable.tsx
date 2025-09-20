@@ -9,7 +9,6 @@ import {
   Text,
   Badge,
   Box,
-  useColorModeValue,
 } from "@chakra-ui/react"
 import type { InventoryItem } from "~/types/inventory"
 import { aggregateItemListByTier } from "~/utils/tierAggregation"
@@ -20,23 +19,23 @@ interface InventoryTierTableProps {
 
 export function InventoryTierTable({ items }: InventoryTierTableProps) {
   const categories = aggregateItemListByTier(items)
-  const tableBg = useColorModeValue("white", "gray.800")
-  const headerBg = useColorModeValue("gray.50", "gray.700")
+  const tableBg = "rgba(24, 35, 60, 0.9)"
+  const headerBg = "rgba(30, 41, 82, 0.85)"
 
   if (categories.length === 0) {
     return (
       <Box
-        p={4}
+        p={6}
         textAlign="center"
         bg={tableBg}
-        borderRadius="md"
-        border="1px solid"
-        borderColor="gray.200"
+        borderRadius={{ base: "2xl", md: "3xl" }}
+        border="1px solid rgba(148, 163, 184, 0.35)"
+        backdropFilter="blur(12px)"
       >
-        <Text color="gray.500" fontSize="md">
+        <Text color="white" fontSize="md">
           No items to display
         </Text>
-        <Text color="gray.400" fontSize="sm" mt={1}>
+        <Text color="whiteAlpha.700" fontSize="sm" mt={2}>
           Track some inventories to see your items organized by tier
         </Text>
       </Box>
@@ -68,17 +67,17 @@ export function InventoryTierTable({ items }: InventoryTierTableProps) {
   return (
     <Box
       bg={tableBg}
-      borderRadius="lg"
-      border="1px solid"
-      borderColor="gray.200"
+      borderRadius={{ base: "2xl", md: "3xl" }}
+      border="1px solid rgba(148, 163, 184, 0.35)"
       overflow="hidden"
-      shadow="sm"
+      boxShadow="xl"
+      backdropFilter="blur(12px)"
     >
       <TableContainer>
         <Table size="sm" variant="simple">
           <Thead bg={headerBg}>
             <Tr>
-              <Th py={2} fontSize="xs" fontWeight="bold" color="gray.700" textTransform="uppercase">
+              <Th py={2} fontSize="xs" fontWeight="bold" color="whiteAlpha.800" textTransform="uppercase">
                 Category
               </Th>
               {sortedTiers.map((tier) => (
@@ -90,8 +89,8 @@ export function InventoryTierTable({ items }: InventoryTierTableProps) {
                   fontWeight="bold"
                   color={
                     getTierColorScheme(tier) === "gray"
-                      ? "gray.600"
-                      : `${getTierColorScheme(tier)}.600`
+                      ? "whiteAlpha.700"
+                      : `${getTierColorScheme(tier)}.200`
                   }
                   textTransform="uppercase"
                 >
@@ -108,10 +107,10 @@ export function InventoryTierTable({ items }: InventoryTierTableProps) {
               return (
                 <Tr
                   key={category.category}
-                  bg={index % 2 === 0 ? "transparent" : useColorModeValue("gray.50", "gray.750")}
-                  _hover={{ bg: useColorModeValue("blue.50", "blue.900") }}
+                  bg={index % 2 === 0 ? "transparent" : "rgba(148, 163, 184, 0.08)"}
+                  _hover={{ bg: "rgba(45, 212, 191, 0.12)" }}
                 >
-                  <Td py={2} fontWeight="semibold" color="gray.700" fontSize="sm">
+                  <Td py={2} fontWeight="semibold" color="white" fontSize="sm">
                     {category.category}
                   </Td>
                   {sortedTiers.map((tier) => (
@@ -130,7 +129,7 @@ export function InventoryTierTable({ items }: InventoryTierTableProps) {
                           {tierMap.get(tier)?.toLocaleString()}
                         </Badge>
                       ) : (
-                        <Text color="gray.300" fontSize="xs" fontWeight="medium">
+                        <Text color="whiteAlpha.500" fontSize="xs" fontWeight="medium">
                           -
                         </Text>
                       )}

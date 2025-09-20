@@ -10,7 +10,6 @@ import {
   Card,
   CardBody,
   Icon,
-  useColorModeValue,
 } from "@chakra-ui/react"
 import { useState } from "react"
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
@@ -26,8 +25,6 @@ interface InventoryListProps {
 export function InventoryList({ inventories, viewMode = "list" }: InventoryListProps) {
   const { isTracked, toggleTracking } = useTrackedInventories()
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
-  const cardBg = useColorModeValue("white", "gray.800")
-  const hoverBg = useColorModeValue("gray.50", "gray.700")
 
   const handleTrackingChange = (inventoryId: string, _checked: boolean) => {
     toggleTracking(inventoryId)
@@ -48,7 +45,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
 
     return (
       <Box>
-        <Text fontSize="lg" fontWeight="semibold" mb={4} color="gray.700">
+        <Text fontSize="lg" fontWeight="semibold" mb={4} color="white">
           {title}
         </Text>
         <VStack spacing={4} align="stretch">
@@ -59,13 +56,14 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
             return (
               <Card
                 key={inventory.id}
-                bg={cardBg}
-                shadow="sm"
+                bg="rgba(24, 35, 60, 0.9)"
                 border="1px solid"
-                borderColor={tracked ? "blue.200" : "gray.200"}
+                borderColor={tracked ? "teal.300" : "rgba(148, 163, 184, 0.35)"}
+                backdropFilter="blur(12px)"
+                boxShadow="xl"
                 _hover={{
-                  shadow: "md",
-                  borderColor: tracked ? "blue.300" : "gray.300",
+                  borderColor: tracked ? "teal.200" : "rgba(148, 163, 184, 0.55)",
+                  transform: "translateY(-2px)",
                 }}
                 transition="all 0.2s"
               >
@@ -75,16 +73,22 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                       <Checkbox
                         isChecked={tracked}
                         onChange={(e) => handleTrackingChange(inventory.id, e.target.checked)}
-                        colorScheme="blue"
+                        colorScheme="teal"
                         size="lg"
                       />
                       <VStack align="start" spacing={1} flex={1}>
                         <HStack spacing={3} align="center">
-                          <Text fontWeight="semibold" fontSize="md">
+                          <Text fontWeight="semibold" fontSize="md" color="white">
                             {inventory.name}
                           </Text>
                           {inventory.claimName && title === "Banks" && (
-                            <Badge variant="subtle" colorScheme="green" fontSize="xs">
+                            <Badge
+                              variant="subtle"
+                              colorScheme="teal"
+                              fontSize="xs"
+                              bg="rgba(45, 212, 191, 0.15)"
+                              color="teal.100"
+                            >
                               {inventory.claimName}
                             </Badge>
                           )}
@@ -92,18 +96,26 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                         <HStack spacing={2}>
                           <Badge
                             variant="subtle"
-                            colorScheme={inventory.items.length > 0 ? "blue" : "gray"}
+                            colorScheme={inventory.items.length > 0 ? "teal" : "gray"}
                             fontSize="xs"
+                            bg={inventory.items.length > 0 ? "rgba(45, 212, 191, 0.12)" : "rgba(148, 163, 184, 0.18)"}
+                            color={inventory.items.length > 0 ? "teal.100" : "whiteAlpha.700"}
                           >
                             {inventory.items.length} items
                           </Badge>
                           {inventory.buildingName && (
-                            <Badge variant="subtle" colorScheme="purple" fontSize="xs">
+                            <Badge
+                              variant="subtle"
+                              colorScheme="purple"
+                              fontSize="xs"
+                              bg="rgba(192, 132, 252, 0.16)"
+                              color="purple.100"
+                            >
                               {inventory.buildingName}
                             </Badge>
                           )}
                           {tracked && (
-                            <Badge variant="solid" colorScheme="blue" fontSize="xs">
+                            <Badge variant="solid" colorScheme="teal" fontSize="xs">
                               Tracked
                             </Badge>
                           )}
@@ -114,12 +126,12 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                     <HStack
                       as="button"
                       spacing={2}
-                      color="blue.500"
+                      color="teal.200"
                       fontSize="sm"
                       onClick={() => handleExpandToggle(inventory.id)}
                       _hover={{
-                        color: "blue.600",
-                        bg: hoverBg,
+                        color: "teal.100",
+                        bg: "rgba(45, 212, 191, 0.12)",
                       }}
                       px={3}
                       py={2}
@@ -132,7 +144,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                   </HStack>
 
                   <Collapse in={isExpanded} animateOpacity>
-                    <Box mt={4} pt={4} borderTop="1px solid" borderColor="gray.200">
+                    <Box mt={4} pt={4} borderTop="1px solid" borderColor="whiteAlpha.200">
                       <InventoryContents items={inventory.items} viewMode={viewMode} />
                     </Box>
                   </Collapse>
@@ -158,27 +170,27 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
       <Box
         p={8}
         textAlign="center"
-        bg="gray.50"
-        borderRadius="lg"
-        border="1px solid"
-        borderColor="gray.200"
+        bg="rgba(24, 35, 60, 0.9)"
+        borderRadius={{ base: "2xl", md: "3xl" }}
+        border="1px solid rgba(148, 163, 184, 0.35)"
+        backdropFilter="blur(12px)"
       >
         <VStack spacing={4}>
           <Text fontSize="3xl" mb={2}>
             🎒
           </Text>
-          <Text color="gray.600" fontSize="xl" fontWeight="semibold">
+          <Text color="white" fontSize="xl" fontWeight="semibold">
             No Inventories Found
           </Text>
-          <Text color="gray.500" fontSize="md" maxW="md">
+          <Text color="whiteAlpha.800" fontSize="md" maxW="md">
             We couldn't find any inventories for this player. This might happen if:
           </Text>
-          <VStack spacing={2} align="start" fontSize="sm" color="gray.500">
+          <VStack spacing={2} align="start" fontSize="sm" color="whiteAlpha.700">
             <Text>• The player data is still loading</Text>
             <Text>• The player has no accessible inventories</Text>
             <Text>• There's a temporary connection issue</Text>
           </VStack>
-          <Text fontSize="sm" color="gray.400" mt={4}>
+          <Text fontSize="sm" color="whiteAlpha.600" mt={4}>
             Try refreshing the page or checking back later.
           </Text>
         </VStack>
