@@ -18,6 +18,7 @@ import type { RecipeBreakdownItem } from "~/types/recipes";
 import { RecipeBreakdownTable } from "./RecipeBreakdownTable";
 import { TierSummaryView } from "./TierSummaryView";
 import { RawMaterialsView } from "./RawMaterialsView";
+import { TrackedInventoryView } from "~/components/TrackedInventoryView";
 
 interface RecipeBreakdownCardProps {
   breakdown: RecipeBreakdownItem[];
@@ -73,6 +74,9 @@ export function RecipeBreakdownCard({
               <Tab color="whiteAlpha.800" _selected={{ bg: "teal.500", color: "gray.900" }}>
                 Raw Materials Only
               </Tab>
+              <Tab color="whiteAlpha.800" _selected={{ bg: "teal.500", color: "gray.900" }}>
+                Tracked Inventory
+              </Tab>
             </TabList>
 
             <TabPanels>
@@ -86,6 +90,10 @@ export function RecipeBreakdownCard({
               
               <TabPanel px={0}>
                 <RawMaterialsView breakdown={filteredBreakdown} />
+              </TabPanel>
+
+              <TabPanel px={0}>
+                <TrackedInventoryView />
               </TabPanel>
             </TabPanels>
           </Tabs>
