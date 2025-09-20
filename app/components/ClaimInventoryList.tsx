@@ -1,79 +1,76 @@
-import { 
-  VStack, 
-  Box, 
-  Text, 
-  Checkbox, 
-  Collapse, 
-  Badge, 
-  HStack,
-  Card,
-  CardBody,
-  Icon,
-  useColorModeValue
-} from "@chakra-ui/react";
-import { useState } from "react";
-import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons";
-import type { ClaimInventory } from "~/types/inventory";
-import { InventoryContents } from "~/components/InventoryContents";
-import { useTrackedInventories } from "~/hooks/useTrackedInventories";
+import { VStack, Box, Text, Checkbox, Collapse, Badge, HStack, Card, CardBody, Icon } from "@chakra-ui/react"
+import { useState } from "react"
+import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
+import type { ClaimInventory } from "~/types/inventory"
+import { InventoryContents } from "~/components/InventoryContents"
+import { useTrackedInventories } from "~/hooks/useTrackedInventories"
 
 interface ClaimInventoryListProps {
   inventories: ClaimInventory[];
   viewMode?: 'list' | 'tier';
 }
 
-export function ClaimInventoryList({ inventories, viewMode = 'list' }: ClaimInventoryListProps) {
-  const { isTracked, toggleTracking } = useTrackedInventories();
-  const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set());
-  const cardBg = useColorModeValue("white", "gray.800");
-  const hoverBg = useColorModeValue("gray.50", "gray.700");
+export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInventoryListProps) {
+  const { isTracked, toggleTracking } = useTrackedInventories()
+  const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
 
   const handleTrackingChange = (inventoryId: string) => {
-    toggleTracking(inventoryId);
-  };
+    toggleTracking(inventoryId)
+  }
 
   const handleExpandToggle = (inventoryId: string) => {
-    const newExpanded = new Set(expandedInventories);
+    const newExpanded = new Set(expandedInventories)
     if (newExpanded.has(inventoryId)) {
-      newExpanded.delete(inventoryId);
+      newExpanded.delete(inventoryId)
     } else {
-      newExpanded.add(inventoryId);
+      newExpanded.add(inventoryId)
     }
-    setExpandedInventories(newExpanded);
-  };
+    setExpandedInventories(newExpanded)
+  }
 
   if (!inventories || inventories.length === 0) {
     return (
-      <Box p={8} textAlign="center" bg="gray.50" borderRadius="lg" border="1px solid" borderColor="gray.200">
+      <Box
+        p={8}
+        textAlign="center"
+        bg="rgba(24, 35, 60, 0.9)"
+        borderRadius={{ base: "2xl", md: "3xl" }}
+        border="1px solid rgba(148, 163, 184, 0.35)"
+        backdropFilter="blur(12px)"
+      >
         <VStack spacing={4}>
-          <Text fontSize="3xl" mb={2}>🏗️</Text>
-          <Text color="gray.600" fontSize="xl" fontWeight="semibold">
+          <Text fontSize="3xl" mb={2}>
+            🏗️
+          </Text>
+          <Text color="white" fontSize="xl" fontWeight="semibold">
             No Buildings Found
           </Text>
-          <Text color="gray.500" fontSize="md" maxW="md">
-            This claim has no accessible building inventories. Buildings may be private or have no storage containers.
+          <Text color="whiteAlpha.800" fontSize="md" maxW="md">
+            This claim has no accessible building inventories. Buildings may be private or have no
+            storage containers.
           </Text>
         </VStack>
       </Box>
-    );
+    )
   }
 
   return (
     <VStack spacing={4} align="stretch">
       {inventories.map((inventory) => {
-        const isExpanded = expandedInventories.has(inventory.id);
-        const tracked = isTracked(inventory.id);
+        const isExpanded = expandedInventories.has(inventory.id)
+        const tracked = isTracked(inventory.id)
         
         return (
           <Card
             key={inventory.id}
-            bg={cardBg}
-            shadow="sm"
+            bg="rgba(24, 35, 60, 0.9)"
             border="1px solid"
-            borderColor={tracked ? "purple.200" : "gray.200"}
-            _hover={{ 
-              shadow: "md",
-              borderColor: tracked ? "purple.300" : "gray.300"
+            borderColor={tracked ? "teal.300" : "rgba(148, 163, 184, 0.35)"}
+            backdropFilter="blur(12px)"
+            boxShadow="xl"
+            _hover={{
+              borderColor: tracked ? "teal.200" : "rgba(148, 163, 184, 0.55)",
+              transform: "translateY(-2px)",
             }}
             transition="all 0.2s"
           >
@@ -83,35 +80,49 @@ export function ClaimInventoryList({ inventories, viewMode = 'list' }: ClaimInve
                   <Checkbox
                     isChecked={tracked}
                     onChange={() => handleTrackingChange(inventory.id)}
-                    colorScheme="purple"
+                    colorScheme="teal"
                     size="lg"
                   />
                   <VStack align="start" spacing={1} flex={1}>
                     <HStack spacing={3} align="center">
-                      <Text fontWeight="semibold" fontSize="md">
+                      <Text fontWeight="semibold" fontSize="md" color="white">
                         {inventory.name}
                       </Text>
                       {inventory.buildingName && (
-                        <Badge variant="subtle" colorScheme="purple" fontSize="xs">
+                        <Badge
+                          variant="subtle"
+                          colorScheme="purple"
+                          fontSize="xs"
+                          bg="rgba(192, 132, 252, 0.16)"
+                          color="purple.100"
+                        >
                           {inventory.buildingName}
                         </Badge>
                       )}
                     </HStack>
                     <HStack spacing={2}>
-                      <Badge 
-                        variant="subtle" 
-                        colorScheme={inventory.items.length > 0 ? "blue" : "gray"}
+                      <Badge
+                        variant="subtle"
+                        colorScheme={inventory.items.length > 0 ? "teal" : "gray"}
                         fontSize="xs"
+                        bg={inventory.items.length > 0 ? "rgba(45, 212, 191, 0.12)" : "rgba(148, 163, 184, 0.18)"}
+                        color={inventory.items.length > 0 ? "teal.100" : "whiteAlpha.700"}
                       >
                         {inventory.items.length} items
                       </Badge>
                       {inventory.claimName && (
-                        <Badge variant="subtle" colorScheme="green" fontSize="xs">
+                        <Badge
+                          variant="subtle"
+                          colorScheme="teal"
+                          fontSize="xs"
+                          bg="rgba(45, 212, 191, 0.12)"
+                          color="teal.100"
+                        >
                           {inventory.claimName}
                         </Badge>
                       )}
                       {tracked && (
-                        <Badge variant="solid" colorScheme="purple" fontSize="xs">
+                        <Badge variant="solid" colorScheme="teal" fontSize="xs">
                           Tracked
                         </Badge>
                       )}
@@ -122,42 +133,32 @@ export function ClaimInventoryList({ inventories, viewMode = 'list' }: ClaimInve
                 <HStack
                   as="button"
                   spacing={2}
-                  color="purple.500"
+                  color="teal.200"
                   fontSize="sm"
                   onClick={() => handleExpandToggle(inventory.id)}
-                  _hover={{ 
-                    color: "purple.600",
-                    bg: hoverBg
+                  _hover={{
+                    color: "teal.100",
+                    bg: "rgba(45, 212, 191, 0.12)",
                   }}
                   px={3}
                   py={2}
                   borderRadius="md"
                   transition="all 0.2s"
                 >
-                  <Text fontWeight="medium">
-                    {isExpanded ? "Collapse" : "Expand"}
-                  </Text>
-                  <Icon 
-                    as={isExpanded ? ChevronDownIcon : ChevronRightIcon} 
-                    boxSize={4}
-                  />
+                  <Text fontWeight="medium">{isExpanded ? "Collapse" : "Expand"}</Text>
+                  <Icon as={isExpanded ? ChevronDownIcon : ChevronRightIcon} boxSize={4} />
                 </HStack>
               </HStack>
               
               <Collapse in={isExpanded} animateOpacity>
-                <Box 
-                  mt={4} 
-                  pt={4} 
-                  borderTop="1px solid" 
-                  borderColor="gray.200"
-                >
+                <Box mt={4} pt={4} borderTop="1px solid" borderColor="whiteAlpha.200">
                   <InventoryContents items={inventory.items} viewMode={viewMode} />
                 </Box>
               </Collapse>
             </CardBody>
           </Card>
-        );
+        )
       })}
     </VStack>
-  );
+  )
 }

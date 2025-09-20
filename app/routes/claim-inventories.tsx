@@ -1,7 +1,9 @@
-import { Box, Container, VStack } from "@chakra-ui/react";
+import { Badge, Box, Button, HStack, Heading, Text, VStack } from "@chakra-ui/react";
 import { Suspense, lazy } from "react";
+import { Link as RemixLink } from "@remix-run/react";
 import { PlayerHeader } from "~/components/PlayerHeader";
 import { ClaimInventoryView } from "~/components/ClaimInventoryView";
+import { DashboardLayout } from "~/components/DashboardLayout";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 
 const PlayerSelectionView = lazy(() =>
@@ -20,13 +22,62 @@ export default function ClaimInventoriesRoute() {
   }
 
   return (
-    <Box minH="100vh">
+    <Box bg="gray.900" minH="100vh">
       <PlayerHeader />
-      <Container maxW="container.xl" py={6}>
-        <VStack spacing={6} align="stretch">
+      <DashboardLayout
+        hero={
+          <Box px={{ base: 6, md: 10 }} py={{ base: 12, md: 20 }}>
+            <VStack spacing={6} align="flex-start" maxW="3xl">
+              <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
+                Claim Storage Command
+              </Text>
+              <Heading size="2xl" lineHeight="1.1" color="white">
+                Line up the storerooms, {player.username}.
+              </Heading>
+              <Text fontSize={{ base: "lg", md: "xl" }} color="whiteAlpha.900">
+                Track every guild hall cellar, stage claim transfers, and keep rare mats ready for
+                the next crafting push.
+              </Text>
+
+              <HStack spacing={3} flexWrap="wrap">
+                <Badge colorScheme="teal" px={3} py={1} borderRadius="full">
+                  Claim buildings synced to dashboard
+                </Badge>
+                <Badge colorScheme="pink" px={3} py={1} borderRadius="full">
+                  Cozy logistics, zero spreadsheeting
+                </Badge>
+              </HStack>
+
+              <HStack spacing={3} flexWrap="wrap">
+                <Button
+                  as="a"
+                  href="#claim-management"
+                  colorScheme="teal"
+                  size="lg"
+                  bg="teal.400"
+                  _hover={{ bg: "teal.500" }}
+                >
+                  Review Claim Buildings
+                </Button>
+                <Button
+                  as={RemixLink}
+                  to="/inventory"
+                  size="lg"
+                  variant="ghost"
+                  color="whiteAlpha.900"
+                  _hover={{ bg: "whiteAlpha.200" }}
+                >
+                  Jump to Personal Stashes
+                </Button>
+              </HStack>
+            </VStack>
+          </Box>
+        }
+      >
+        <VStack spacing={{ base: 8, md: 10 }} align="stretch" id="claim-management">
           <ClaimInventoryView />
         </VStack>
-      </Container>
+      </DashboardLayout>
     </Box>
   );
 }

@@ -68,47 +68,55 @@ export function ClaimOverview({
     claimData.inventories[0] || { buildingName: "None", items: [] }
   )
 
+  const glassCardProps = {
+    bg: "rgba(24, 35, 60, 0.9)",
+    border: "1px solid rgba(148, 163, 184, 0.35)",
+    borderRadius: { base: "2xl", md: "3xl" },
+    backdropFilter: "blur(12px)",
+    boxShadow: "xl",
+  } as const
+
   return (
     <VStack spacing={6} align="stretch">
       {/* Main Stats Cards */}
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
-        <Card>
+        <Card {...glassCardProps} borderColor="rgba(221, 214, 254, 0.35)">
           <CardBody>
             <Stat>
-              <StatLabel>Total Buildings</StatLabel>
-              <StatNumber color="purple.500">{totalInventories}</StatNumber>
-              <StatHelpText>{trackedCount} tracked</StatHelpText>
+              <StatLabel color="whiteAlpha.700">Total Buildings</StatLabel>
+              <StatNumber color="purple.200">{totalInventories}</StatNumber>
+              <StatHelpText color="whiteAlpha.600">{trackedCount} tracked</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
 
-        <Card>
+        <Card {...glassCardProps} borderColor="rgba(110, 231, 183, 0.35)">
           <CardBody>
             <Stat>
-              <StatLabel>Total Items</StatLabel>
-              <StatNumber color="green.500">{totalItems.toLocaleString()}</StatNumber>
-              <StatHelpText>{totalUniqueItems} unique types</StatHelpText>
+              <StatLabel color="whiteAlpha.700">Total Items</StatLabel>
+              <StatNumber color="green.300">{totalItems.toLocaleString()}</StatNumber>
+              <StatHelpText color="whiteAlpha.600">{totalUniqueItems} unique types</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
 
-        <Card>
+        <Card {...glassCardProps} borderColor="rgba(249, 168, 212, 0.35)">
           <CardBody>
             <Stat>
-              <StatLabel>High Tier Items</StatLabel>
-              <StatNumber color="orange.500">{highTierItems.toLocaleString()}</StatNumber>
-              <StatHelpText>Tier 4 & 5 materials</StatHelpText>
+              <StatLabel color="whiteAlpha.700">High Tier Items</StatLabel>
+              <StatNumber color="pink.200">{highTierItems.toLocaleString()}</StatNumber>
+              <StatHelpText color="whiteAlpha.600">Tier 4 & 5 materials</StatHelpText>
             </Stat>
           </CardBody>
         </Card>
 
-        <Card>
+        <Card {...glassCardProps} borderColor="rgba(45, 212, 191, 0.35)">
           <CardBody>
             <Stat>
-              <StatLabel>Tracking Progress</StatLabel>
-              <StatNumber color="teal.500">{Math.round(trackingProgress)}%</StatNumber>
-              <StatHelpText>
-                <Progress value={trackingProgress} size="sm" colorScheme="teal" mt={2} />
+              <StatLabel color="whiteAlpha.700">Tracking Progress</StatLabel>
+              <StatNumber color="teal.200">{Math.round(trackingProgress)}%</StatNumber>
+              <StatHelpText color="whiteAlpha.700">
+                <Progress value={trackingProgress} size="sm" colorScheme="teal" mt={2} bg="whiteAlpha.200" />
               </StatHelpText>
             </Stat>
           </CardBody>
@@ -118,10 +126,10 @@ export function ClaimOverview({
       {/* Quick Actions and Claim Info */}
       <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
         {/* Quick Actions Card */}
-        <Card>
+        <Card {...glassCardProps} borderColor="rgba(94, 234, 212, 0.35)">
           <CardBody>
             <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold">
+              <Text fontSize="lg" fontWeight="bold" color="white">
                 Quick Actions
               </Text>
 
@@ -129,8 +137,9 @@ export function ClaimOverview({
                 <HStack spacing={3}>
                   <Button
                     size="sm"
-                    colorScheme="green"
-                    variant="outline"
+                    colorScheme="teal"
+                    bg="teal.400"
+                    _hover={{ bg: "teal.500" }}
                     onClick={onTrackAll}
                     isDisabled={trackedCount === totalInventories}
                     flex={1}
@@ -139,8 +148,9 @@ export function ClaimOverview({
                   </Button>
                   <Button
                     size="sm"
-                    colorScheme="red"
-                    variant="outline"
+                    variant="ghost"
+                    color="whiteAlpha.800"
+                    _hover={{ bg: "whiteAlpha.200" }}
                     onClick={onUntrackAll}
                     isDisabled={trackedCount === 0}
                     flex={1}
@@ -151,22 +161,24 @@ export function ClaimOverview({
 
                 <Button
                   size="sm"
-                  colorScheme="purple"
-                  variant="outline"
+                  variant="ghost"
+                  color="whiteAlpha.800"
+                  leftIcon={<Icon as={ExternalLinkIcon} color="teal.200" />}
+                  _hover={{ bg: "whiteAlpha.200" }}
                   onClick={onChangeClaim}
-                  leftIcon={<Icon as={ExternalLinkIcon} />}
                 >
                   Change Claim
                 </Button>
 
-                <Divider />
+                <Divider borderColor="whiteAlpha.200" />
 
                 <Button
                   as={RemixLink}
                   to="/"
-                  leftIcon={<Icon as={SettingsIcon} />}
-                  variant="outline"
-                  colorScheme="blue"
+                  leftIcon={<Icon as={SettingsIcon} color="teal.200" />}
+                  variant="ghost"
+                  color="whiteAlpha.800"
+                  _hover={{ bg: "whiteAlpha.200" }}
                   size="sm"
                   justifyContent="flex-start"
                 >
@@ -175,9 +187,10 @@ export function ClaimOverview({
                 <Button
                   as={RemixLink}
                   to="/recipes"
-                  leftIcon={<Icon as={StarIcon} />}
-                  variant="outline"
-                  colorScheme="green"
+                  leftIcon={<Icon as={StarIcon} color="purple.200" />}
+                  variant="ghost"
+                  color="whiteAlpha.800"
+                  _hover={{ bg: "whiteAlpha.200" }}
                   size="sm"
                   justifyContent="flex-start"
                 >
@@ -189,32 +202,32 @@ export function ClaimOverview({
         </Card>
 
         {/* Claim Information Card */}
-        <Card>
+        <Card {...glassCardProps} borderColor="rgba(233, 213, 255, 0.35)">
           <CardBody>
             <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold">
+              <Text fontSize="lg" fontWeight="bold" color="white">
                 Claim Information
               </Text>
 
               <VStack spacing={3} align="stretch">
                 <Box>
-                  <Text fontSize="sm" color="gray.500" mb={1}>
+                  <Text fontSize="sm" color="whiteAlpha.600" mb={1}>
                     Claim Name:
                   </Text>
-                  <Text fontSize="md" fontWeight="semibold">
+                  <Text fontSize="md" fontWeight="semibold" color="white">
                     {claimData.claimName}
                   </Text>
                 </Box>
 
                 <Box>
-                  <Text fontSize="sm" color="gray.500" mb={1}>
+                  <Text fontSize="sm" color="whiteAlpha.600" mb={1}>
                     Claim ID:
                   </Text>
                   <Tooltip label="Click to copy" placement="top">
                     <Text
                       fontSize="sm"
                       fontFamily="mono"
-                      color="blue.600"
+                      color="teal.200"
                       cursor="pointer"
                       _hover={{ textDecoration: "underline" }}
                       onClick={() => navigator.clipboard.writeText(claimData.claimId)}
@@ -224,33 +237,37 @@ export function ClaimOverview({
                   </Tooltip>
                 </Box>
 
-                <Divider />
+                <Divider borderColor="whiteAlpha.200" />
 
                 <HStack justify="space-between">
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color="whiteAlpha.700">
                     Building Types:
                   </Text>
-                  <Badge colorScheme="purple">{buildingTypes} types</Badge>
+                  <Badge colorScheme="purple" variant="subtle" color="purple.100" bg="rgba(192, 132, 252, 0.16)">
+                    {buildingTypes} types
+                  </Badge>
                 </HStack>
 
                 <HStack justify="space-between">
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color="whiteAlpha.700">
                     Storage Buildings:
                   </Text>
-                  <Badge colorScheme="blue">{totalInventories} buildings</Badge>
+                  <Badge colorScheme="teal" variant="subtle" color="teal.100" bg="rgba(45, 212, 191, 0.18)">
+                    {totalInventories} buildings
+                  </Badge>
                 </HStack>
 
                 {mostValuableBuilding && (
                   <>
-                    <Divider />
+                    <Divider borderColor="whiteAlpha.200" />
                     <Box>
-                      <Text fontSize="xs" color="gray.500" mb={1}>
+                      <Text fontSize="xs" color="whiteAlpha.600" mb={1}>
                         Largest Storage:
                       </Text>
-                      <Text fontSize="sm" fontWeight="medium">
+                      <Text fontSize="sm" fontWeight="medium" color="white">
                         {mostValuableBuilding.buildingName || "Unknown Building"}
                       </Text>
-                      <Text fontSize="xs" color="gray.500">
+                      <Text fontSize="xs" color="whiteAlpha.600">
                         {mostValuableBuilding.items.length} items
                       </Text>
                     </Box>
@@ -264,15 +281,19 @@ export function ClaimOverview({
 
       {/* Tracking Status Banner */}
       {trackedCount > 0 && (
-        <Card bg="purple.50" borderColor="purple.200">
+        <Card
+          {...glassCardProps}
+          borderColor="rgba(192, 132, 252, 0.45)"
+          bg="rgba(76, 29, 149, 0.58)"
+        >
           <CardBody>
             <HStack spacing={4}>
-              <Icon as={CheckCircleIcon} color="purple.500" boxSize={6} />
+              <Icon as={CheckCircleIcon} color="teal.200" boxSize={6} />
               <VStack align="start" spacing={1} flex={1}>
-                <Text fontWeight="bold" color="purple.700">
+                <Text fontWeight="bold" color="white">
                   Tracking {trackedCount} of {totalInventories} claim buildings
                 </Text>
-                <Text fontSize="sm" color="purple.600">
+                <Text fontSize="sm" color="whiteAlpha.800">
                   Tracked buildings will appear in your dashboard and can be used for recipe
                   calculations.
                 </Text>
