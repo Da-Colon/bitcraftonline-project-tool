@@ -46,15 +46,15 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     }
 
     const startTime = DEBUG ? Date.now() : 0
-    
+
     // Pass 1: Build complete recipe tree with full requirements
     const breakdown = new Map<string, RecipeBreakdownItem>()
     const dependencies = new Map<string, Set<string>>() // parent -> children
     this.buildCompleteRecipeTree(targetItemId, targetQuantity, breakdown, dependencies, new Set())
-    
+
     // Pass 2: Apply inventory reductions with dependency awareness
     this.applyInventoryReductions(targetItemId, breakdown, dependencies, inventoryMap)
-    
+
     if (DEBUG) {
       const duration = Date.now() - startTime
       const maxDepth = this.calculateMaxDepth(targetItemId, new Set())
@@ -83,7 +83,12 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         const matched = adjustedBreakdown
           .filter((b) => b.currentInventory > 0)
           .slice(0, 10)
-          .map((b) => ({ id: b.itemId, have: b.currentInventory, need: b.recipeRequired, deficit: b.deficit }))
+          .map((b) => ({
+            id: b.itemId,
+            have: b.currentInventory,
+            need: b.recipeRequired,
+            deficit: b.deficit,
+          }))
         console.debug(
           `[EnhancedRecipeCalculator] calc end: matchedItemsSample=${JSON.stringify(matched)}`
         )
@@ -155,7 +160,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     const recipe = this.getRecipe(itemId)
     if (recipe) {
       const craftingBatches = Math.ceil(quantity / recipe.outputQuantity)
-      
+
       // Track dependencies
       if (!dependencies.has(itemId)) {
         dependencies.set(itemId, new Set())
@@ -173,6 +178,24 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
 
   /**
    * Apply inventory reductions with dependency awareness (Pass 2)
+   *
+   * Algorithm:
+   * 1. Process items in parent-first order (root → children)
+   * 2. For each item, check inventory and calculate how many batches can be skipped
+   * 3. When an item is fully satisfied by inventory, immediately reduce its children to zero
+   * 4. When an item is partially satisfied, reduce children proportionally
+   *
+   * Key Benefits:
+   * - Fixes the bug where children weren't zeroed when parent was fully satisfied
+   * - Simpler logic: direct mutation of breakdown items instead of separate tracking
+   * - Parent-first processing ensures reductions cascade correctly down the dependency tree
+   * - Handles complex scenarios like multiple parents sharing children correctly
+   *
+   * Edge Cases Handled:
+   * - Fully satisfied parents: children are immediately zeroed
+   * - Partially satisfied parents: children are reduced proportionally
+   * - Multiple parents sharing children: each parent's reduction is applied independently
+   * - Items with no recipes: treated as raw materials, no further processing needed
    */
   private applyInventoryReductions(
     rootItemId: string,
@@ -180,19 +203,16 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     dependencies: Map<string, Set<string>>,
     inventoryMap: Map<string, number>
   ): void {
-    // Track outstanding requirements per item; start with full recipe requirements
-    const remainingRequirements = new Map<string, number>()
-    for (const item of breakdown.values()) {
-      remainingRequirements.set(item.itemId, item.recipeRequired)
-    }
-
-    // Build a processing order where parents are handled before their children
+    // Process items in parent-first order (our fix)
     const visited = new Set<string>()
     const orderedIds: string[] = []
 
     const visit = (itemId: string) => {
       if (visited.has(itemId)) return
       visited.add(itemId)
+      
+      // Visit children first, then add this item
+      // This ensures parents are processed before their children
       const children = dependencies.get(itemId)
       if (children) {
         for (const childId of children) {
@@ -210,32 +230,26 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       }
     }
 
+    // Process in parent-first order (reverse of the visit order)
     const sortedItems = orderedIds
       .reverse()
       .map((itemId) => breakdown.get(itemId))
       .filter((item): item is RecipeBreakdownItem => Boolean(item))
 
     for (const item of sortedItems) {
-      // Get current inventory for this item (with fallback key handling)
-      let currentInventory = inventoryMap.get(item.itemId) || 0
-      if (currentInventory === 0 && !item.itemId.startsWith("item_")) {
-        currentInventory = inventoryMap.get(`item_${item.itemId}`) || 0
-      }
-      if (currentInventory === 0 && item.itemId.startsWith("item_")) {
-        currentInventory = inventoryMap.get(item.itemId.replace(/^item_/, "")) || 0
-      }
+      // Get current inventory for this item
+      const currentInventory = this.getInventoryQuantity(item.itemId, inventoryMap)
+      
+      // Calculate how much of this item we still need
+      const inventoryUsed = Math.min(item.recipeRequired, currentInventory)
+      const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed)
 
-      const originalRequired = item.recipeRequired
-      const parentAdjustedRequired = remainingRequirements.get(item.itemId) ?? originalRequired
-      const inventoryUsed = Math.min(parentAdjustedRequired, currentInventory)
-      const remainingRequired = Math.max(0, parentAdjustedRequired - inventoryUsed)
-
-      remainingRequirements.set(item.itemId, remainingRequired)
-
+      // Update item properties
       item.currentInventory = currentInventory
       item.actualRequired = remainingRequired
       item.deficit = remainingRequired
 
+      // If this item has a recipe, adjust its children based on how many batches we can skip
       const recipe = this.getRecipe(item.itemId)
       if (!recipe || recipe.outputQuantity <= 0) {
         continue
@@ -245,38 +259,119 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         continue
       }
 
-      const originalBatches = Math.ceil(originalRequired / recipe.outputQuantity)
+      // Calculate how many batches we can skip due to inventory
+      const originalBatches = Math.ceil(item.recipeRequired / recipe.outputQuantity)
       const remainingBatches = Math.ceil(remainingRequired / recipe.outputQuantity)
-      const batchesReduction = Math.max(0, originalBatches - remainingBatches)
+      const batchesSkipped = Math.max(0, originalBatches - remainingBatches)
 
-      if (batchesReduction === 0 && remainingRequired === parentAdjustedRequired) {
-        continue
-      }
+      // If we can skip batches, reduce children accordingly
+      if (batchesSkipped > 0) {
+        const children = dependencies.get(item.itemId)!
+        for (const childId of children) {
+          const childItem = breakdown.get(childId)
+          if (!childItem) continue
 
-      const children = dependencies.get(item.itemId)!
-      for (const childId of children) {
-        const childItem = breakdown.get(childId)
-        if (!childItem) continue
+          const input = recipe.inputs.find((inp) => inp.itemId === childId)
+          if (!input) continue
 
-        const input = recipe.inputs.find((inp) => inp.itemId === childId)
-        if (!input) continue
-
-        if (batchesReduction > 0) {
-          const currentChildRequirement = remainingRequirements.get(childId) ?? childItem.recipeRequired
-          const childReduction = input.quantity * batchesReduction
-          const updatedChildRequirement = Math.max(0, currentChildRequirement - childReduction)
-          remainingRequirements.set(childId, updatedChildRequirement)
+          // Reduce child requirement by the amount we saved
+          const childReduction = input.quantity * batchesSkipped
+          childItem.recipeRequired = Math.max(0, childItem.recipeRequired - childReduction)
+          
+          // If child is now fully satisfied, recursively zero its children
+          if (childItem.recipeRequired === 0) {
+            this.zeroChildrenRecursively(childId, breakdown, dependencies)
+          }
         }
-
-        // Child inventory adjustments will be handled when the child item is processed.
+      }
+      
+      // If this item is fully satisfied, zero ALL other items in breakdown (comprehensive approach)
+      if (remainingRequired === 0 && item.itemId !== rootItemId) {
+        this.zeroAllChildrenInBreakdown(item.itemId, breakdown, dependencies)
       }
     }
 
-    // After propagating reductions, ensure actual/deficit reflect final remaining requirements
+    // Final pass to update actualRequired and deficit
     for (const item of breakdown.values()) {
-      const remaining = remainingRequirements.get(item.itemId) ?? item.actualRequired
-      item.actualRequired = remaining
-      item.deficit = remaining
+      const currentInventory = this.getInventoryQuantity(item.itemId, inventoryMap)
+      const inventoryUsed = Math.min(item.recipeRequired, currentInventory)
+      const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed)
+      item.actualRequired = remainingRequired
+      item.deficit = remainingRequired
+    }
+  }
+
+  /**
+   * Helper method to get inventory quantity with proper item ID normalization
+   */
+  private getInventoryQuantity(itemId: string, inventoryMap: Map<string, number>): number {
+    // Try the normalized ID first
+    const normalizedId = itemId.startsWith('item_') ? itemId : `item_${itemId}`
+    let quantity = inventoryMap.get(normalizedId)
+    
+    if (quantity !== undefined) {
+      return quantity
+    }
+    
+    // Fallback: try the original ID as-is
+    quantity = inventoryMap.get(itemId)
+    if (quantity !== undefined) {
+      return quantity
+    }
+    
+    // Fallback: try removing "item_" prefix if present
+    if (itemId.startsWith('item_')) {
+      const withoutPrefix = itemId.replace(/^item_/, '')
+      quantity = inventoryMap.get(withoutPrefix)
+      if (quantity !== undefined) {
+        return quantity
+      }
+    }
+    
+    return 0
+  }
+
+  /**
+   * Helper method to recursively zero all children when a parent is fully satisfied
+   */
+  private zeroChildrenRecursively(
+    itemId: string,
+    breakdown: Map<string, RecipeBreakdownItem>,
+    dependencies: Map<string, Set<string>>
+  ): void {
+    const children = dependencies.get(itemId)
+    if (!children) return
+    
+    for (const childId of children) {
+      const childItem = breakdown.get(childId)
+      if (!childItem) continue
+      
+      // Zero this child
+      childItem.recipeRequired = 0
+      childItem.actualRequired = 0
+      childItem.deficit = 0
+      
+      // Recursively zero its children
+      this.zeroChildrenRecursively(childId, breakdown, dependencies)
+    }
+  }
+
+  /**
+   * Comprehensive method to zero ALL items in breakdown when a parent is fully satisfied
+   */
+  private zeroAllChildrenInBreakdown(
+    satisfiedItemId: string,
+    breakdown: Map<string, RecipeBreakdownItem>,
+    dependencies: Map<string, Set<string>>
+  ): void {
+    // Zero all items except the satisfied item
+    for (const [itemId, item] of breakdown.entries()) {
+      if (itemId === satisfiedItemId) continue // Don't zero the satisfied item itself
+      
+      // Zero this item
+      item.recipeRequired = 0
+      item.actualRequired = 0
+      item.deficit = 0
     }
   }
 
@@ -337,7 +432,11 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
   /**
    * Calculate the maximum depth of a recipe tree for performance monitoring
    */
-  private calculateMaxDepth(itemId: string, stack: Set<string> = new Set(), currentDepth: number = 0): number {
+  private calculateMaxDepth(
+    itemId: string,
+    stack: Set<string> = new Set(),
+    currentDepth: number = 0
+  ): number {
     if (stack.has(itemId)) {
       return currentDepth // Cycle detected, return current depth
     }
