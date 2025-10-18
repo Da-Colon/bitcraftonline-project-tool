@@ -13,19 +13,20 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-} from "@chakra-ui/react";
-import type { RecipeBreakdownItem } from "~/types/recipes";
-import { RecipeBreakdownTable } from "./RecipeBreakdownTable";
-import { TierSummaryView } from "./TierSummaryView";
-import { RawMaterialsView } from "./RawMaterialsView";
-import { TrackedInventoryView } from "~/components/TrackedInventoryView";
+} from "@chakra-ui/react"
+import type { RecipeBreakdownItem } from "~/types/recipes"
+import { RecipeBreakdownTable } from "./RecipeBreakdownTable"
+import { TierSummaryView } from "./TierSummaryView"
+import { RawMaterialsView } from "./RawMaterialsView"
+import { TrackedInventoryView } from "~/components/TrackedInventoryView"
 
 interface RecipeBreakdownCardProps {
-  breakdown: RecipeBreakdownItem[];
-  filteredBreakdown: RecipeBreakdownItem[];
-  hideCompleted: boolean;
-  onHideCompletedChange: (checked: boolean) => void;
-  isLoading: boolean;
+  breakdown: RecipeBreakdownItem[]
+  filteredBreakdown: RecipeBreakdownItem[]
+  hideCompleted: boolean
+  onHideCompletedChange: (checked: boolean) => void
+  isLoading: boolean
+  onClearSelection: () => void
 }
 
 export function RecipeBreakdownCard({
@@ -34,7 +35,10 @@ export function RecipeBreakdownCard({
   hideCompleted,
   onHideCompletedChange,
   isLoading,
+  onClearSelection,
 }: RecipeBreakdownCardProps) {
+  // Calculate if recipe is complete
+  const isRecipeComplete = breakdown.length > 0 && breakdown.every((item) => item.deficit === 0)
   return (
     <Card
       bg="rgba(24,35,60,0.9)"
@@ -81,15 +85,27 @@ export function RecipeBreakdownCard({
 
             <TabPanels>
               <TabPanel px={0}>
-                <RecipeBreakdownTable breakdown={filteredBreakdown} />
+                <RecipeBreakdownTable
+                  breakdown={filteredBreakdown}
+                  isRecipeComplete={isRecipeComplete}
+                  onClearSelection={onClearSelection}
+                />
               </TabPanel>
-              
+
               <TabPanel px={0}>
-                <TierSummaryView breakdown={filteredBreakdown} />
+                <TierSummaryView
+                  breakdown={filteredBreakdown}
+                  isRecipeComplete={isRecipeComplete}
+                  onClearSelection={onClearSelection}
+                />
               </TabPanel>
-              
+
               <TabPanel px={0}>
-                <RawMaterialsView breakdown={filteredBreakdown} />
+                <RawMaterialsView
+                  breakdown={filteredBreakdown}
+                  isRecipeComplete={isRecipeComplete}
+                  onClearSelection={onClearSelection}
+                />
               </TabPanel>
 
               <TabPanel px={0}>
@@ -111,5 +127,5 @@ export function RecipeBreakdownCard({
         ) : null}
       </CardBody>
     </Card>
-  );
+  )
 }

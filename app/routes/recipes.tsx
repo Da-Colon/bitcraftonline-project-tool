@@ -1,17 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
 import { useLoaderData, useFetcher } from "@remix-run/react"
-import {
-  Badge,
-  Box,
-  Button,
-  Divider,
-  Heading,
-  HStack,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react"
+import { Badge, Box, Button, Divider, Heading, HStack, Stack, Text, VStack } from "@chakra-ui/react"
 import { PlayerHeader } from "~/components/PlayerHeader"
 import { RecipeOverview } from "~/components/RecipeOverview"
 import { ItemSearchCard } from "~/components/recipes/ItemSearchCard"
@@ -220,6 +210,10 @@ export default function RecipesRoute() {
               hideCompleted={hideCompleted}
               onHideCompletedChange={setHideCompleted}
               isLoading={isLoading}
+              onClearSelection={() => {
+                clearSelection()
+                setSearchQuery("")
+              }}
             />
           )}
         </VStack>
