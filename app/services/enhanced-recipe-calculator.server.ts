@@ -285,8 +285,8 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         }
       }
       
-      // If this item is fully satisfied, zero ALL other items in breakdown (comprehensive approach)
-      if (remainingRequired === 0 && item.itemId !== rootItemId) {
+      // If this item is fully satisfied BY INVENTORY, zero all its children
+      if (remainingRequired === 0 && currentInventory > 0 && item.itemId !== rootItemId) {
         this.zeroAllChildrenInBreakdown(item.itemId, breakdown, dependencies)
       }
     }
@@ -357,7 +357,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
   }
 
   /**
-   * Comprehensive method to zero ALL items in breakdown when a parent is fully satisfied
+   * Comprehensive method to zero ALL items in breakdown when a parent is fully satisfied BY INVENTORY
    */
   private zeroAllChildrenInBreakdown(
     satisfiedItemId: string,
