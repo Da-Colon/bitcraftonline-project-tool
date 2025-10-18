@@ -27,6 +27,7 @@ export interface TrackedInventorySnapshot {
 }
 
 export interface PlayerInventoryTracking {
+  playerId: string
   trackedInventories: {
     [inventoryId: string]: TrackedInventorySnapshot
   }

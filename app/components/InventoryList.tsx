@@ -20,6 +20,7 @@ import { InventoryContents } from "~/components/InventoryContents"
 import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { getSnapshotAge } from "~/utils/inventory-snapshot"
+import type { InventorySource } from "~/types/inventory-tracking"
 
 interface InventoryListProps {
   inventories: PlayerInventories
@@ -34,9 +35,21 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
   const toast = useToast()
 
   const handleTrackingChange = async (inventory: Inventory, source: string, checked: boolean) => {
+    // Validate player is selected
+    if (!player?.entityId) {
+      toast({
+        title: "No Player Selected",
+        description: "Please select a player before tracking inventories",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+
     try {
       if (checked) {
-        await trackInventory(inventory, source as any)
+        await trackInventory(inventory, source as InventorySource)
         toast({
           title: "Inventory Tracked",
           description: `${inventory.name} is now being tracked`,
@@ -55,6 +68,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
         })
       }
     } catch (error) {
+      console.error("Failed to track/untrack inventory:", error)
       toast({
         title: "Error",
         description: `Failed to ${checked ? "track" : "untrack"} inventory`,
@@ -66,8 +80,19 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
   }
 
   const handleRefreshSnapshot = async (inventory: Inventory, source: string) => {
+    if (!player?.entityId) {
+      toast({
+        title: "No Player Selected",
+        description: "Please select a player first",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+
     try {
-      await refreshSnapshot(inventory.id, inventory, source as any)
+      await refreshSnapshot(inventory.id, inventory, source as InventorySource)
       toast({
         title: "Snapshot Refreshed",
         description: `${inventory.name} data has been updated`,
@@ -76,6 +101,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
         isClosable: true,
       })
     } catch (error) {
+      console.error("Failed to refresh snapshot:", error)
       toast({
         title: "Error",
         description: "Failed to refresh snapshot",

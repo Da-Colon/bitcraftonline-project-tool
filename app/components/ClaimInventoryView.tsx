@@ -1,7 +1,19 @@
-import { Box, Text, VStack, HStack, Divider, Button, useToast, useDisclosure, Heading, Spinner } from "@chakra-ui/react"
+import {
+  Box,
+  Text,
+  VStack,
+  HStack,
+  Divider,
+  Button,
+  useToast,
+  useDisclosure,
+  Heading,
+  Spinner,
+} from "@chakra-ui/react"
 import { useState } from "react"
 import { useClaimInventories } from "~/hooks/useClaimInventories"
-import { useTrackedInventories } from "~/hooks/useTrackedInventories"
+import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { useSelectedClaim } from "~/hooks/useSelectedClaim"
 import { ClaimInventoryList } from "~/components/ClaimInventoryList"
 import { ClaimSearchModal } from "~/components/ClaimSearchModal"
@@ -10,9 +22,12 @@ import { ClaimOverview } from "~/components/ClaimOverview"
 type ClaimInventoryViewMode = "list" | "tier"
 
 export function ClaimInventoryView() {
+  const { player } = useSelectedPlayer()
   const { claim, selectClaim, clearClaim } = useSelectedClaim()
   const { inventories, loading, error } = useClaimInventories(claim?.claimId)
-  const { trackedInventories, trackAll, untrackAll } = useTrackedInventories()
+  const { snapshots, trackInventories, untrackAll, isLoading } = usePlayerInventoryTracking(
+    player?.entityId || null
+  )
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [viewMode, setViewMode] = useState<ClaimInventoryViewMode>("list")
   const toast = useToast()
@@ -39,28 +54,47 @@ export function ClaimInventoryView() {
     })
   }
 
-  const handleTrackAll = () => {
+  const handleTrackAll = async () => {
     if (!inventories) return
-    const allIds = inventories.inventories.map((inv) => inv.id)
-    trackAll(allIds)
-    toast({
-      title: "All Buildings Tracked",
-      description: `Now tracking ${allIds.length} claim buildings`,
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    })
+    try {
+      await trackInventories(inventories.inventories, "claim")
+      toast({
+        title: "All Buildings Tracked",
+        description: `Now tracking ${inventories.inventories.length} claim buildings`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      })
+    } catch (error) {
+      toast({
+        title: "Error Tracking Buildings",
+        description: "Failed to track some buildings",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
-  const handleUntrackAll = () => {
-    untrackAll()
-    toast({
-      title: "All Tracking Cleared",
-      description: "No claim buildings are being tracked",
-      status: "info",
-      duration: 3000,
-      isClosable: true,
-    })
+  const handleUntrackAll = async () => {
+    try {
+      await untrackAll()
+      toast({
+        title: "All Tracking Cleared",
+        description: "No claim buildings are being tracked",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      })
+    } catch (error) {
+      toast({
+        title: "Error Clearing Tracking",
+        description: "Failed to clear tracking",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
   if (!claim) {
@@ -71,8 +105,8 @@ export function ClaimInventoryView() {
             Claim Inventories
           </Heading>
           <Text color="whiteAlpha.800">
-            Manage storerooms, guild caches, and production outputs from a single cozy panel. Select a
-            claim to get started.
+            Manage storerooms, guild caches, and production outputs from a single cozy panel. Select
+            a claim to get started.
           </Text>
         </Box>
 
@@ -94,7 +128,13 @@ export function ClaimInventoryView() {
               Select a claim to view and manage its building inventories. You can track storage
               containers, production buildings, and other structures.
             </Text>
-            <Button colorScheme="teal" size="lg" bg="teal.400" _hover={{ bg: "teal.500" }} onClick={onOpen}>
+            <Button
+              colorScheme="teal"
+              size="lg"
+              bg="teal.400"
+              _hover={{ bg: "teal.500" }}
+              onClick={onOpen}
+            >
               Select Claim
             </Button>
           </VStack>
@@ -137,7 +177,13 @@ export function ClaimInventoryView() {
               Error loading claim inventories: {error}
             </Text>
             <HStack spacing={3}>
-              <Button size="sm" colorScheme="teal" bg="teal.400" _hover={{ bg: "teal.500" }} onClick={onOpen}>
+              <Button
+                size="sm"
+                colorScheme="teal"
+                bg="teal.400"
+                _hover={{ bg: "teal.500" }}
+                onClick={onOpen}
+              >
                 Select Different Claim
               </Button>
               <Button
@@ -174,7 +220,13 @@ export function ClaimInventoryView() {
               This claim has no accessible inventories.
             </Text>
             <HStack spacing={3}>
-              <Button size="sm" colorScheme="teal" bg="teal.400" _hover={{ bg: "teal.500" }} onClick={onOpen}>
+              <Button
+                size="sm"
+                colorScheme="teal"
+                bg="teal.400"
+                _hover={{ bg: "teal.500" }}
+                onClick={onOpen}
+              >
                 Select Different Claim
               </Button>
               <Button
@@ -194,7 +246,7 @@ export function ClaimInventoryView() {
     )
   }
 
-  const claimTrackedCount = inventories.inventories.filter((inv) => trackedInventories.has(inv.id)).length
+  const claimTrackedCount = snapshots.length
 
   return (
     <VStack spacing={8} align="stretch">

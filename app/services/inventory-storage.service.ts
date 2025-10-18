@@ -63,6 +63,7 @@ class InventoryStorageService {
         await new Promise<void>((resolve, reject) => {
           getRequest.onsuccess = () => {
             const existing: PlayerInventoryTracking = getRequest.result || {
+              playerId,
               trackedInventories: {},
               lastUpdated: new Date().toISOString(),
             }
@@ -86,6 +87,7 @@ class InventoryStorageService {
       const existing = this.loadFromLocalStorage()
       if (!existing[playerId]) {
         existing[playerId] = {
+          playerId,
           trackedInventories: {},
           lastUpdated: new Date().toISOString(),
         }
@@ -114,10 +116,8 @@ class InventoryStorageService {
           request.onsuccess = () => {
             const data: InventoryTrackingStorage = {}
             request.result.forEach((playerData: PlayerInventoryTracking) => {
-              data[
-                playerData.trackedInventories[Object.keys(playerData.trackedInventories)[0]]?.id ||
-                  "unknown"
-              ] = playerData
+              // Use the playerId from the object itself
+              data[playerData.playerId] = playerData
             })
             resolve(data)
           }
