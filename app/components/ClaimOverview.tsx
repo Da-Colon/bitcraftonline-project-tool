@@ -24,6 +24,7 @@ import type { ClaimInventoriesResponse } from "~/types/inventory"
 interface ClaimOverviewProps {
   claimData: ClaimInventoriesResponse
   trackedCount: number
+  totalTrackedCount?: number
   onTrackAll: () => void
   onUntrackAll: () => void
   onChangeClaim: () => void
@@ -32,6 +33,7 @@ interface ClaimOverviewProps {
 export function ClaimOverview({
   claimData,
   trackedCount,
+  totalTrackedCount,
   onTrackAll,
   onUntrackAll,
   onChangeClaim,
@@ -85,7 +87,14 @@ export function ClaimOverview({
             <Stat>
               <StatLabel color="whiteAlpha.700">Total Buildings</StatLabel>
               <StatNumber color="purple.200">{totalInventories}</StatNumber>
-              <StatHelpText color="whiteAlpha.600">{trackedCount} tracked</StatHelpText>
+              <StatHelpText color="whiteAlpha.600">
+                {trackedCount} tracked
+                {totalTrackedCount && totalTrackedCount > trackedCount && (
+                  <Text as="span" color="teal.200" ml={1}>
+                    ({totalTrackedCount} total)
+                  </Text>
+                )}
+              </StatHelpText>
             </Stat>
           </CardBody>
         </Card>
@@ -116,7 +125,13 @@ export function ClaimOverview({
               <StatLabel color="whiteAlpha.700">Tracking Progress</StatLabel>
               <StatNumber color="teal.200">{Math.round(trackingProgress)}%</StatNumber>
               <StatHelpText color="whiteAlpha.700">
-                <Progress value={trackingProgress} size="sm" colorScheme="teal" mt={2} bg="whiteAlpha.200" />
+                <Progress
+                  value={trackingProgress}
+                  size="sm"
+                  colorScheme="teal"
+                  mt={2}
+                  bg="whiteAlpha.200"
+                />
               </StatHelpText>
             </Stat>
           </CardBody>
@@ -155,7 +170,7 @@ export function ClaimOverview({
                     isDisabled={trackedCount === 0}
                     flex={1}
                   >
-                    Untrack All
+                    Untrack This Claim
                   </Button>
                 </HStack>
 
@@ -243,7 +258,12 @@ export function ClaimOverview({
                   <Text fontSize="sm" color="whiteAlpha.700">
                     Building Types:
                   </Text>
-                  <Badge colorScheme="purple" variant="subtle" color="purple.100" bg="rgba(192, 132, 252, 0.16)">
+                  <Badge
+                    colorScheme="purple"
+                    variant="subtle"
+                    color="purple.100"
+                    bg="rgba(192, 132, 252, 0.16)"
+                  >
                     {buildingTypes} types
                   </Badge>
                 </HStack>
@@ -252,7 +272,12 @@ export function ClaimOverview({
                   <Text fontSize="sm" color="whiteAlpha.700">
                     Storage Buildings:
                   </Text>
-                  <Badge colorScheme="teal" variant="subtle" color="teal.100" bg="rgba(45, 212, 191, 0.18)">
+                  <Badge
+                    colorScheme="teal"
+                    variant="subtle"
+                    color="teal.100"
+                    bg="rgba(45, 212, 191, 0.18)"
+                  >
                     {totalInventories} buildings
                   </Badge>
                 </HStack>

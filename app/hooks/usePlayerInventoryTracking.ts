@@ -9,6 +9,7 @@ import { createInventorySnapshot, getSnapshotMetadata } from "~/utils/inventory-
 import type {
   TrackedInventorySnapshot,
   InventorySnapshotMetadata,
+  InventorySource,
 } from "~/types/inventory-tracking"
 import type { Inventory, ClaimInventory } from "~/types/inventory"
 
@@ -181,6 +182,62 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     })
   }, [snapshots, metadata])
 
+  // Get snapshots by claim ID
+  const getSnapshotsByClaim = useCallback(
+    (claimId: string) => {
+      return snapshots.filter((snapshot) => snapshot.claimId === claimId)
+    },
+    [snapshots]
+  )
+
+  // Get snapshots by source
+  const getSnapshotsBySource = useCallback(
+    (source: InventorySource) => {
+      return snapshots.filter((snapshot) => snapshot.source === source)
+    },
+    [snapshots]
+  )
+
+  // Untrack all inventories from a specific claim
+  const untrackByClaim = useCallback(
+    async (claimId: string) => {
+      if (!playerId) {
+        throw new Error("No player selected")
+      }
+
+      try {
+        await inventoryStorageService.clearClaimTracking(playerId, claimId)
+        await loadSnapshots() // Refresh the list
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to clear claim tracking")
+        throw err
+      }
+    },
+    [playerId, loadSnapshots]
+  )
+
+  // Get tracking summary with breakdown by source and claim
+  const getTrackingSummary = useCallback(async () => {
+    if (!playerId) {
+      return {
+        total: 0,
+        bySource: {},
+        byClaim: {},
+      }
+    }
+
+    try {
+      return await inventoryStorageService.getTrackingSummaryBySource(playerId)
+    } catch (err) {
+      console.error("Failed to get tracking summary:", err)
+      return {
+        total: 0,
+        bySource: {},
+        byClaim: {},
+      }
+    }
+  }, [playerId])
+
   return {
     snapshots,
     metadata,
@@ -190,10 +247,14 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     untrackInventory,
     trackInventories,
     untrackAll,
+    untrackByClaim,
     isTracked,
     getSnapshot,
     refreshSnapshot,
     getStaleSnapshots,
+    getSnapshotsByClaim,
+    getSnapshotsBySource,
+    getTrackingSummary,
     reload: loadSnapshots,
   }
 }

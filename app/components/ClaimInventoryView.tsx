@@ -9,8 +9,13 @@ import {
   useDisclosure,
   Heading,
   Spinner,
+  Card,
+  CardBody,
+  Icon,
+  Badge,
 } from "@chakra-ui/react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { ExternalLinkIcon } from "@chakra-ui/icons"
 import { useClaimInventories } from "~/hooks/useClaimInventories"
 import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
@@ -18,6 +23,8 @@ import { useSelectedClaim } from "~/hooks/useSelectedClaim"
 import { ClaimInventoryList } from "~/components/ClaimInventoryList"
 import { ClaimSearchModal } from "~/components/ClaimSearchModal"
 import { ClaimOverview } from "~/components/ClaimOverview"
+import { TrackedInventorySummary } from "~/components/TrackedInventorySummary"
+import { useConfirmationDialog } from "~/components/ConfirmationDialog"
 
 type ClaimInventoryViewMode = "list" | "tier"
 
@@ -25,12 +32,34 @@ export function ClaimInventoryView() {
   const { player } = useSelectedPlayer()
   const { claim, selectClaim, clearClaim } = useSelectedClaim()
   const { inventories, loading, error } = useClaimInventories(claim?.claimId)
-  const { snapshots, trackInventories, untrackAll, isLoading } = usePlayerInventoryTracking(
-    player?.entityId || null
-  )
+  const {
+    snapshots,
+    trackInventories,
+    untrackByClaim,
+    getSnapshotsByClaim,
+    getTrackingSummary,
+    isLoading,
+  } = usePlayerInventoryTracking(player?.entityId || null)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const [viewMode, setViewMode] = useState<ClaimInventoryViewMode>("list")
+  const [totalTrackedCount, setTotalTrackedCount] = useState(0)
   const toast = useToast()
+  const { confirm, ConfirmationDialog } = useConfirmationDialog()
+
+  // Load total tracked count
+  useEffect(() => {
+    const loadTotalCount = async () => {
+      if (player?.entityId) {
+        try {
+          const summary = await getTrackingSummary()
+          setTotalTrackedCount(summary.total)
+        } catch (error) {
+          console.error("Failed to load tracking summary:", error)
+        }
+      }
+    }
+    loadTotalCount()
+  }, [player?.entityId, getTrackingSummary])
 
   const handleSelectClaim = (claimId: string, claimName: string) => {
     selectClaim(claimId, claimName)
@@ -77,11 +106,17 @@ export function ClaimInventoryView() {
   }
 
   const handleUntrackAll = async () => {
+    if (!claim?.claimId) return
+
     try {
-      await untrackAll()
+      await untrackByClaim(claim.claimId)
+      // Refresh total count
+      const summary = await getTrackingSummary()
+      setTotalTrackedCount(summary.total)
+
       toast({
-        title: "All Tracking Cleared",
-        description: "No claim buildings are being tracked",
+        title: "Claim Tracking Cleared",
+        description: `No buildings from ${claim.claimName} are being tracked`,
         status: "info",
         duration: 3000,
         isClosable: true,
@@ -89,12 +124,28 @@ export function ClaimInventoryView() {
     } catch (error) {
       toast({
         title: "Error Clearing Tracking",
-        description: "Failed to clear tracking",
+        description: "Failed to clear claim tracking",
         status: "error",
         duration: 3000,
         isClosable: true,
       })
     }
+  }
+
+  const handleUntrackAllWithConfirmation = () => {
+    if (!claim?.claimId) return
+
+    const currentClaimTrackedCount = getSnapshotsByClaim(claim.claimId).length
+
+    confirm({
+      title: "Untrack This Claim's Inventories",
+      message: `This will untrack ${currentClaimTrackedCount} building${
+        currentClaimTrackedCount !== 1 ? "s" : ""
+      } from ${claim.claimName}. Your personal and other claim inventories will not be affected.`,
+      confirmText: "Untrack This Claim",
+      severity: "warning",
+      onConfirm: handleUntrackAll,
+    })
   }
 
   if (!claim) {
@@ -246,7 +297,7 @@ export function ClaimInventoryView() {
     )
   }
 
-  const claimTrackedCount = snapshots.length
+  const claimTrackedCount = claim?.claimId ? getSnapshotsByClaim(claim.claimId).length : 0
 
   return (
     <VStack spacing={8} align="stretch">
@@ -260,11 +311,78 @@ export function ClaimInventoryView() {
         </Text>
       </Box>
 
+      {/* Prominent Claim Selector Card */}
+      <Card
+        bg="rgba(24, 35, 60, 0.9)"
+        border="1px solid"
+        borderColor="teal.300"
+        borderRadius="2xl"
+        backdropFilter="blur(12px)"
+        boxShadow="xl"
+      >
+        <CardBody p={6}>
+          <HStack justify="space-between" align="center">
+            <HStack spacing={4}>
+              <Text fontSize="3xl">🏰</Text>
+              <VStack align="start" spacing={1}>
+                <Text color="white" fontSize="xl" fontWeight="bold">
+                  {claim?.claimName || "No Claim Selected"}
+                </Text>
+                <HStack spacing={4}>
+                  <Badge
+                    colorScheme="teal"
+                    variant="subtle"
+                    bg="rgba(45, 212, 191, 0.12)"
+                    color="teal.100"
+                  >
+                    {inventories?.inventories.length || 0} buildings
+                  </Badge>
+                  <Badge
+                    colorScheme="purple"
+                    variant="subtle"
+                    bg="rgba(192, 132, 252, 0.12)"
+                    color="purple.100"
+                  >
+                    {claimTrackedCount} tracked
+                  </Badge>
+                  <Badge
+                    colorScheme="blue"
+                    variant="subtle"
+                    bg="rgba(59, 130, 246, 0.12)"
+                    color="blue.100"
+                  >
+                    {inventories?.inventories.reduce((sum, inv) => sum + inv.items.length, 0) || 0}{" "}
+                    items
+                  </Badge>
+                </HStack>
+              </VStack>
+            </HStack>
+            <Button
+              size="lg"
+              colorScheme="teal"
+              bg="teal.400"
+              _hover={{ bg: "teal.500" }}
+              onClick={onOpen}
+              rightIcon={<Icon as={ExternalLinkIcon} />}
+            >
+              Change Claim
+            </Button>
+          </HStack>
+        </CardBody>
+      </Card>
+
+      {/* Tracking Summary */}
+      <TrackedInventorySummary
+        currentClaimId={claim?.claimId}
+        currentClaimName={claim?.claimName}
+      />
+
       <ClaimOverview
         claimData={inventories}
         trackedCount={claimTrackedCount}
+        totalTrackedCount={totalTrackedCount}
         onTrackAll={handleTrackAll}
-        onUntrackAll={handleUntrackAll}
+        onUntrackAll={handleUntrackAllWithConfirmation}
         onChangeClaim={onOpen}
       />
 
@@ -310,6 +428,7 @@ export function ClaimInventoryView() {
       <ClaimInventoryList inventories={inventories.inventories} viewMode={viewMode} />
 
       <ClaimSearchModal isOpen={isOpen} onClose={onClose} onSelectClaim={handleSelectClaim} />
+      {ConfirmationDialog}
     </VStack>
   )
 }

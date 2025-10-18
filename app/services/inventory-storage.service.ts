@@ -219,6 +219,48 @@ class InventoryStorageService {
     }
   }
 
+  async getClaimTrackedInventories(
+    playerId: string,
+    claimId: string
+  ): Promise<TrackedInventorySnapshot[]> {
+    const allSnapshots = await this.getPlayerTrackedInventories(playerId)
+    return allSnapshots.filter((snapshot) => snapshot.claimId === claimId)
+  }
+
+  async clearClaimTracking(playerId: string, claimId: string): Promise<void> {
+    const claimSnapshots = await this.getClaimTrackedInventories(playerId, claimId)
+
+    for (const snapshot of claimSnapshots) {
+      await this.removeTrackedInventory(playerId, snapshot.id)
+    }
+  }
+
+  async getTrackingSummaryBySource(playerId: string): Promise<{
+    total: number
+    bySource: Record<string, number>
+    byClaim: Record<string, number>
+  }> {
+    const allSnapshots = await this.getPlayerTrackedInventories(playerId)
+
+    const summary = {
+      total: allSnapshots.length,
+      bySource: {} as Record<string, number>,
+      byClaim: {} as Record<string, number>,
+    }
+
+    for (const snapshot of allSnapshots) {
+      // Count by source
+      summary.bySource[snapshot.source] = (summary.bySource[snapshot.source] || 0) + 1
+
+      // Count by claim (only for claim inventories)
+      if (snapshot.source === "claim" && snapshot.claimId) {
+        summary.byClaim[snapshot.claimId] = (summary.byClaim[snapshot.claimId] || 0) + 1
+      }
+    }
+
+    return summary
+  }
+
   async clearOldSnapshots(maxAgeHours: number = 168): Promise<void> {
     // 7 days default
     const cutoffTime = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000)
