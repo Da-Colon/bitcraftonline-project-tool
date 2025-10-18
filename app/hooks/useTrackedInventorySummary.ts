@@ -3,19 +3,26 @@ import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { usePlayerInventories } from "~/hooks/usePlayerInventories"
 import { useSelectedClaim } from "~/hooks/useSelectedClaim"
 import { useClaimInventories } from "~/hooks/useClaimInventories"
-import { useTrackedInventories } from "~/hooks/useTrackedInventories"
+import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
 import {
   buildTrackedInventorySummary,
+  buildTrackedInventorySummaryFromSnapshots,
   type TrackedInventorySummary,
 } from "~/utils/combineAllTrackedInventories"
-import type { PlayerInventories, ClaimInventoriesResponse } from "~/types/inventory"
+import type {
+  PlayerInventories,
+  ClaimInventoriesResponse,
+  Inventory,
+  ClaimInventory,
+} from "~/types/inventory"
+import type { TrackedInventorySnapshot, InventorySource } from "~/types/inventory-tracking"
 
 export interface TrackedInventorySummaryResult extends TrackedInventorySummary {
   player: ReturnType<typeof useSelectedPlayer>["player"]
   claim: ReturnType<typeof useSelectedClaim>["claim"]
   playerInventories: PlayerInventories | null
   claimInventories: ClaimInventoriesResponse | null
-  trackedInventoryIds: Set<string>
+  snapshots: TrackedInventorySnapshot[]
   trackedCount: number
   isTrackingLoaded: boolean
   loading: boolean
@@ -24,10 +31,20 @@ export interface TrackedInventorySummaryResult extends TrackedInventorySummary {
   playerError: string | null
   claimLoading: boolean
   claimError: string | null
-  toggleTracking: (inventoryId: string) => void
-  trackAll: (inventoryIds: string[]) => void
-  untrackAll: () => void
-  clearAll: () => void
+  trackInventory: (inventory: Inventory | ClaimInventory, source: InventorySource) => Promise<void>
+  untrackInventory: (inventoryId: string) => Promise<void>
+  trackInventories: (
+    inventories: (Inventory | ClaimInventory)[],
+    source: InventorySource
+  ) => Promise<void>
+  untrackAll: () => Promise<void>
+  isTracked: (inventoryId: string) => boolean
+  refreshSnapshot: (
+    inventoryId: string,
+    freshInventory: Inventory | ClaimInventory,
+    source: InventorySource
+  ) => Promise<void>
+  getStaleSnapshots: () => TrackedInventorySnapshot[]
 }
 
 export function useTrackedInventorySummary(): TrackedInventorySummaryResult {
@@ -44,21 +61,33 @@ export function useTrackedInventorySummary(): TrackedInventorySummaryResult {
     error: claimError,
   } = useClaimInventories(claim?.claimId)
   const {
-    trackedInventories,
-    toggleTracking,
-    trackAll,
+    snapshots,
+    metadata,
+    isLoading: trackingLoading,
+    error: trackingError,
+    trackInventory,
+    untrackInventory,
+    trackInventories,
     untrackAll,
-    clearAll,
-    isLoaded,
-  } = useTrackedInventories()
+    isTracked,
+    refreshSnapshot,
+    getStaleSnapshots,
+  } = usePlayerInventoryTracking(player?.entityId || null)
 
   const summary = useMemo(() => {
-    return buildTrackedInventorySummary(playerInventories, claimInventories, trackedInventories)
-  }, [playerInventories, claimInventories, trackedInventories])
+    // Use snapshots if available, otherwise fall back to live data
+    if (snapshots.length > 0) {
+      return buildTrackedInventorySummaryFromSnapshots(snapshots)
+    } else {
+      // Fallback to old method for backward compatibility
+      const trackedIds = new Set(snapshots.map((s) => s.id))
+      return buildTrackedInventorySummary(playerInventories, claimInventories, trackedIds)
+    }
+  }, [snapshots, playerInventories, claimInventories])
 
-  const loading = playerLoading || claimLoading
-  const error = playerError || claimError || null
-  const trackedCount = trackedInventories.size
+  const loading = playerLoading || claimLoading || trackingLoading
+  const error = playerError || claimError || trackingError || null
+  const trackedCount = snapshots.length
 
   return {
     ...summary,
@@ -66,18 +95,21 @@ export function useTrackedInventorySummary(): TrackedInventorySummaryResult {
     claim,
     playerInventories,
     claimInventories,
-    trackedInventoryIds: trackedInventories,
+    snapshots,
     trackedCount,
-    isTrackingLoaded: isLoaded,
+    isTrackingLoaded: !trackingLoading,
     loading,
     error,
     playerLoading,
     playerError,
     claimLoading,
     claimError,
-    toggleTracking,
-    trackAll,
+    trackInventory,
+    untrackInventory,
+    trackInventories,
     untrackAll,
-    clearAll,
+    isTracked,
+    refreshSnapshot,
+    getStaleSnapshots,
   }
 }

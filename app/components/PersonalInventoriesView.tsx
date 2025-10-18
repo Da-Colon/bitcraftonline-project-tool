@@ -1,8 +1,18 @@
-import { Box, Text, VStack, Spinner, HStack, Button, Heading, Divider, useToast } from "@chakra-ui/react"
+import {
+  Box,
+  Text,
+  VStack,
+  Spinner,
+  HStack,
+  Button,
+  Heading,
+  Divider,
+  useToast,
+} from "@chakra-ui/react"
 import { useState } from "react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { usePlayerInventories } from "~/hooks/usePlayerInventories"
-import { useTrackedInventories } from "~/hooks/useTrackedInventories"
+import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
 import { InventoryList } from "~/components/InventoryList"
 import { InventoryOverview } from "~/components/InventoryOverview"
 
@@ -11,7 +21,16 @@ type InventoryViewType = "list" | "tier"
 export function PersonalInventoriesView() {
   const { player } = useSelectedPlayer()
   const { inventories, loading, error } = usePlayerInventories(player?.entityId)
-  const { trackedInventories, trackAll, untrackAll } = useTrackedInventories()
+  const {
+    snapshots,
+    trackInventory,
+    untrackInventory,
+    trackInventories,
+    untrackAll,
+    isTracked,
+    isLoading: trackingLoading,
+    error: trackingError,
+  } = usePlayerInventoryTracking(player?.entityId || null)
   const [viewType, setViewType] = useState<InventoryViewType>("list")
   const toast = useToast()
 
@@ -97,29 +116,70 @@ export function PersonalInventoriesView() {
     ...(inventories.recovery || []),
     ...(inventories.housing || []),
   ]
-  const trackedCount = allInventories.filter((inv) => trackedInventories.has(inv.id)).length
+  const trackedCount = allInventories.filter((inv) => isTracked(inv.id)).length
 
-  const handleTrackAll = () => {
-    const allIds = allInventories.map((inv) => inv.id)
-    trackAll(allIds)
-    toast({
-      title: "All Inventories Tracked",
-      description: `Now tracking ${allIds.length} inventories`,
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    })
+  const handleTrackAll = async () => {
+    try {
+      const personalInventories = inventories.personal || []
+      const bankInventories = inventories.banks || []
+      const storageInventories = inventories.storage || []
+      const recoveryInventories = inventories.recovery || []
+      const housingInventories = inventories.housing || []
+
+      // Track each type separately with appropriate source
+      if (personalInventories.length > 0) {
+        await trackInventories(personalInventories, "personal")
+      }
+      if (bankInventories.length > 0) {
+        await trackInventories(bankInventories, "bank")
+      }
+      if (storageInventories.length > 0) {
+        await trackInventories(storageInventories, "storage")
+      }
+      if (recoveryInventories.length > 0) {
+        await trackInventories(recoveryInventories, "recovery")
+      }
+      if (housingInventories.length > 0) {
+        await trackInventories(housingInventories, "housing")
+      }
+
+      toast({
+        title: "All Inventories Tracked",
+        description: `Now tracking ${allInventories.length} inventories`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      })
+    } catch (error) {
+      toast({
+        title: "Error Tracking Inventories",
+        description: "Failed to track some inventories",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
-  const handleUntrackAll = () => {
-    untrackAll()
-    toast({
-      title: "All Tracking Cleared",
-      description: "No inventories are being tracked",
-      status: "info",
-      duration: 3000,
-      isClosable: true,
-    })
+  const handleUntrackAll = async () => {
+    try {
+      await untrackAll()
+      toast({
+        title: "All Tracking Cleared",
+        description: "No inventories are being tracked",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      })
+    } catch (error) {
+      toast({
+        title: "Error Clearing Tracking",
+        description: "Failed to clear tracking",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
   return (

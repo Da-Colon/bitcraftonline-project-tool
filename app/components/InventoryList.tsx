@@ -10,12 +10,16 @@ import {
   Card,
   CardBody,
   Icon,
+  Button,
+  useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import type { PlayerInventories, Inventory } from "~/types/inventory"
 import { InventoryContents } from "~/components/InventoryContents"
-import { useTrackedInventories } from "~/hooks/useTrackedInventories"
+import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import { getSnapshotAge } from "~/utils/inventory-snapshot"
 
 interface InventoryListProps {
   inventories: PlayerInventories
@@ -23,11 +27,63 @@ interface InventoryListProps {
 }
 
 export function InventoryList({ inventories, viewMode = "list" }: InventoryListProps) {
-  const { isTracked, toggleTracking } = useTrackedInventories()
+  const { player } = useSelectedPlayer()
+  const { isTracked, trackInventory, untrackInventory, refreshSnapshot, getSnapshot, snapshots } =
+    usePlayerInventoryTracking(player?.entityId || null)
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
+  const toast = useToast()
 
-  const handleTrackingChange = (inventoryId: string, _checked: boolean) => {
-    toggleTracking(inventoryId)
+  const handleTrackingChange = async (inventory: Inventory, source: string, checked: boolean) => {
+    try {
+      if (checked) {
+        await trackInventory(inventory, source as any)
+        toast({
+          title: "Inventory Tracked",
+          description: `${inventory.name} is now being tracked`,
+          status: "success",
+          duration: 2000,
+          isClosable: true,
+        })
+      } else {
+        await untrackInventory(inventory.id)
+        toast({
+          title: "Inventory Untracked",
+          description: `${inventory.name} is no longer tracked`,
+          status: "info",
+          duration: 2000,
+          isClosable: true,
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to ${checked ? "track" : "untrack"} inventory`,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
+  }
+
+  const handleRefreshSnapshot = async (inventory: Inventory, source: string) => {
+    try {
+      await refreshSnapshot(inventory.id, inventory, source as any)
+      toast({
+        title: "Snapshot Refreshed",
+        description: `${inventory.name} data has been updated`,
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh snapshot",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
   const handleExpandToggle = (inventoryId: string) => {
@@ -40,7 +96,11 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
     setExpandedInventories(newExpanded)
   }
 
-  const renderInventorySection = (title: string, inventories: Inventory[] | undefined) => {
+  const renderInventorySection = (
+    title: string,
+    inventories: Inventory[] | undefined,
+    source: string
+  ) => {
     if (!inventories || inventories.length === 0) return null
 
     return (
@@ -52,6 +112,8 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
           {inventories.map((inventory) => {
             const isExpanded = expandedInventories.has(inventory.id)
             const tracked = isTracked(inventory.id)
+            const snapshot = getSnapshot(inventory.id)
+            const snapshotAge = snapshot ? getSnapshotAge(snapshot) : null
 
             return (
               <Card
@@ -72,7 +134,7 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                     <HStack spacing={4} flex={1}>
                       <Checkbox
                         isChecked={tracked}
-                        onChange={(e) => handleTrackingChange(inventory.id, e.target.checked)}
+                        onChange={(e) => handleTrackingChange(inventory, source, e.target.checked)}
                         colorScheme="teal"
                         size="lg"
                       />
@@ -98,7 +160,11 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                             variant="subtle"
                             colorScheme={inventory.items.length > 0 ? "teal" : "gray"}
                             fontSize="xs"
-                            bg={inventory.items.length > 0 ? "rgba(45, 212, 191, 0.12)" : "rgba(148, 163, 184, 0.18)"}
+                            bg={
+                              inventory.items.length > 0
+                                ? "rgba(45, 212, 191, 0.12)"
+                                : "rgba(148, 163, 184, 0.18)"
+                            }
                             color={inventory.items.length > 0 ? "teal.100" : "whiteAlpha.700"}
                           >
                             {inventory.items.length} items
@@ -119,27 +185,51 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
                               Tracked
                             </Badge>
                           )}
+                          {snapshotAge && (
+                            <Badge
+                              variant="subtle"
+                              colorScheme="blue"
+                              fontSize="xs"
+                              bg="rgba(59, 130, 246, 0.15)"
+                              color="blue.100"
+                            >
+                              {snapshotAge}
+                            </Badge>
+                          )}
                         </HStack>
                       </VStack>
                     </HStack>
 
-                    <HStack
-                      as="button"
-                      spacing={2}
-                      color="teal.200"
-                      fontSize="sm"
-                      onClick={() => handleExpandToggle(inventory.id)}
-                      _hover={{
-                        color: "teal.100",
-                        bg: "rgba(45, 212, 191, 0.12)",
-                      }}
-                      px={3}
-                      py={2}
-                      borderRadius="md"
-                      transition="all 0.2s"
-                    >
-                      <Text fontWeight="medium">{isExpanded ? "Collapse" : "Expand"}</Text>
-                      <Icon as={isExpanded ? ChevronDownIcon : ChevronRightIcon} boxSize={4} />
+                    <HStack spacing={2}>
+                      {tracked && snapshot && (
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          colorScheme="blue"
+                          onClick={() => handleRefreshSnapshot(inventory, source)}
+                          _hover={{ bg: "rgba(59, 130, 246, 0.12)" }}
+                        >
+                          Refresh
+                        </Button>
+                      )}
+                      <HStack
+                        as="button"
+                        spacing={2}
+                        color="teal.200"
+                        fontSize="sm"
+                        onClick={() => handleExpandToggle(inventory.id)}
+                        _hover={{
+                          color: "teal.100",
+                          bg: "rgba(45, 212, 191, 0.12)",
+                        }}
+                        px={3}
+                        py={2}
+                        borderRadius="md"
+                        transition="all 0.2s"
+                      >
+                        <Text fontWeight="medium">{isExpanded ? "Collapse" : "Expand"}</Text>
+                        <Icon as={isExpanded ? ChevronDownIcon : ChevronRightIcon} boxSize={4} />
+                      </HStack>
                     </HStack>
                   </HStack>
 
@@ -200,11 +290,11 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
 
   return (
     <VStack spacing={8} align="stretch">
-      {renderInventorySection("Personal Inventories", inventories.personal)}
-      {renderInventorySection("Storage", inventories.storage)}
-      {renderInventorySection("Housing Inventories", inventories.housing)}
-      {renderInventorySection("Banks", inventories.banks)}
-      {renderInventorySection("Recovery Chests", inventories.recovery)}
+      {renderInventorySection("Personal Inventories", inventories.personal, "personal")}
+      {renderInventorySection("Storage", inventories.storage, "storage")}
+      {renderInventorySection("Housing Inventories", inventories.housing, "housing")}
+      {renderInventorySection("Banks", inventories.banks, "bank")}
+      {renderInventorySection("Recovery Chests", inventories.recovery, "recovery")}
     </VStack>
   )
 }

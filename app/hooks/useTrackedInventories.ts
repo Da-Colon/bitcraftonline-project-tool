@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from "react"
 
 const TRACKED_INVENTORIES_KEY = "bitcraft-tracked-inventories"
 
+/**
+ * @deprecated Use usePlayerInventoryTracking instead for player-scoped tracking with snapshots
+ * This hook will be removed in a future version
+ */
 export function useTrackedInventories() {
   const [trackedInventories, setTrackedInventories] = useState<Set<string>>(new Set())
   const [isLoaded, setIsLoaded] = useState(false)
@@ -18,12 +22,18 @@ export function useTrackedInventories() {
         if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) {
           setTrackedInventories(new Set(parsed))
         } else {
-          console.warn("Invalid tracked inventories payload found in localStorage — resetting state", parsed)
+          console.warn(
+            "Invalid tracked inventories payload found in localStorage — resetting state",
+            parsed
+          )
           window.localStorage.removeItem(TRACKED_INVENTORIES_KEY)
         }
       }
     } catch (error) {
-      console.warn("Failed to load tracked inventories from localStorage — clearing saved value", error)
+      console.warn(
+        "Failed to load tracked inventories from localStorage — clearing saved value",
+        error
+      )
       if (storedValue !== null) {
         window.localStorage.removeItem(TRACKED_INVENTORIES_KEY)
       }

@@ -1,26 +1,11 @@
-import {
-  Badge,
-  Box,
-  Button,
-  HStack,
-  Spinner,
-  Text,
-  VStack,
-  useToast,
-} from "@chakra-ui/react"
+import { Badge, Box, Button, HStack, Spinner, Text, VStack, useToast } from "@chakra-ui/react"
 import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
 import { InventoryTierTable } from "~/components/InventoryTierTable"
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 
 export function TrackedInventoryView() {
-  const {
-    player,
-    loading,
-    error,
-    trackedInventoryIds,
-    combinedItems,
-    clearAll,
-  } = useTrackedInventorySummary()
+  const { player, loading, error, snapshots, combinedItems, untrackAll } =
+    useTrackedInventorySummary()
   const toast = useToast()
 
   const glassPanelStyles = {
@@ -66,24 +51,30 @@ export function TrackedInventoryView() {
     )
   }
 
-  const handleClearAll = () => {
-    clearAll()
-    toast({
-      title: "Tracking Cleared",
-      description: "All inventory tracking has been removed",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    })
+  const handleClearAll = async () => {
+    try {
+      await untrackAll()
+      toast({
+        title: "Tracking Cleared",
+        description: "All inventory tracking has been removed",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      })
+    } catch (error) {
+      toast({
+        title: "Error Clearing Tracking",
+        description: "Failed to clear tracking",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      })
+    }
   }
 
-  if (trackedInventoryIds.size === 0) {
+  if (snapshots.length === 0) {
     return (
-      <Box
-        {...glassPanelStyles}
-        p={8}
-        textAlign="center"
-      >
+      <Box {...glassPanelStyles} p={8} textAlign="center">
         <VStack spacing={3}>
           <Text fontSize="2xl" mb={1}>
             📦
@@ -175,7 +166,7 @@ export function TrackedInventoryView() {
 
           <HStack spacing={3} flexWrap="wrap">
             <Badge colorScheme="teal" borderRadius="full" px={3} py={1}>
-              {trackedInventoryIds.size} inventories tracked
+              {snapshots.length} inventories tracked
             </Badge>
             <Badge colorScheme="purple" borderRadius="full" px={3} py={1}>
               {combinedItems.length.toLocaleString()} unique items
