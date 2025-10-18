@@ -25,9 +25,14 @@ import type { InventorySource } from "~/types/inventory-tracking"
 interface InventoryListProps {
   inventories: PlayerInventories
   viewMode?: "list" | "tier"
+  isFiltered?: boolean
 }
 
-export function InventoryList({ inventories, viewMode = "list" }: InventoryListProps) {
+export function InventoryList({
+  inventories,
+  viewMode = "list",
+  isFiltered = false,
+}: InventoryListProps) {
   const { player } = useSelectedPlayer()
   const { isTracked, trackInventory, untrackInventory, refreshSnapshot, getSnapshot, snapshots } =
     usePlayerInventoryTracking(player?.entityId || null)
@@ -293,21 +298,27 @@ export function InventoryList({ inventories, viewMode = "list" }: InventoryListP
       >
         <VStack spacing={4}>
           <Text fontSize="3xl" mb={2}>
-            🎒
+            {isFiltered ? "🔍" : "🎒"}
           </Text>
           <Text color="white" fontSize="xl" fontWeight="semibold">
-            No Inventories Found
+            {isFiltered ? "No Matching Inventories" : "No Inventories Found"}
           </Text>
           <Text color="whiteAlpha.800" fontSize="md" maxW="md">
-            We couldn't find any inventories for this player. This might happen if:
+            {isFiltered
+              ? "No inventories contain items matching your search. Try a different search term or clear the search to see all inventories."
+              : "We couldn't find any inventories for this player. This might happen if:"}
           </Text>
-          <VStack spacing={2} align="start" fontSize="sm" color="whiteAlpha.700">
-            <Text>• The player data is still loading</Text>
-            <Text>• The player has no accessible inventories</Text>
-            <Text>• There's a temporary connection issue</Text>
-          </VStack>
+          {!isFiltered && (
+            <VStack spacing={2} align="start" fontSize="sm" color="whiteAlpha.700">
+              <Text>• The player data is still loading</Text>
+              <Text>• The player has no accessible inventories</Text>
+              <Text>• There's a temporary connection issue</Text>
+            </VStack>
+          )}
           <Text fontSize="sm" color="whiteAlpha.600" mt={4}>
-            Try refreshing the page or checking back later.
+            {isFiltered
+              ? "Try searching for a different item or clear the search to see all inventories."
+              : "Try refreshing the page or checking back later."}
           </Text>
         </VStack>
       </Box>

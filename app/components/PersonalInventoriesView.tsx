@@ -8,13 +8,20 @@ import {
   Heading,
   Divider,
   useToast,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  Badge,
 } from "@chakra-ui/react"
+import { SearchIcon, CloseIcon } from "@chakra-ui/icons"
 import { useState } from "react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { usePlayerInventories } from "~/hooks/usePlayerInventories"
 import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
 import { InventoryList } from "~/components/InventoryList"
 import { InventoryOverview } from "~/components/InventoryOverview"
+import { useDebounce } from "~/hooks/useDebounce"
+import type { Inventory } from "~/types/inventory"
 
 type InventoryViewType = "list" | "tier"
 
@@ -32,7 +39,22 @@ export function PersonalInventoriesView() {
     error: trackingError,
   } = usePlayerInventoryTracking(player?.entityId || null)
   const [viewType, setViewType] = useState<InventoryViewType>("list")
+  const [searchQuery, setSearchQuery] = useState("")
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const toast = useToast()
+
+  // Filter inventories by item name
+  const filterInventoriesByItem = (
+    inventories: Inventory[] | undefined,
+    query: string
+  ): Inventory[] => {
+    if (!inventories || !query.trim()) return inventories || []
+
+    const lowercaseQuery = query.toLowerCase()
+    return inventories.filter((inventory) =>
+      inventory.items.some((item) => item.name?.toLowerCase().includes(lowercaseQuery))
+    )
+  }
 
   if (loading) {
     return (
@@ -108,6 +130,15 @@ export function PersonalInventoriesView() {
     )
   }
 
+  // Filter inventories based on search query
+  const filteredInventories = {
+    personal: filterInventoriesByItem(inventories.personal, debouncedSearchQuery),
+    banks: filterInventoriesByItem(inventories.banks, debouncedSearchQuery),
+    storage: filterInventoriesByItem(inventories.storage, debouncedSearchQuery),
+    recovery: filterInventoriesByItem(inventories.recovery, debouncedSearchQuery),
+    housing: filterInventoriesByItem(inventories.housing, debouncedSearchQuery),
+  }
+
   // Calculate tracked count
   const allInventories = [
     ...(inventories.personal || []),
@@ -117,6 +148,16 @@ export function PersonalInventoriesView() {
     ...(inventories.housing || []),
   ]
   const trackedCount = allInventories.filter((inv) => isTracked(inv.id)).length
+
+  // Calculate filtered count for display
+  const allFilteredInventories = [
+    ...filteredInventories.personal,
+    ...filteredInventories.banks,
+    ...filteredInventories.storage,
+    ...filteredInventories.recovery,
+    ...filteredInventories.housing,
+  ]
+  const isSearchActive = debouncedSearchQuery.trim().length > 0
 
   const handleTrackAll = async () => {
     try {
@@ -238,6 +279,59 @@ export function PersonalInventoriesView() {
             </Button>
           </HStack>
         </HStack>
+
+        {/* Search Input */}
+        <Box mb={4}>
+          <InputGroup>
+            <InputLeftElement pointerEvents="none">
+              <SearchIcon color="whiteAlpha.600" />
+            </InputLeftElement>
+            <Input
+              placeholder="Search for items in inventories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              bg="rgba(24, 35, 60, 0.9)"
+              border="1px solid rgba(148, 163, 184, 0.35)"
+              color="white"
+              _placeholder={{ color: "whiteAlpha.600" }}
+              _focus={{
+                borderColor: "teal.300",
+                boxShadow: "0 0 0 1px rgba(45, 212, 191, 0.3)",
+              }}
+              _hover={{
+                borderColor: "rgba(148, 163, 184, 0.55)",
+              }}
+            />
+          </InputGroup>
+
+          {/* Search Results Info */}
+          {isSearchActive && (
+            <HStack mt={2} spacing={3}>
+              <Badge
+                colorScheme="teal"
+                variant="subtle"
+                bg="rgba(45, 212, 191, 0.15)"
+                color="teal.100"
+                px={3}
+                py={1}
+                borderRadius="full"
+              >
+                Showing {allFilteredInventories.length} of {allInventories.length} inventories
+              </Badge>
+              <Button
+                size="xs"
+                variant="ghost"
+                color="whiteAlpha.600"
+                leftIcon={<CloseIcon />}
+                onClick={() => setSearchQuery("")}
+                _hover={{ bg: "whiteAlpha.200", color: "white" }}
+              >
+                Clear search
+              </Button>
+            </HStack>
+          )}
+        </Box>
+
         <Text color="whiteAlpha.800" mb={6}>
           {viewType === "list"
             ? "Select inventories to track. Use the checkboxes to add or remove inventories from tracking."
@@ -245,7 +339,11 @@ export function PersonalInventoriesView() {
         </Text>
       </Box>
 
-      <InventoryList inventories={inventories} viewMode={viewType} />
+      <InventoryList
+        inventories={filteredInventories}
+        viewMode={viewType}
+        isFiltered={isSearchActive}
+      />
     </VStack>
   )
 }
