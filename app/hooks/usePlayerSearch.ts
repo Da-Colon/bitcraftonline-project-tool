@@ -8,7 +8,7 @@ type UsePlayerSearchOptions = {
 };
 
 export function usePlayerSearch(query: string, opts: UsePlayerSearchOptions = {}) {
-  const minLength = opts.minLength ?? 3;
+  const minLength = opts.minLength ?? 2;
   const delay = opts.delay ?? 300;
   const debounced = useDebounce(query, delay);
   const [results, setResults] = useState<Player[]>([]);

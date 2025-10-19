@@ -6,7 +6,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const q = url.searchParams.get("q")?.trim() || "";
 
-  if (q.length < 3) {
+  if (q.length < 2) {
     return json({ players: [] });
   }
 

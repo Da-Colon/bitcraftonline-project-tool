@@ -20,7 +20,7 @@ import { PlayerResults } from "~/components/PlayerResults"
 export function PlayerSelectionView() {
   const { savePlayer } = useSelectedPlayer()
   const [query, setQuery] = useState("")
-  const { results, loading, error } = usePlayerSearch(query, { minLength: 3, delay: 300 })
+  const { results, loading, error } = usePlayerSearch(query, { minLength: 2, delay: 300 })
 
   return (
     <Box bg="gradient-to-br from-blue.50 to-purple.50" position="relative" overflow="hidden">
@@ -77,7 +77,7 @@ export function PlayerSelectionView() {
                   </InputLeftElement>
                   <Input
                     autoFocus
-                    placeholder="Enter player name (min 3 characters)..."
+                    placeholder="Enter player name (min 2 characters)..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     bg="gray.50"
@@ -93,7 +93,7 @@ export function PlayerSelectionView() {
                   />
                 </InputGroup>
 
-                {(!query || query.trim().length < 3) && (
+                {(!query || query.trim().length < 2) && (
                   <Text color="gray.500" fontSize="sm" textAlign="center">
                     Start typing to search for players...
                   </Text>
