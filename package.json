@@ -1,6 +1,6 @@
 {
   "name": "bitcraft-helper",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "sideEffects": false,
   "type": "module",
