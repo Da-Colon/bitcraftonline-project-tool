@@ -18,7 +18,7 @@ import type { RecipeBreakdownItem } from "~/types/recipes"
 import { RecipeBreakdownTable } from "./RecipeBreakdownTable"
 import { TierSummaryView } from "./TierSummaryView"
 import { RawMaterialsView } from "./RawMaterialsView"
-import { TrackedInventoryView } from "~/components/TrackedInventoryView"
+import { TrackedInventoryView } from "~/components/inventory/TrackedInventoryView"
 
 interface RecipeBreakdownCardProps {
   breakdown: RecipeBreakdownItem[]

@@ -3,6 +3,10 @@ import type { ProjectItem, Item, Recipe, RecipeBreakdownItem, InventoryItem } fr
 import { RecipeCalculator } from "~/services/recipe-calculator.server";
 import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server";
 
+// Note: This API supports both calculators:
+// - Enhanced calculator: For single-item calculations with inventory (preferred)
+// - Basic calculator: For legacy multi-item project calculations
+
 type CalcResponse = {
   rawMaterials: Array<[string, number]>;
   intermediates: Array<[string, number]>;

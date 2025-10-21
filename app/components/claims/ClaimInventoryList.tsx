@@ -15,7 +15,7 @@ import {
 import { useState } from "react"
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import type { ClaimInventory } from "~/types/inventory"
-import { InventoryContents } from "~/components/InventoryContents"
+import { InventoryContents } from "~/components/inventory/InventoryContents"
 import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { getSnapshotAge } from "~/utils/inventory-snapshot"

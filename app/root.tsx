@@ -80,8 +80,10 @@ const Document = withEmotionCache(({ children }: DocumentProps, emotionCache) =>
 
 export default function App() {
   useEffect(() => {
-    // Run migration on app initialization
-    migrateInventoryTracking().catch(console.error)
+    // Run migration on app initialization (non-blocking)
+    setTimeout(() => {
+      migrateInventoryTracking().catch(console.error)
+    }, 100)
   }, [])
 
   return (

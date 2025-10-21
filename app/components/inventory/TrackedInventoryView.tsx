@@ -1,6 +1,6 @@
 import { Badge, Box, Button, HStack, Spinner, Text, VStack, useToast } from "@chakra-ui/react"
 import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
-import { InventoryTierTable } from "~/components/InventoryTierTable"
+import { InventoryTierTable } from "./InventoryTierTable"
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 
 export function TrackedInventoryView() {

@@ -23,7 +23,7 @@ import {
 import { useState, useCallback, useEffect } from "react"
 import type { Item } from "~/types/recipes"
 import type { PlayerInventoryResponse } from "~/routes/api.player.inventory"
-import { InventoryReviewModal } from "./InventoryReviewModal"
+import { InventoryReviewModal } from "~/components/inventory/InventoryReviewModal"
 import { usePlayerInventorySelections } from "~/hooks/usePlayerInventorySelections"
 
 interface PlayerSearchModalProps {

@@ -1,13 +1,13 @@
 import { Badge, Box, Button, HStack, Heading, Text, VStack } from "@chakra-ui/react";
 import { Suspense, lazy } from "react";
 import { Link as RemixLink } from "@remix-run/react";
-import { PlayerHeader } from "~/components/PlayerHeader";
-import { ClaimInventoryView } from "~/components/ClaimInventoryView";
-import { DashboardLayout } from "~/components/DashboardLayout";
+import { PlayerHeader } from "~/components/player/PlayerHeader";
+import { ClaimInventoryView } from "~/components/claims/ClaimInventoryView";
+import { DashboardLayout } from "~/components/dashboard/DashboardLayout";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 
 const PlayerSelectionView = lazy(() =>
-  import("~/components/PlayerSelectionView").then((m) => ({ default: m.PlayerSelectionView }))
+  import("~/components/player/PlayerSelectionView").then((m) => ({ default: m.PlayerSelectionView }))
 );
 
 export default function ClaimInventoriesRoute() {

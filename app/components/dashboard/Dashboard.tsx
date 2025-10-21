@@ -18,11 +18,11 @@ import {
   useDisclosure,
 } from "@chakra-ui/react"
 import { Link as RemixLink } from "@remix-run/react"
-import { PlayerHeader } from "~/components/PlayerHeader"
-import { DashboardOverview } from "~/components/DashboardOverview"
-import { PlayerSelectionView } from "~/components/PlayerSelectionView"
-import { DashboardLayout } from "~/components/DashboardLayout"
-import { DashboardFocusPanels } from "~/components/DashboardFocusPanels"
+import { PlayerHeader } from "~/components/player/PlayerHeader"
+import { DashboardOverview } from "./DashboardOverview"
+import { PlayerSelectionView } from "~/components/player/PlayerSelectionView"
+import { DashboardLayout } from "./DashboardLayout"
+import { DashboardFocusPanels } from "./DashboardFocusPanels"
 import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
 import { useRecipeSelection } from "~/hooks/useRecipeSelection"
 
