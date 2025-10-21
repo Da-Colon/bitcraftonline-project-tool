@@ -26,8 +26,6 @@ import { ClaimOverview } from "./ClaimOverview"
 import { TrackedInventorySummary } from "~/components/inventory/TrackedInventorySummary"
 import { useConfirmationDialog } from "~/components/ConfirmationDialog"
 
-type ClaimInventoryViewMode = "list" | "tier"
-
 export function ClaimInventoryView() {
   const { player } = useSelectedPlayer()
   const { claim, selectClaim, clearClaim } = useSelectedClaim()
@@ -41,7 +39,6 @@ export function ClaimInventoryView() {
     isLoading,
   } = usePlayerInventoryTracking(player?.entityId || null)
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const [viewMode, setViewMode] = useState<ClaimInventoryViewMode>("list")
   const [totalTrackedCount, setTotalTrackedCount] = useState(0)
   const toast = useToast()
   const { confirm, ConfirmationDialog } = useConfirmationDialog()
@@ -389,43 +386,15 @@ export function ClaimInventoryView() {
       <Divider borderColor="whiteAlpha.200" />
 
       <Box>
-        <HStack justify="space-between" align="center" mb={4}>
-          <Text fontSize="xl" fontWeight="bold" color="white">
-            Building Management
-          </Text>
-          <HStack spacing={2}>
-            <Button
-              size="sm"
-              colorScheme="teal"
-              bg={viewMode === "list" ? "teal.400" : "transparent"}
-              variant={viewMode === "list" ? "solid" : "ghost"}
-              color={viewMode === "list" ? "white" : "whiteAlpha.800"}
-              _hover={viewMode === "list" ? { bg: "teal.500" } : { bg: "whiteAlpha.200" }}
-              onClick={() => setViewMode("list")}
-            >
-              List View
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="teal"
-              bg={viewMode === "tier" ? "teal.400" : "transparent"}
-              variant={viewMode === "tier" ? "solid" : "ghost"}
-              color={viewMode === "tier" ? "white" : "whiteAlpha.800"}
-              _hover={viewMode === "tier" ? { bg: "teal.500" } : { bg: "whiteAlpha.200" }}
-              onClick={() => setViewMode("tier")}
-            >
-              Tier View
-            </Button>
-          </HStack>
-        </HStack>
+        <Text fontSize="xl" fontWeight="bold" color="white" mb={4}>
+          Building Management
+        </Text>
         <Text color="whiteAlpha.800" mb={6}>
-          {viewMode === "list"
-            ? "Select buildings to track. Use the checkboxes to add or remove buildings from tracking."
-            : "View items grouped by category and tier within each building for better organization."}
+          Select buildings to track. Use the checkboxes to add or remove buildings from tracking.
         </Text>
       </Box>
 
-      <ClaimInventoryList inventories={inventories.inventories} viewMode={viewMode} />
+      <ClaimInventoryList inventories={inventories.inventories} />
 
       <ClaimSearchModal isOpen={isOpen} onClose={onClose} onSelectClaim={handleSelectClaim} />
       {ConfirmationDialog}

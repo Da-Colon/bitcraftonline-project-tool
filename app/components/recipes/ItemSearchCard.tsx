@@ -28,6 +28,11 @@ export function ItemSearchCard({
   selectedItem,
   onItemSelect,
 }: ItemSearchCardProps) {
+  // Hide the search card when an item is selected
+  if (selectedItem) {
+    return null
+  }
+
   return (
     <Card
       bg="rgba(24,35,60,0.9)"
@@ -56,13 +61,15 @@ export function ItemSearchCard({
             _placeholder={{ color: "whiteAlpha.600" }}
           />
 
-          {searchQuery.length > 2 && searchResults.length > 0 && !selectedItem && (
+          {searchQuery.length > 2 && searchResults.length > 0 && (
             <Box
-              maxH="300px"
+              maxH="400px"
               overflowY="auto"
               border="1px solid rgba(148, 163, 184, 0.2)"
               borderRadius="xl"
               bg="rgba(15,23,42,0.92)"
+              position="relative"
+              zIndex={10}
             >
               {searchResults.map((item: Item) => (
                 <Box

@@ -101,74 +101,10 @@ export function RecipeOverview({
           </CardBody>
         </Card>
 
-        <Card {...glassCardStyles}>
-          <CardBody>
-            <Stat>
-              <StatLabel color="whiteAlpha.700">Calculator Status</StatLabel>
-              <StatNumber color={isCalculating ? "teal.200" : hasRecipeData ? "teal.300" : "purple.300"}>
-                {isCalculating ? "Calculating..." : hasRecipeData ? "Ready" : "Waiting"}
-              </StatNumber>
-              <StatHelpText color="whiteAlpha.600">
-                {hasInventoryData ? "Inventory loaded" : "No inventory data"}
-              </StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
       </SimpleGrid>
 
-      {/* Quick Actions and Status */}
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-        {/* Quick Actions Card */}
-        <Card {...glassCardStyles}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold" color="white">
-                Quick Actions
-              </Text>
-
-              <VStack spacing={3} align="stretch">
-                <Button
-                  as={RemixLink}
-                  to="/inventory"
-                  leftIcon={<Icon as={SettingsIcon} />}
-                  colorScheme="teal"
-                  size="sm"
-                  bg="teal.500"
-                  color="gray.900"
-                  justifyContent="flex-start"
-                  _hover={{ bg: "teal.400" }}
-                >
-                  Manage Personal Inventories
-                </Button>
-                <Button
-                  as={RemixLink}
-                  to="/claim-inventories"
-                  leftIcon={<Icon as={ExternalLinkIcon} />}
-                  colorScheme="purple"
-                  size="sm"
-                  bg="purple.500"
-                  color="gray.900"
-                  justifyContent="flex-start"
-                  _hover={{ bg: "purple.400" }}
-                >
-                  Manage Claim Inventories
-                </Button>
-                <Button
-                  as={RemixLink}
-                  to="/"
-                  leftIcon={<Icon as={CheckCircleIcon} />}
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  size="sm"
-                  justifyContent="flex-start"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                >
-                  View Dashboard
-                </Button>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
+      {/* Inventory Status */}
+      <SimpleGrid columns={{ base: 1, lg: 1 }} spacing={6}>
 
         {/* Inventory Status Card */}
         <Card {...glassCardStyles}>

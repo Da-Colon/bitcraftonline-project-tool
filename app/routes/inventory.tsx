@@ -26,8 +26,8 @@ export default function InventoryRoute() {
       <PlayerHeader />
       <DashboardLayout
         hero={
-          <Box px={{ base: 6, md: 10 }} py={{ base: 12, md: 20 }}>
-            <VStack spacing={6} align="flex-start" maxW="3xl">
+          <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
+            <VStack spacing={4} align="flex-start" maxW="3xl">
               <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
                 Personal Inventory Command
               </Text>
@@ -46,29 +46,6 @@ export default function InventoryRoute() {
                 <Badge colorScheme="purple" px={3} py={1} borderRadius="full">
                   Track + plan without leaving
                 </Badge>
-              </HStack>
-
-              <HStack spacing={3} flexWrap="wrap">
-                <Button
-                  as={RemixLink}
-                  to="/claim-inventories"
-                  colorScheme="teal"
-                  size="lg"
-                  bg="teal.400"
-                  _hover={{ bg: "teal.500" }}
-                >
-                  Claim Inventories
-                </Button>
-                <Button
-                  as={RemixLink}
-                  to="/recipes"
-                  size="lg"
-                  variant="ghost"
-                  color="whiteAlpha.900"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                >
-                  Jump to Recipes
-                </Button>
               </HStack>
             </VStack>
           </Box>

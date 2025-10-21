@@ -54,8 +54,8 @@ export function Dashboard() {
   }, 0)
 
   const hero = (
-    <Box px={{ base: 6, md: 10 }} py={{ base: 12, md: 20 }}>
-      <VStack spacing={{ base: 6, md: 8 }} align="flex-start" maxW="3xl" w="full">
+    <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
+      <VStack spacing={{ base: 4, md: 6 }} align="flex-start" maxW="3xl" w="full">
         <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
           BitCraft Project Planner
         </Text>
@@ -98,40 +98,11 @@ export function Dashboard() {
           )}
         </Wrap>
 
-        <Stack
-          direction={{ base: "column", sm: "row" }}
-          spacing={{ base: 3, md: 4 }}
-          align={{ base: "stretch", sm: "center" }}
-          w="full"
-        >
-          {player ? (
-            <Button
-              as={RemixLink}
-              to="/recipes"
-              colorScheme="teal"
-              size="lg"
-              w={{ base: "full", sm: "auto" }}
-            >
-              Plan Tonight's Crafting
-            </Button>
-          ) : (
-            <Button colorScheme="teal" size="lg" onClick={onOpen} w={{ base: "full", sm: "auto" }}>
-              Select Player to Begin
-            </Button>
-          )}
-          <Button
-            as={RemixLink}
-            to="/about"
-            variant="outline"
-            borderColor="whiteAlpha.400"
-            colorScheme="whiteAlpha"
-            size="lg"
-            w={{ base: "full", sm: "auto" }}
-            _hover={{ bg: "whiteAlpha.200" }}
-          >
-            Learn the vision
+        {!player && (
+          <Button colorScheme="teal" size="lg" onClick={onOpen} w={{ base: "full", sm: "auto" }}>
+            Select Player to Begin
           </Button>
-        </Stack>
+        )}
       </VStack>
     </Box>
   )
@@ -151,8 +122,6 @@ export function Dashboard() {
               claim={claim}
               combinedItems={combinedItems}
               selectedRecipe={selectedRecipe}
-              trackedCount={trackedCount}
-              totalInventories={totalInventories}
             />
             <Divider borderColor="whiteAlpha.200" />
           </VStack>

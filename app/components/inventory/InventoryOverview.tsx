@@ -109,85 +109,10 @@ export function InventoryOverview({
           </CardBody>
         </Card>
 
-        <Card {...glassCardProps} borderColor="rgba(45, 212, 191, 0.35)">
-          <CardBody>
-            <Stat>
-              <StatLabel color="whiteAlpha.700">Tracking Progress</StatLabel>
-              <StatNumber color="teal.200">{Math.round(trackingProgress)}%</StatNumber>
-              <StatHelpText color="whiteAlpha.700">
-                <Progress value={trackingProgress} size="sm" colorScheme="teal" mt={2} bg="whiteAlpha.200" />
-              </StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
       </SimpleGrid>
 
-      {/* Quick Actions and Info */}
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-        {/* Quick Actions Card */}
-        <Card {...glassCardProps} borderColor="rgba(94, 234, 212, 0.35)">
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold" color="white">
-                Quick Actions
-              </Text>
-
-              <VStack spacing={3} align="stretch">
-                <HStack spacing={3}>
-                  <Button
-                    size="sm"
-                    colorScheme="teal"
-                    bg="teal.400"
-                    _hover={{ bg: "teal.500" }}
-                    onClick={onTrackAll}
-                    isDisabled={trackedCount === totalInventories}
-                    flex={1}
-                  >
-                    Track All
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    color="whiteAlpha.800"
-                    _hover={{ bg: "whiteAlpha.200" }}
-                    onClick={onUntrackAll}
-                    isDisabled={trackedCount === 0}
-                    flex={1}
-                  >
-                    Untrack All
-                  </Button>
-                </HStack>
-
-                <Divider borderColor="whiteAlpha.200" />
-
-                <Button
-                  as={RemixLink}
-                  to="/"
-                  leftIcon={<Icon as={SettingsIcon} color="teal.200" />}
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                  size="sm"
-                  justifyContent="flex-start"
-                >
-                  View Dashboard
-                </Button>
-                <Button
-                  as={RemixLink}
-                  to="/recipes"
-                  leftIcon={<Icon as={StarIcon} color="purple.200" />}
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                  size="sm"
-                  justifyContent="flex-start"
-                >
-                  Calculate Recipes
-                </Button>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
+      {/* Inventory Breakdown */}
+      <SimpleGrid columns={{ base: 1, lg: 1 }} spacing={6}>
 
         {/* Inventory Breakdown Card */}
         <Card {...glassCardProps} borderColor="rgba(233, 213, 255, 0.35)">
@@ -290,29 +215,6 @@ export function InventoryOverview({
         </Card>
       </SimpleGrid>
 
-      {/* Tracking Status Banner */}
-      {trackedCount > 0 && (
-        <Card
-          {...glassCardProps}
-          borderColor="rgba(56, 189, 248, 0.4)"
-          bg="rgba(14, 59, 110, 0.82)"
-        >
-          <CardBody>
-            <HStack spacing={4}>
-              <Icon as={CheckCircleIcon} color="teal.200" boxSize={6} />
-              <VStack align="start" spacing={1} flex={1}>
-                <Text fontWeight="bold" color="white">
-                  Tracking {trackedCount} of {totalInventories} inventories
-                </Text>
-                <Text fontSize="sm" color="whiteAlpha.800">
-                  Tracked inventories will appear in your dashboard and can be used for recipe
-                  calculations.
-                </Text>
-              </VStack>
-            </HStack>
-          </CardBody>
-        </Card>
-      )}
     </VStack>
   )
 }

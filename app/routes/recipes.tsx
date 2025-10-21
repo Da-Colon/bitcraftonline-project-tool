@@ -5,7 +5,6 @@ import { Badge, Box, Button, Divider, Heading, HStack, Stack, Text, VStack } fro
 import { PlayerHeader } from "~/components/player/PlayerHeader"
 import { RecipeOverview } from "~/components/RecipeOverview"
 import { ItemSearchCard } from "~/components/recipes/ItemSearchCard"
-import { SelectedItemCard } from "~/components/recipes/SelectedItemCard"
 import { RecipeBreakdownCard } from "~/components/recipes/RecipeBreakdownCard"
 import { useDebounce } from "~/hooks/useDebounce"
 import { useRecipeSelection } from "~/hooks/useRecipeSelection"
@@ -108,8 +107,8 @@ export default function RecipesRoute() {
   const uniqueInventoryItems = combinedInventory.length
 
   const hero = (
-    <Box px={{ base: 6, md: 10 }} py={{ base: 12, md: 20 }}>
-      <VStack spacing={6} align="flex-start" maxW="4xl">
+    <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
+      <VStack spacing={4} align="flex-start" maxW="4xl">
         <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
           Recipe Planning Suite
         </Text>
@@ -134,15 +133,6 @@ export default function RecipesRoute() {
             </Badge>
           )}
         </HStack>
-
-        <Stack direction={{ base: "column", sm: "row" }} spacing={3}>
-          <Button as="a" href="#recipe-calculator" colorScheme="teal" size="lg">
-            Start planning
-          </Button>
-          <Button as={RemixLink} to="/" variant="ghost" colorScheme="whiteAlpha" size="lg">
-            Return to dashboard
-          </Button>
-        </Stack>
       </VStack>
     </Box>
   )
@@ -194,24 +184,19 @@ export default function RecipesRoute() {
           />
 
           {selectedItem && (
-            <SelectedItemCard
-              selectedItem={selectedItem}
-              targetQuantity={targetQuantity}
-              onQuantityChange={handleQuantityChange}
-              onClear={() => {
-                clearSelection()
-                setSearchQuery("")
-              }}
-            />
-          )}
-
-          {selectedItem && (
             <RecipeBreakdownCard
               breakdown={breakdown}
               filteredBreakdown={filteredBreakdown}
               hideCompleted={hideCompleted}
               onHideCompletedChange={setHideCompleted}
               isLoading={isLoading}
+              selectedItem={{
+                name: selectedItem.name,
+                quantity: targetQuantity,
+                category: selectedItem.category,
+                tier: selectedItem.tier,
+                iconAssetName: selectedItem.iconAssetName,
+              }}
               onClearSelection={() => {
                 clearSelection()
                 setSearchQuery("")

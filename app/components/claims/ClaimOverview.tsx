@@ -138,83 +138,8 @@ export function ClaimOverview({
         </Card>
       </SimpleGrid>
 
-      {/* Quick Actions and Claim Info */}
-      <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
-        {/* Quick Actions Card */}
-        <Card {...glassCardProps} borderColor="rgba(94, 234, 212, 0.35)">
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontSize="lg" fontWeight="bold" color="white">
-                Quick Actions
-              </Text>
-
-              <VStack spacing={3} align="stretch">
-                <HStack spacing={3}>
-                  <Button
-                    size="sm"
-                    colorScheme="teal"
-                    bg="teal.400"
-                    _hover={{ bg: "teal.500" }}
-                    onClick={onTrackAll}
-                    isDisabled={trackedCount === totalInventories}
-                    flex={1}
-                  >
-                    Track All
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    color="whiteAlpha.800"
-                    _hover={{ bg: "whiteAlpha.200" }}
-                    onClick={onUntrackAll}
-                    isDisabled={trackedCount === 0}
-                    flex={1}
-                  >
-                    Untrack This Claim
-                  </Button>
-                </HStack>
-
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  leftIcon={<Icon as={ExternalLinkIcon} color="teal.200" />}
-                  _hover={{ bg: "whiteAlpha.200" }}
-                  onClick={onChangeClaim}
-                >
-                  Change Claim
-                </Button>
-
-                <Divider borderColor="whiteAlpha.200" />
-
-                <Button
-                  as={RemixLink}
-                  to="/"
-                  leftIcon={<Icon as={SettingsIcon} color="teal.200" />}
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                  size="sm"
-                  justifyContent="flex-start"
-                >
-                  View Dashboard
-                </Button>
-                <Button
-                  as={RemixLink}
-                  to="/recipes"
-                  leftIcon={<Icon as={StarIcon} color="purple.200" />}
-                  variant="ghost"
-                  color="whiteAlpha.800"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                  size="sm"
-                  justifyContent="flex-start"
-                >
-                  Calculate Recipes
-                </Button>
-              </VStack>
-            </VStack>
-          </CardBody>
-        </Card>
+      {/* Claim Info */}
+      <SimpleGrid columns={{ base: 1, lg: 1 }} spacing={6}>
 
         {/* Claim Information Card */}
         <Card {...glassCardProps} borderColor="rgba(233, 213, 255, 0.35)">

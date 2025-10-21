@@ -26,8 +26,8 @@ interface PlayerHeaderProps {}
 const NAV_LINKS = [
   { label: "Dashboard", to: "/" },
   { label: "Inventory", to: "/inventory" },
-  { label: "Recipes", to: "/recipes" },
   { label: "Claims", to: "/claim-inventories" },
+  { label: "Recipes", to: "/recipes" },
 ] as const
 
 export function PlayerHeader({}: PlayerHeaderProps = {}) {

@@ -26,8 +26,8 @@ export default function ClaimInventoriesRoute() {
       <PlayerHeader />
       <DashboardLayout
         hero={
-          <Box px={{ base: 6, md: 10 }} py={{ base: 12, md: 20 }}>
-            <VStack spacing={6} align="flex-start" maxW="3xl">
+          <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
+            <VStack spacing={4} align="flex-start" maxW="3xl">
               <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
                 Claim Storage Command
               </Text>
@@ -46,29 +46,6 @@ export default function ClaimInventoriesRoute() {
                 <Badge colorScheme="pink" px={3} py={1} borderRadius="full">
                   Cozy logistics, zero spreadsheeting
                 </Badge>
-              </HStack>
-
-              <HStack spacing={3} flexWrap="wrap">
-                <Button
-                  as="a"
-                  href="#claim-management"
-                  colorScheme="teal"
-                  size="lg"
-                  bg="teal.400"
-                  _hover={{ bg: "teal.500" }}
-                >
-                  Review Claim Buildings
-                </Button>
-                <Button
-                  as={RemixLink}
-                  to="/inventory"
-                  size="lg"
-                  variant="ghost"
-                  color="whiteAlpha.900"
-                  _hover={{ bg: "whiteAlpha.200" }}
-                >
-                  Jump to Personal Stashes
-                </Button>
               </HStack>
             </VStack>
           </Box>

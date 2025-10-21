@@ -30,6 +30,7 @@ export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInve
   const { isTracked, trackInventory, untrackInventory, refreshSnapshot, getSnapshot } =
     usePlayerInventoryTracking(player?.entityId || null)
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
+  const [inventoryViewModes, setInventoryViewModes] = useState<Record<string, "list" | "tier">>({})
   const toast = useToast()
 
   const handleTrackingChange = async (inventory: ClaimInventory, checked: boolean) => {
@@ -118,6 +119,15 @@ export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInve
       newExpanded.add(inventoryId)
     }
     setExpandedInventories(newExpanded)
+  }
+
+  const handleViewModeToggle = (inventoryId: string) => {
+    const currentMode = inventoryViewModes[inventoryId] || "list"
+    const newMode = currentMode === "list" ? "tier" : "list"
+    setInventoryViewModes(prev => ({
+      ...prev,
+      [inventoryId]: newMode
+    }))
   }
 
   if (!inventories || inventories.length === 0) {
@@ -251,6 +261,15 @@ export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInve
                       Refresh
                     </Button>
                   )}
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    colorScheme="teal"
+                    onClick={() => handleViewModeToggle(inventory.id)}
+                    _hover={{ bg: "rgba(45, 212, 191, 0.12)" }}
+                  >
+                    {inventoryViewModes[inventory.id] === "tier" ? "List" : "Tier"}
+                  </Button>
                   <HStack
                     as="button"
                     spacing={2}
@@ -274,7 +293,7 @@ export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInve
 
               <Collapse in={isExpanded} animateOpacity>
                 <Box mt={4} pt={4} borderTop="1px solid" borderColor="whiteAlpha.200">
-                  <InventoryContents items={inventory.items} viewMode={viewMode} />
+                  <InventoryContents items={inventory.items} viewMode={inventoryViewModes[inventory.id] || "list"} />
                 </Box>
               </Collapse>
             </CardBody>

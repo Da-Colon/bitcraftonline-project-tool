@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelectedPlayer } from "./useSelectedPlayer";
 
 const SELECTED_CLAIM_KEY = "bitcraft-selected-claim";
 
@@ -8,37 +9,50 @@ export interface SelectedClaim {
 }
 
 export function useSelectedClaim() {
+  const { player } = useSelectedPlayer();
   const [claim, setClaim] = useState<SelectedClaim | null>(null);
 
-  // Load from localStorage on mount
+  // Get the storage key for the current player
+  const getStorageKey = (playerId: string) => `${SELECTED_CLAIM_KEY}-${playerId}`;
+
+  // Load from localStorage on mount and when player changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && player?.entityId) {
       try {
-        const stored = localStorage.getItem(SELECTED_CLAIM_KEY);
+        const storageKey = getStorageKey(player.entityId);
+        const stored = localStorage.getItem(storageKey);
         if (stored) {
           const parsed = JSON.parse(stored);
           setClaim(parsed);
+        } else {
+          // Clear claim if no stored data for this player
+          setClaim(null);
         }
       } catch (error) {
         console.warn("Failed to load selected claim from localStorage:", error);
+        setClaim(null);
       }
+    } else if (!player?.entityId) {
+      // Clear claim when no player is selected
+      setClaim(null);
     }
-  }, []);
+  }, [player?.entityId]);
 
   // Save to localStorage whenever claim changes
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && player?.entityId) {
       try {
+        const storageKey = getStorageKey(player.entityId);
         if (claim) {
-          localStorage.setItem(SELECTED_CLAIM_KEY, JSON.stringify(claim));
+          localStorage.setItem(storageKey, JSON.stringify(claim));
         } else {
-          localStorage.removeItem(SELECTED_CLAIM_KEY);
+          localStorage.removeItem(storageKey);
         }
       } catch (error) {
         console.warn("Failed to save selected claim to localStorage:", error);
       }
     }
-  }, [claim]);
+  }, [claim, player?.entityId]);
 
   const selectClaim = (claimId: string, claimName: string) => {
     setClaim({ claimId, claimName });

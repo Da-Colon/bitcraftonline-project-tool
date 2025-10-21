@@ -23,8 +23,6 @@ import { InventoryOverview } from "./InventoryOverview"
 import { useDebounce } from "~/hooks/useDebounce"
 import type { Inventory } from "~/types/inventory"
 
-type InventoryViewType = "list" | "tier"
-
 export function PersonalInventoriesView() {
   const { player } = useSelectedPlayer()
   const { inventories, loading, error } = usePlayerInventories(player?.entityId)
@@ -38,7 +36,6 @@ export function PersonalInventoriesView() {
     isLoading: trackingLoading,
     error: trackingError,
   } = usePlayerInventoryTracking(player?.entityId || null)
-  const [viewType, setViewType] = useState<InventoryViewType>("list")
   const [searchQuery, setSearchQuery] = useState("")
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const toast = useToast()
@@ -250,35 +247,9 @@ export function PersonalInventoriesView() {
 
       {/* Inventory Management Section */}
       <Box>
-        <HStack justify="space-between" align="center" mb={4}>
-          <Text fontSize="xl" fontWeight="bold" color="white">
-            Inventory Management
-          </Text>
-          <HStack spacing={2}>
-            <Button
-              size="sm"
-              colorScheme="teal"
-              bg={viewType === "list" ? "teal.400" : "transparent"}
-              variant={viewType === "list" ? "solid" : "ghost"}
-              color={viewType === "list" ? "white" : "whiteAlpha.800"}
-              _hover={viewType === "list" ? { bg: "teal.500" } : { bg: "whiteAlpha.200" }}
-              onClick={() => setViewType("list")}
-            >
-              List View
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="teal"
-              bg={viewType === "tier" ? "teal.400" : "transparent"}
-              variant={viewType === "tier" ? "solid" : "ghost"}
-              color={viewType === "tier" ? "white" : "whiteAlpha.800"}
-              _hover={viewType === "tier" ? { bg: "teal.500" } : { bg: "whiteAlpha.200" }}
-              onClick={() => setViewType("tier")}
-            >
-              Tier View
-            </Button>
-          </HStack>
-        </HStack>
+        <Text fontSize="xl" fontWeight="bold" color="white" mb={4}>
+          Inventory Management
+        </Text>
 
         {/* Search Input */}
         <Box mb={4}>
@@ -333,15 +304,12 @@ export function PersonalInventoriesView() {
         </Box>
 
         <Text color="whiteAlpha.800" mb={6}>
-          {viewType === "list"
-            ? "Select inventories to track. Use the checkboxes to add or remove inventories from tracking."
-            : "View items grouped by category and tier within each inventory for better organization."}
+          Select inventories to track. Use the checkboxes to add or remove inventories from tracking.
         </Text>
       </Box>
 
       <InventoryList
         inventories={filteredInventories}
-        viewMode={viewType}
         isFiltered={isSearchActive}
       />
     </VStack>
