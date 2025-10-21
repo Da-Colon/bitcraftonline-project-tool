@@ -187,7 +187,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
    *
    * Key Benefits:
    * - Fixes the bug where children weren't zeroed when parent was fully satisfied
-   * - Simpler logic: direct mutation of breakdown items instead of separate tracking
+   * - Preserves recipeRequired immutability - only modifies actualRequired and deficit
    * - Parent-first processing ensures reductions cascade correctly down the dependency tree
    * - Handles complex scenarios like multiple parents sharing children correctly
    *
@@ -203,6 +203,9 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     dependencies: Map<string, Set<string>>,
     inventoryMap: Map<string, number>
   ): void {
+    // Track parent reductions separately to avoid modifying recipeRequired
+    const parentReductions = new Map<string, number>()
+
     // Process items in parent-first order (our fix)
     const visited = new Set<string>()
     const orderedIds: string[] = []
@@ -242,7 +245,8 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       
       // Calculate how much of this item we still need
       const inventoryUsed = Math.min(item.recipeRequired, currentInventory)
-      const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed)
+      const parentReduction = parentReductions.get(item.itemId) || 0
+      const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed - parentReduction)
 
       // Update item properties
       item.currentInventory = currentInventory
@@ -274,28 +278,31 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
           const input = recipe.inputs.find((inp) => inp.itemId === childId)
           if (!input) continue
 
-          // Reduce child requirement by the amount we saved
+          // Track child reduction instead of modifying recipeRequired
           const childReduction = input.quantity * batchesSkipped
-          childItem.recipeRequired = Math.max(0, childItem.recipeRequired - childReduction)
+          const existingReduction = parentReductions.get(childId) || 0
+          parentReductions.set(childId, existingReduction + childReduction)
           
-          // If child is now fully satisfied, recursively zero its children
-          if (childItem.recipeRequired === 0) {
-            this.zeroChildrenRecursively(childId, breakdown, dependencies)
+          // If child would be fully satisfied, recursively zero its children
+          const childRemaining = Math.max(0, childItem.recipeRequired - (parentReductions.get(childId) || 0))
+          if (childRemaining === 0) {
+            this.zeroChildrenRecursively(childId, breakdown, dependencies, parentReductions)
           }
         }
       }
       
       // If this item is fully satisfied BY INVENTORY, zero all its children
       if (remainingRequired === 0 && currentInventory > 0 && item.itemId !== rootItemId) {
-        this.zeroAllChildrenInBreakdown(item.itemId, breakdown, dependencies)
+        this.zeroAllChildrenInBreakdown(item.itemId, breakdown, dependencies, parentReductions)
       }
     }
 
-    // Final pass to update actualRequired and deficit
+    // Final pass to update actualRequired and deficit based on immutable recipeRequired
     for (const item of breakdown.values()) {
       const currentInventory = this.getInventoryQuantity(item.itemId, inventoryMap)
       const inventoryUsed = Math.min(item.recipeRequired, currentInventory)
-      const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed)
+      const parentReduction = parentReductions.get(item.itemId) || 0
+      const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed - parentReduction)
       item.actualRequired = remainingRequired
       item.deficit = remainingRequired
     }
@@ -333,11 +340,13 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
 
   /**
    * Helper method to recursively zero all children when a parent is fully satisfied
+   * Preserves recipeRequired immutability - only modifies actualRequired and deficit
    */
   private zeroChildrenRecursively(
     itemId: string,
     breakdown: Map<string, RecipeBreakdownItem>,
-    dependencies: Map<string, Set<string>>
+    dependencies: Map<string, Set<string>>,
+    parentReductions: Map<string, number>
   ): void {
     const children = dependencies.get(itemId)
     if (!children) return
@@ -346,32 +355,30 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       const childItem = breakdown.get(childId)
       if (!childItem) continue
       
-      // Zero this child
-      childItem.recipeRequired = 0
-      childItem.actualRequired = 0
-      childItem.deficit = 0
+      // Set parent reduction to full recipeRequired to effectively zero the child
+      parentReductions.set(childId, childItem.recipeRequired)
       
       // Recursively zero its children
-      this.zeroChildrenRecursively(childId, breakdown, dependencies)
+      this.zeroChildrenRecursively(childId, breakdown, dependencies, parentReductions)
     }
   }
 
   /**
    * Comprehensive method to zero ALL items in breakdown when a parent is fully satisfied BY INVENTORY
+   * Preserves recipeRequired immutability - only modifies actualRequired and deficit via parentReductions
    */
   private zeroAllChildrenInBreakdown(
     satisfiedItemId: string,
     breakdown: Map<string, RecipeBreakdownItem>,
-    dependencies: Map<string, Set<string>>
+    dependencies: Map<string, Set<string>>,
+    parentReductions: Map<string, number>
   ): void {
-    // Zero all items except the satisfied item
+    // Zero all items except the satisfied item by setting parent reductions
     for (const [itemId, item] of breakdown.entries()) {
       if (itemId === satisfiedItemId) continue // Don't zero the satisfied item itself
       
-      // Zero this item
-      item.recipeRequired = 0
-      item.actualRequired = 0
-      item.deficit = 0
+      // Set parent reduction to full recipeRequired to effectively zero the item
+      parentReductions.set(itemId, item.recipeRequired)
     }
   }
 
