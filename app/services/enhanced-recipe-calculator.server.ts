@@ -26,6 +26,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       }
     })
 
+
     if (DEBUG) {
       try {
         const sampleKeys = Array.from(inventoryMap.keys()).slice(0, 10)
@@ -54,6 +55,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
 
     // Pass 2: Apply inventory reductions with dependency awareness
     this.applyInventoryReductions(targetItemId, breakdown, dependencies, inventoryMap)
+    
 
     if (DEBUG) {
       const duration = Date.now() - startTime
@@ -283,23 +285,17 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
           const existingReduction = parentReductions.get(childId) || 0
           parentReductions.set(childId, existingReduction + childReduction)
           
-          // If child would be fully satisfied, recursively zero its children
-          const childRemaining = Math.max(0, childItem.recipeRequired - (parentReductions.get(childId) || 0))
-          if (childRemaining === 0) {
-            this.zeroChildrenRecursively(childId, breakdown, dependencies, parentReductions)
-          }
+          // Note: We don't recursively zero children - all requirements should be calculated
         }
       }
       
-      // If this item is fully satisfied BY INVENTORY, zero all its children
-      if (remainingRequired === 0 && currentInventory > 0 && item.itemId !== rootItemId) {
-        this.zeroAllChildrenInBreakdown(item.itemId, breakdown, dependencies, parentReductions)
-      }
+      // Note: We don't zero children when parent is satisfied - all requirements should be calculated
     }
 
     // Final pass to update actualRequired and deficit based on immutable recipeRequired
     for (const item of breakdown.values()) {
       const currentInventory = this.getInventoryQuantity(item.itemId, inventoryMap)
+      item.currentInventory = currentInventory  // ← ADD THIS LINE
       const inventoryUsed = Math.min(item.recipeRequired, currentInventory)
       const parentReduction = parentReductions.get(item.itemId) || 0
       const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed - parentReduction)
@@ -338,49 +334,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     return 0
   }
 
-  /**
-   * Helper method to recursively zero all children when a parent is fully satisfied
-   * Preserves recipeRequired immutability - only modifies actualRequired and deficit
-   */
-  private zeroChildrenRecursively(
-    itemId: string,
-    breakdown: Map<string, RecipeBreakdownItem>,
-    dependencies: Map<string, Set<string>>,
-    parentReductions: Map<string, number>
-  ): void {
-    const children = dependencies.get(itemId)
-    if (!children) return
-    
-    for (const childId of children) {
-      const childItem = breakdown.get(childId)
-      if (!childItem) continue
-      
-      // Set parent reduction to full recipeRequired to effectively zero the child
-      parentReductions.set(childId, childItem.recipeRequired)
-      
-      // Recursively zero its children
-      this.zeroChildrenRecursively(childId, breakdown, dependencies, parentReductions)
-    }
-  }
 
-  /**
-   * Comprehensive method to zero ALL items in breakdown when a parent is fully satisfied BY INVENTORY
-   * Preserves recipeRequired immutability - only modifies actualRequired and deficit via parentReductions
-   */
-  private zeroAllChildrenInBreakdown(
-    satisfiedItemId: string,
-    breakdown: Map<string, RecipeBreakdownItem>,
-    dependencies: Map<string, Set<string>>,
-    parentReductions: Map<string, number>
-  ): void {
-    // Zero all items except the satisfied item by setting parent reductions
-    for (const [itemId, item] of breakdown.entries()) {
-      if (itemId === satisfiedItemId) continue // Don't zero the satisfied item itself
-      
-      // Set parent reduction to full recipeRequired to effectively zero the item
-      parentReductions.set(itemId, item.recipeRequired)
-    }
-  }
 
   /**
    * Recursively calculate detailed requirements for an item

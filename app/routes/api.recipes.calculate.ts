@@ -77,6 +77,8 @@ export async function action({ request }: ActionFunctionArgs) {
         breakdown,
         totalDeficit: [],
       };
+      
+      
       return json(response, {
         headers: {
           "Cache-Control": "no-store",

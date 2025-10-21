@@ -73,6 +73,7 @@ export default function RecipesRoute() {
 
   const breakdown = (calculationFetcher.data as any)?.breakdown || []
   const isLoading = calculationFetcher.state !== "idle"
+  
 
   // Filter breakdown based on hideCompleted state
   const filteredBreakdown = hideCompleted
@@ -81,7 +82,8 @@ export default function RecipesRoute() {
 
   // Auto-calculate when inputs change (debounced) to avoid duplicate submits
   useEffect(() => {
-    if (!selectedItem) return
+    if (!selectedItem || debouncedQuantity <= 0) return
+    
     const formData = new FormData()
     formData.append("itemId", selectedItem.id)
     formData.append("quantity", String(debouncedQuantity))
