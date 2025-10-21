@@ -4,21 +4,16 @@ import {
   Card,
   CardBody,
   Divider,
+  Flex,
   HStack,
   Icon,
-  Progress,
-  SimpleGrid,
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { ExternalLinkIcon, InfoOutlineIcon, StarIcon } from "@chakra-ui/icons"
+import { StarIcon } from "@chakra-ui/icons"
 import { Link as RemixLink } from "@remix-run/react"
-import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
-import type { SelectedClaim } from "~/hooks/useSelectedClaim"
 
 interface DashboardFocusPanelsProps {
-  claim: SelectedClaim | null
-  combinedItems: CombinedInventoryItem[]
   selectedRecipe: {
     name: string
     quantity: number
@@ -28,24 +23,21 @@ interface DashboardFocusPanelsProps {
 }
 
 export function DashboardFocusPanels({
-  claim,
-  combinedItems,
   selectedRecipe,
 }: DashboardFocusPanelsProps) {
-  const highTierItem = combinedItems
-    .filter((item) => (item.tier ?? -1) >= 4)
-    .sort((a, b) => b.totalQuantity - a.totalQuantity)[0]
+
 
   return (
     <Card bg="rgba(24, 35, 60, 0.9)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="2xl" h="full">
+      
       <CardBody>
-        <VStack align="stretch" spacing={4} h="full">
-          <HStack justify="space-between">
+        <Flex direction="column" align="stretch" gap={4} h="full">
+          <Flex justify="space-between" align="center">
             <Text fontSize="lg" fontWeight="bold" color="white">
               Crafting Queue
             </Text>
             <Icon as={StarIcon} color="yellow.200" boxSize={4} />
-          </HStack>
+          </Flex>
 
           {selectedRecipe ? (
             <VStack align="stretch" spacing={2} flex={1}>
@@ -91,7 +83,7 @@ export function DashboardFocusPanels({
           >
             Open Recipe Calculator
           </Button>
-        </VStack>
+        </Flex>
       </CardBody>
     </Card>
   )

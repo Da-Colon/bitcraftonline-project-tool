@@ -47,7 +47,6 @@ export function Dashboard() {
       }
     : null
 
-  const totalInventories = allInventories.length
 
   const tierFiveCount = combinedItems.reduce((sum, item) => {
     return sum + ((item.tier ?? -1) === 5 ? item.totalQuantity : 0)
@@ -109,15 +108,13 @@ export function Dashboard() {
       <PlayerHeader />
       <DashboardLayout hero={hero}>
         {player ? (
-          <Flex direction="column" gap={{ base: 16, md: 20 }} align="stretch">
+          <Flex direction="column" gap={{ base: 4, md: 6 }} align="stretch">
             <DashboardOverview
               trackedInventoriesCount={trackedCount}
               totalItems={totalQuantity}
               combinedItems={combinedItems}
             />
             <DashboardFocusPanels
-              claim={claim}
-              combinedItems={combinedItems}
               selectedRecipe={selectedRecipe}
             />
             <Divider borderColor="whiteAlpha.200" />

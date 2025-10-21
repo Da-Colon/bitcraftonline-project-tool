@@ -1,21 +1,14 @@
 import {
-  Badge,
   Card,
   CardBody,
-  Divider,
-  HStack,
+  Flex,
   SimpleGrid,
   Stat,
   StatHelpText,
   StatLabel,
   StatNumber,
-  Text,
   VStack,
-  Button,
-  Icon,
 } from "@chakra-ui/react"
-import { ExternalLinkIcon, SettingsIcon, StarIcon } from "@chakra-ui/icons"
-import { Link as RemixLink } from "@remix-run/react"
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 
 interface DashboardOverviewProps {
@@ -37,13 +30,10 @@ export function DashboardOverview({
   }, {} as Record<number, number>)
 
   const highestTierItems = combinedItems.filter((item) => (item.tier ?? -1) === 5)
-  const mostValuableItems = combinedItems
-    .filter((item) => (item.tier ?? -1) >= 4)
-    .sort((a, b) => b.totalQuantity - a.totalQuantity)
-    .slice(0, 3)
+
 
   return (
-    <VStack spacing={{ base: 8, md: 10 }} align="stretch">
+    <Flex direction="column">
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={5}>
         <Card bg="rgba(29, 42, 72, 0.85)" border="1px solid" borderColor="whiteAlpha.300" borderRadius="xl">
           <CardBody>
@@ -91,6 +81,6 @@ export function DashboardOverview({
           </CardBody>
         </Card>
       </SimpleGrid>
-    </VStack>
+    </Flex>
   )
 }
