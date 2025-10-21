@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Divider,
+  Flex,
   Heading,
   Modal,
   ModalBody,
@@ -12,7 +13,6 @@ import {
   ModalOverlay,
   Stack,
   Text,
-  VStack,
   Wrap,
   WrapItem,
   useDisclosure,
@@ -55,10 +55,7 @@ export function Dashboard() {
 
   const hero = (
     <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
-      <VStack spacing={{ base: 4, md: 6 }} align="flex-start" maxW="3xl" w="full">
-        <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
-          BitCraft Project Planner
-        </Text>
+      <Flex direction="column" align="flex-start" maxW="3xl" w="full" gap={{ base: 2, md: 3 }}>
         <Heading
           fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
           lineHeight={{ base: "1.15", md: "1.1" }}
@@ -71,27 +68,27 @@ export function Dashboard() {
           progression, clear goals, and cozy vibes—all in one place.
         </Text>
 
-        <Wrap spacing={{ base: 2, md: 3 }} justify={{ base: "flex-start", sm: "flex-start" }}>
+        <Wrap spacing={{ base: 1, md: 2 }} justify={{ base: "flex-start", sm: "flex-start" }}>
           <WrapItem>
-            <Badge colorScheme="blue" px={3} py={1} borderRadius="full">
+            <Badge colorScheme="blue" px={2} py={0.5} borderRadius="full" fontSize="xs">
               {trackedCount} tracked inventories
             </Badge>
           </WrapItem>
           <WrapItem>
-            <Badge colorScheme="green" px={3} py={1} borderRadius="full">
+            <Badge colorScheme="green" px={2} py={0.5} borderRadius="full" fontSize="xs">
               {totalQuantity.toLocaleString()} items on hand
             </Badge>
           </WrapItem>
           {player && claim && (
             <WrapItem>
-              <Badge colorScheme="purple" px={3} py={1} borderRadius="full">
+              <Badge colorScheme="purple" px={2} py={0.5} borderRadius="full" fontSize="xs">
                 Claim: {claim.claimName}
               </Badge>
             </WrapItem>
           )}
           {player && tierFiveCount > 0 && (
             <WrapItem>
-              <Badge colorScheme="pink" px={3} py={1} borderRadius="full">
+              <Badge colorScheme="pink" px={2} py={0.5} borderRadius="full" fontSize="xs">
                 {tierFiveCount.toLocaleString()} Tier 5 mats
               </Badge>
             </WrapItem>
@@ -103,7 +100,7 @@ export function Dashboard() {
             Select Player to Begin
           </Button>
         )}
-      </VStack>
+      </Flex>
     </Box>
   )
 
@@ -112,7 +109,7 @@ export function Dashboard() {
       <PlayerHeader />
       <DashboardLayout hero={hero}>
         {player ? (
-          <VStack spacing={{ base: 10, md: 12 }} align="stretch">
+          <Flex direction="column" gap={{ base: 16, md: 20 }} align="stretch">
             <DashboardOverview
               trackedInventoriesCount={trackedCount}
               totalItems={totalQuantity}
@@ -124,9 +121,9 @@ export function Dashboard() {
               selectedRecipe={selectedRecipe}
             />
             <Divider borderColor="whiteAlpha.200" />
-          </VStack>
+          </Flex>
         ) : (
-          <VStack spacing={6} align="center" textAlign="center">
+          <Flex direction="column" gap={6} align="center" textAlign="center">
             <Heading size="lg" color="white">
               Choose a traveler to see their world
             </Heading>
@@ -137,7 +134,7 @@ export function Dashboard() {
             <Button colorScheme="teal" size="lg" onClick={onOpen}>
               Select Player
             </Button>
-          </VStack>
+          </Flex>
         )}
       </DashboardLayout>
 

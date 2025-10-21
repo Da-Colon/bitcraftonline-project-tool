@@ -42,7 +42,7 @@ export function DashboardLayout({ hero, children }: DashboardLayoutProps) {
         </Box>
       </Box>
 
-      <Container maxW="container.xl" mt={{ base: "-2rem", md: "-4rem" }} pb={12} position="relative" zIndex={1}>
+      <Container maxW="container.xl" mt={{ base: "-1rem", md: "-2rem" }} pb={12} position="relative" zIndex={1}>
         <Box
           bg="rgba(17, 24, 39, 0.85)"
           backdropFilter="blur(14px)"
