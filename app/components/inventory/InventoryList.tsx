@@ -1,29 +1,17 @@
-import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import {
   VStack,
   Box,
   Text,
-  Checkbox,
-  Collapse,
-  SimpleGrid,
-  Badge,
-  HStack,
-  Card,
-  CardBody,
-  Icon,
-  Button,
   useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
 
-
-import { InventoryContents } from "./InventoryContents"
+import { InventoryCardBase } from "./InventoryCardBase"
 
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import type { PlayerInventories, Inventory } from "~/types/inventory"
 import type { InventorySource } from "~/types/inventory-tracking"
-import { getSnapshotAge } from "~/utils/inventory-snapshot"
 
 interface InventoryListProps {
   inventories: PlayerInventories
@@ -37,7 +25,7 @@ export function InventoryList({
   isFiltered = false,
 }: InventoryListProps) {
   const { player } = useSelectedPlayer()
-  const { isTracked, trackInventory, untrackInventory, refreshSnapshot, getSnapshot, snapshots } =
+  const { isTracked, trackInventory, untrackInventory, getSnapshot, snapshots } =
     useSharedPlayerInventoryTracking()
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
   const [inventoryViewModes, setInventoryViewModes] = useState<Record<string, "list" | "tier">>({})
@@ -88,38 +76,6 @@ export function InventoryList({
     }
   }
 
-  const handleRefreshSnapshot = async (inventory: Inventory, source: string) => {
-    if (!player?.entityId) {
-      toast({
-        title: "No Player Selected",
-        description: "Please select a player first",
-        status: "warning",
-        duration: 3000,
-        isClosable: true,
-      })
-      return
-    }
-
-    try {
-      await refreshSnapshot(inventory.id, inventory, source as InventorySource)
-      toast({
-        title: "Snapshot Refreshed",
-        description: `${inventory.name} data has been updated`,
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      })
-    } catch (error) {
-      console.error("Failed to refresh snapshot:", error)
-      toast({
-        title: "Error",
-        description: "Failed to refresh snapshot",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-    }
-  }
 
   const handleExpandToggle = (inventoryId: string) => {
     const newExpanded = new Set(expandedInventories)
@@ -157,142 +113,20 @@ export function InventoryList({
             const isExpanded = expandedInventories.has(inventory.id)
             const tracked = isTracked(inventory.id)
             const snapshot = getSnapshot(inventory.id)
-            const snapshotAge = snapshot ? getSnapshotAge(snapshot) : null
 
             return (
-              <Card
+              <InventoryCardBase
                 key={inventory.id}
-                bg="rgba(24, 35, 60, 0.9)"
-                border="1px solid"
-                borderColor={tracked ? "teal.300" : "rgba(148, 163, 184, 0.35)"}
-                backdropFilter="blur(12px)"
-                boxShadow="xl"
-                _hover={{
-                  borderColor: tracked ? "teal.200" : "rgba(148, 163, 184, 0.55)",
-                  transform: "translateY(-2px)",
-                }}
-                transition="all 0.2s"
-              >
-                <CardBody p={4}>
-                  <HStack justify="space-between" align="center" mb={isExpanded ? 4 : 0}>
-                    <HStack spacing={4} flex={1}>
-                      <Checkbox
-                        isChecked={tracked}
-                        onChange={(e) => handleTrackingChange(inventory, source, e.target.checked)}
-                        colorScheme="teal"
-                        size="lg"
-                      />
-                      <VStack align="start" spacing={1} flex={1}>
-                        <HStack spacing={3} align="center">
-                          <Text fontWeight="semibold" fontSize="md" color="white">
-                            {inventory.name}
-                          </Text>
-                          {inventory.claimName && title === "Banks" && (
-                            <Badge
-                              variant="subtle"
-                              colorScheme="teal"
-                              fontSize="xs"
-                              bg="rgba(45, 212, 191, 0.15)"
-                              color="teal.100"
-                            >
-                              {inventory.claimName}
-                            </Badge>
-                          )}
-                        </HStack>
-                        <HStack spacing={2}>
-                          <Badge
-                            variant="subtle"
-                            colorScheme={inventory.items.length > 0 ? "teal" : "gray"}
-                            fontSize="xs"
-                            bg={
-                              inventory.items.length > 0
-                                ? "rgba(45, 212, 191, 0.12)"
-                                : "rgba(148, 163, 184, 0.18)"
-                            }
-                            color={inventory.items.length > 0 ? "teal.100" : "whiteAlpha.700"}
-                          >
-                            {inventory.items.length} items
-                          </Badge>
-                          {inventory.buildingName && (
-                            <Badge
-                              variant="subtle"
-                              colorScheme="purple"
-                              fontSize="xs"
-                              bg="rgba(192, 132, 252, 0.16)"
-                              color="purple.100"
-                            >
-                              {inventory.buildingName}
-                            </Badge>
-                          )}
-                          {tracked && (
-                            <Badge variant="solid" colorScheme="teal" fontSize="xs">
-                              Tracked
-                            </Badge>
-                          )}
-                          {snapshotAge && (
-                            <Badge
-                              variant="subtle"
-                              colorScheme="blue"
-                              fontSize="xs"
-                              bg="rgba(59, 130, 246, 0.15)"
-                              color="blue.100"
-                            >
-                              {snapshotAge}
-                            </Badge>
-                          )}
-                        </HStack>
-                      </VStack>
-                    </HStack>
-
-                    <HStack spacing={2}>
-                      {tracked && snapshot && (
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          colorScheme="blue"
-                          onClick={() => handleRefreshSnapshot(inventory, source)}
-                          _hover={{ bg: "rgba(59, 130, 246, 0.12)" }}
-                        >
-                          Refresh
-                        </Button>
-                      )}
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        colorScheme="teal"
-                        onClick={() => handleViewModeToggle(inventory.id)}
-                        _hover={{ bg: "rgba(45, 212, 191, 0.12)" }}
-                      >
-                        {inventoryViewModes[inventory.id] === "tier" ? "List" : "Tier"}
-                      </Button>
-                      <HStack
-                        as="button"
-                        spacing={2}
-                        color="teal.200"
-                        fontSize="sm"
-                        onClick={() => handleExpandToggle(inventory.id)}
-                        _hover={{
-                          color: "teal.100",
-                          bg: "rgba(45, 212, 191, 0.12)",
-                        }}
-                        px={3}
-                        py={2}
-                        borderRadius="md"
-                        transition="all 0.2s"
-                      >
-                        <Text fontWeight="medium">{isExpanded ? "Collapse" : "Expand"}</Text>
-                        <Icon as={isExpanded ? ChevronDownIcon : ChevronRightIcon} boxSize={4} />
-                      </HStack>
-                    </HStack>
-                  </HStack>
-
-                  <Collapse in={isExpanded} animateOpacity>
-                    <Box mt={4} pt={4} borderTop="1px solid" borderColor="whiteAlpha.200">
-                      <InventoryContents items={inventory.items} viewMode={inventoryViewModes[inventory.id] || "list"} />
-                    </Box>
-                  </Collapse>
-                </CardBody>
-              </Card>
+                inventory={inventory}
+                tracked={tracked}
+                snapshot={snapshot}
+                expanded={isExpanded}
+                viewMode={inventoryViewModes[inventory.id] || "list"}
+                onTrackingChange={(checked) => handleTrackingChange(inventory, source, checked)}
+                onExpandToggle={() => handleExpandToggle(inventory.id)}
+                onViewModeToggle={() => handleViewModeToggle(inventory.id)}
+                showClaimBadge={title === "Banks"}
+              />
             )
           })}
         </VStack>

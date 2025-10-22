@@ -18,6 +18,7 @@ import { useCallback } from "react"
 
 import { usePlayerDetails } from "~/hooks/usePlayerDetails"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 
 interface PlayerHeaderProps {}
 
@@ -34,6 +35,15 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const location = useLocation()
   const { player, clearPlayer } = useSelectedPlayer()
   const { detail, loading, derived } = usePlayerDetails(player?.entityId)
+  
+  // Get tracking info for polling indicator
+  let snapshots: any[] = []
+  try {
+    const tracking = useSharedPlayerInventoryTracking()
+    snapshots = tracking.snapshots
+  } catch {
+    // Context not available, no tracking data
+  }
 
 
   const handleChangePlayer = useCallback(() => {
@@ -159,6 +169,21 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
               <Flex align="center" gap={2} color="whiteAlpha.800" mt={1}>
                 <Spinner size="xs" color="teal.200" />
                 <Text fontSize="xs">Syncing...</Text>
+              </Flex>
+            )}
+            
+            {/* Polling indicator for tracked inventories */}
+            {!loading && snapshots.length > 0 && (
+              <Flex align="center" gap={2} color="whiteAlpha.600" mt={1}>
+                <Box
+                  w={2}
+                  h={2}
+                  borderRadius="full"
+                  bg="teal.400"
+                  boxShadow="0 0 6px rgba(45, 212, 191, 0.4)"
+                  animation="pulse 2s infinite"
+                />
+                <Text fontSize="xs">Auto-syncing {snapshots.length} inventories</Text>
               </Flex>
             )}
           </Box>

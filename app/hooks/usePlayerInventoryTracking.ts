@@ -54,6 +54,19 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     loadSnapshots()
   }, [loadSnapshots])
 
+  // Set up polling for tracked inventories
+  useEffect(() => {
+    if (!playerId || snapshots.length === 0) {
+      return
+    }
+
+    const interval = setInterval(() => {
+      loadSnapshots()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
+  }, [playerId, snapshots.length, loadSnapshots])
+
   // Track an inventory by creating a snapshot
   const trackInventory = useCallback(
     async (
