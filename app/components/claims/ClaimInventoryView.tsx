@@ -14,10 +14,10 @@ import {
   Icon,
   Badge,
 } from "@chakra-ui/react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ExternalLinkIcon } from "@chakra-ui/icons"
 import { useClaimInventories } from "~/hooks/useClaimInventories"
-import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { useSelectedClaim } from "~/hooks/useSelectedClaim"
 import { ClaimInventoryList } from "./ClaimInventoryList"
@@ -37,26 +37,10 @@ export function ClaimInventoryView() {
     getSnapshotsByClaim,
     getTrackingSummary,
     isLoading,
-  } = usePlayerInventoryTracking(player?.entityId || null)
+  } = useSharedPlayerInventoryTracking()
   const { isOpen, onOpen, onClose } = useDisclosure()
-  const [totalTrackedCount, setTotalTrackedCount] = useState(0)
   const toast = useToast()
   const { confirm, ConfirmationDialog } = useConfirmationDialog()
-
-  // Load total tracked count
-  useEffect(() => {
-    const loadTotalCount = async () => {
-      if (player?.entityId) {
-        try {
-          const summary = await getTrackingSummary()
-          setTotalTrackedCount(summary.total)
-        } catch (error) {
-          console.error("Failed to load tracking summary:", error)
-        }
-      }
-    }
-    loadTotalCount()
-  }, [player?.entityId, getTrackingSummary])
 
   const handleSelectClaim = (claimId: string, claimName: string) => {
     selectClaim(claimId, claimName)
@@ -107,10 +91,6 @@ export function ClaimInventoryView() {
 
     try {
       await untrackByClaim(claim.claimId)
-      // Refresh total count
-      const summary = await getTrackingSummary()
-      setTotalTrackedCount(summary.total)
-
       toast({
         title: "Claim Tracking Cleared",
         description: `No buildings from ${claim.claimName} are being tracked`,
@@ -377,7 +357,7 @@ export function ClaimInventoryView() {
       <ClaimOverview
         claimData={inventories}
         trackedCount={claimTrackedCount}
-        totalTrackedCount={totalTrackedCount}
+        totalTrackedCount={snapshots.length}
         onTrackAll={handleTrackAll}
         onUntrackAll={handleUntrackAllWithConfirmation}
         onChangeClaim={onOpen}

@@ -13,10 +13,9 @@ import {
 } from "@chakra-ui/react"
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import { Link as RemixLink } from "@remix-run/react"
-import { useState, useEffect } from "react"
-import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import type { InventorySource } from "~/types/inventory-tracking"
+import { useState } from "react"
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
+import type { InventorySource, TrackedInventorySnapshot } from "~/types/inventory-tracking"
 
 interface TrackedInventorySummaryProps {
   currentClaimId?: string
@@ -45,58 +44,26 @@ export function TrackedInventorySummary({
   currentClaimId,
   currentClaimName,
 }: TrackedInventorySummaryProps) {
-  const { player } = useSelectedPlayer()
-  const { getTrackingSummary, getSnapshotsByClaim } = usePlayerInventoryTracking(
-    player?.entityId || null
-  )
-  const [summary, setSummary] = useState<{
-    total: number
-    bySource: Record<string, number>
-    byClaim: Record<string, number>
-  }>({ total: 0, bySource: {}, byClaim: {} })
+  const { snapshots, getSnapshotsByClaim } = useSharedPlayerInventoryTracking()
   const [isExpanded, setIsExpanded] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const loadSummary = async () => {
-      if (!player?.entityId) {
-        setSummary({ total: 0, bySource: {}, byClaim: {} })
-        setIsLoading(false)
-        return
-      }
-
-      try {
-        const summaryData = await getTrackingSummary()
-        setSummary(summaryData)
-      } catch (error) {
-        console.error("Failed to load tracking summary:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadSummary()
-  }, [player?.entityId, getTrackingSummary])
+  // Calculate summary from snapshots
+  const summary = {
+    total: snapshots.length,
+    bySource: snapshots.reduce((acc, snapshot) => {
+      acc[snapshot.source] = (acc[snapshot.source] || 0) + 1
+      return acc
+    }, {} as Record<string, number>),
+    byClaim: snapshots
+      .filter(s => s.source === 'claim' && s.claimId)
+      .reduce((acc, snapshot) => {
+        acc[snapshot.claimId!] = (acc[snapshot.claimId!] || 0) + 1
+        return acc
+      }, {} as Record<string, number>)
+  }
 
   const currentClaimCount = currentClaimId ? getSnapshotsByClaim(currentClaimId).length : 0
   const claimInventoriesCount = summary.bySource.claim || 0
-
-  if (isLoading) {
-    return (
-      <Card
-        bg="rgba(24, 35, 60, 0.9)"
-        border="1px solid"
-        borderColor="whiteAlpha.200"
-        borderRadius="2xl"
-      >
-        <CardBody p={6}>
-          <Text color="whiteAlpha.800" textAlign="center">
-            Loading tracking summary...
-          </Text>
-        </CardBody>
-      </Card>
-    )
-  }
 
   if (summary.total === 0) {
     return (

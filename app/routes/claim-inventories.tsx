@@ -5,6 +5,7 @@ import { PlayerHeader } from "~/components/player/PlayerHeader";
 import { ClaimInventoryView } from "~/components/claims/ClaimInventoryView";
 import { DashboardLayout } from "~/components/dashboard/DashboardLayout";
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
+import { PlayerInventoryTrackingProvider } from "~/contexts/PlayerInventoryTrackingContext";
 
 const PlayerSelectionView = lazy(() =>
   import("~/components/player/PlayerSelectionView").then((m) => ({ default: m.PlayerSelectionView }))
@@ -22,10 +23,11 @@ export default function ClaimInventoriesRoute() {
   }
 
   return (
-    <Box bg="gray.900" minH="100vh">
-      <PlayerHeader />
-      <DashboardLayout
-        hero={
+    <PlayerInventoryTrackingProvider playerId={player.entityId}>
+      <Box bg="gray.900" minH="100vh">
+        <PlayerHeader />
+        <DashboardLayout
+          hero={
           <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
             <Flex direction="column" align="flex-start" maxW="3xl" w="full" gap={{ base: 2, md: 3 }}>
               <Heading
@@ -61,5 +63,6 @@ export default function ClaimInventoriesRoute() {
         </VStack>
       </DashboardLayout>
     </Box>
+    </PlayerInventoryTrackingProvider>
   );
 }
