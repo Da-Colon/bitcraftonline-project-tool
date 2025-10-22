@@ -64,6 +64,7 @@ export function usePlayerDetails(id: string | null | undefined) {
         id: best.skill_id,
         name: skillDef?.name || String(best.skill_id),
         title: skillDef?.title || "",
+        icon_asset_name: skillDef?.icon_asset_name,
         level,
         xp: best.quantity,
       },

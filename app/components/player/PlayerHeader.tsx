@@ -13,7 +13,6 @@ import {
   useToast,
 } from "@chakra-ui/react"
 import { CloseIcon } from "@chakra-ui/icons"
-import { GameDataIcon } from "~/components/GameDataIcon"
 import { useCallback } from "react"
 import { Link as RemixLink, useLocation, useNavigate } from "@remix-run/react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
@@ -134,10 +133,13 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
               {!loading && highest && (
                 <Tooltip label={highest.name} placement="bottom">
                   <Flex align="center" gap={1}>
-                    <GameDataIcon
-                      iconAssetName={highest.title}
-                      size="14px"
+                    <Box
+                      as="img"
+                      src={`/assets/Skill/SkillIcon${highest.name}.png`}
                       alt={highest.name}
+                      w="14px"
+                      h="14px"
+                      objectFit="contain"
                     />
                     <Text fontSize="xs" color="whiteAlpha.900">
                       Lv {highest.level}
