@@ -66,13 +66,20 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       try {
         const snapshot = createInventorySnapshot(inventory, source)
         await inventoryStorageService.saveTrackedInventory(playerId, snapshot)
-        await loadSnapshots() // Refresh the list
+        
+        // Direct state update instead of re-fetching
+        setSnapshots(prev => [...prev, snapshot])
+        setMetadata(prev => {
+          const newMetadata = new Map(prev)
+          newMetadata.set(snapshot.id, getSnapshotMetadata(snapshot))
+          return newMetadata
+        })
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to track inventory")
         throw err
       }
     },
-    [playerId, loadSnapshots]
+    [playerId]
   )
 
   // Untrack an inventory
@@ -84,13 +91,20 @@ export function usePlayerInventoryTracking(playerId: string | null) {
 
       try {
         await inventoryStorageService.removeTrackedInventory(playerId, inventoryId)
-        await loadSnapshots() // Refresh the list
+        
+        // Direct state update instead of re-fetching
+        setSnapshots(prev => prev.filter(s => s.id !== inventoryId))
+        setMetadata(prev => {
+          const newMetadata = new Map(prev)
+          newMetadata.delete(inventoryId)
+          return newMetadata
+        })
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to untrack inventory")
         throw err
       }
     },
-    [playerId, loadSnapshots]
+    [playerId]
   )
 
   // Track multiple inventories
@@ -111,13 +125,21 @@ export function usePlayerInventoryTracking(playerId: string | null) {
           await inventoryStorageService.saveTrackedInventory(playerId, snapshot)
         }
 
-        await loadSnapshots() // Refresh the list
+        // Direct state update instead of re-fetching
+        setSnapshots(prev => [...prev, ...snapshots])
+        setMetadata(prev => {
+          const newMetadata = new Map(prev)
+          snapshots.forEach(snapshot => {
+            newMetadata.set(snapshot.id, getSnapshotMetadata(snapshot))
+          })
+          return newMetadata
+        })
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to track inventories")
         throw err
       }
     },
-    [playerId, loadSnapshots]
+    [playerId]
   )
 
   // Untrack all inventories for the current player
@@ -165,13 +187,20 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       try {
         const snapshot = createInventorySnapshot(freshInventory, source)
         await inventoryStorageService.saveTrackedInventory(playerId, snapshot)
-        await loadSnapshots() // Refresh the list
+        
+        // Direct state update instead of re-fetching
+        setSnapshots(prev => prev.map(s => s.id === inventoryId ? snapshot : s))
+        setMetadata(prev => {
+          const newMetadata = new Map(prev)
+          newMetadata.set(snapshot.id, getSnapshotMetadata(snapshot))
+          return newMetadata
+        })
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to refresh snapshot")
         throw err
       }
     },
-    [playerId, loadSnapshots]
+    [playerId]
   )
 
   // Get snapshots that need refresh
@@ -207,13 +236,25 @@ export function usePlayerInventoryTracking(playerId: string | null) {
 
       try {
         await inventoryStorageService.clearClaimTracking(playerId, claimId)
-        await loadSnapshots() // Refresh the list
+        
+        // Direct state update instead of re-fetching
+        setSnapshots(prev => prev.filter(s => s.claimId !== claimId))
+        setMetadata(prev => {
+          const newMetadata = new Map(prev)
+          prev.forEach((_, snapshotId) => {
+            const snapshot = snapshots.find(s => s.id === snapshotId)
+            if (snapshot?.claimId === claimId) {
+              newMetadata.delete(snapshotId)
+            }
+          })
+          return newMetadata
+        })
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to clear claim tracking")
         throw err
       }
     },
-    [playerId, loadSnapshots]
+    [playerId, snapshots]
   )
 
   // Get tracking summary with breakdown by source and claim
