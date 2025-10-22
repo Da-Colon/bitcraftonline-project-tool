@@ -17,7 +17,7 @@ import { SearchIcon, CloseIcon } from "@chakra-ui/icons"
 import { useState } from "react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { usePlayerInventories } from "~/hooks/usePlayerInventories"
-import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { InventoryList } from "./InventoryList"
 import { InventoryOverview } from "./InventoryOverview"
 import { useDebounce } from "~/hooks/useDebounce"
@@ -35,7 +35,7 @@ export function PersonalInventoriesView() {
     isTracked,
     isLoading: trackingLoading,
     error: trackingError,
-  } = usePlayerInventoryTracking(player?.entityId || null)
+  } = useSharedPlayerInventoryTracking()
   const [searchQuery, setSearchQuery] = useState("")
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const toast = useToast()

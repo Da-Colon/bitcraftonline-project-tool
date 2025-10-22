@@ -17,7 +17,7 @@ import { useState } from "react"
 import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import type { PlayerInventories, Inventory } from "~/types/inventory"
 import { InventoryContents } from "./InventoryContents"
-import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import { getSnapshotAge } from "~/utils/inventory-snapshot"
 import type { InventorySource } from "~/types/inventory-tracking"
@@ -35,7 +35,7 @@ export function InventoryList({
 }: InventoryListProps) {
   const { player } = useSelectedPlayer()
   const { isTracked, trackInventory, untrackInventory, refreshSnapshot, getSnapshot, snapshots } =
-    usePlayerInventoryTracking(player?.entityId || null)
+    useSharedPlayerInventoryTracking()
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
   const [inventoryViewModes, setInventoryViewModes] = useState<Record<string, "list" | "tier">>({})
   const toast = useToast()
