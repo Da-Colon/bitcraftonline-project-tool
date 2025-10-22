@@ -25,7 +25,7 @@ export function AboutPage() {
   return (
     <Box minH="100vh" bgGradient={bgGradient}>
       {/* Hero Section */}
-      <Container maxW="7xl" pt={20} pb={16}>
+      <Container maxW="container.xl" pt={20} pb={16}>
         <VStack spacing={8} textAlign="center">
           <VStack spacing={4}>
             <Heading

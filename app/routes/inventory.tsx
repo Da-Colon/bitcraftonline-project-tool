@@ -30,7 +30,7 @@ export default function InventoryRoute() {
         <DashboardLayout
           hero={
           <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
-            <Flex direction="column" align="flex-start" maxW="3xl" w="full" gap={{ base: 2, md: 3 }}>
+            <Flex direction="column" align="flex-start" w="full" gap={{ base: 2, md: 3 }}>
               <Heading
                 fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
                 lineHeight={{ base: "1.15", md: "1.1" }}

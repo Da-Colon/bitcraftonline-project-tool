@@ -36,9 +36,11 @@ export function DashboardLayout({ hero, children }: DashboardLayoutProps) {
           minH="320px"
           borderBottomRadius={{ base: "4xl", md: "5xl" }}
         >
-          <Box position="relative" zIndex={1}>
-            {hero}
-          </Box>
+          <Container maxW="container.xl">
+            <Box position="relative" zIndex={1}>
+              {hero}
+            </Box>
+          </Container>
         </Box>
       </Box>
 
