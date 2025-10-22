@@ -1,7 +1,8 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
-import type { ProjectItem, Item, Recipe, RecipeBreakdownItem, InventoryItem } from "~/types/recipes";
-import { RecipeCalculator } from "~/services/recipe-calculator.server";
+
 import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server";
+import { RecipeCalculator } from "~/services/recipe-calculator.server";
+import type { ProjectItem, Item, Recipe, RecipeBreakdownItem, InventoryItem } from "~/types/recipes";
 
 // Note: This API supports both calculators:
 // - Enhanced calculator: For single-item calculations with inventory (preferred)

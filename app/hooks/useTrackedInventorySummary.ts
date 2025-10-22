@@ -1,14 +1,10 @@
 import { useMemo } from "react"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { usePlayerInventories } from "~/hooks/usePlayerInventories"
-import { useSelectedClaim } from "~/hooks/useSelectedClaim"
+
 import { useClaimInventories } from "~/hooks/useClaimInventories"
+import { usePlayerInventories } from "~/hooks/usePlayerInventories"
 import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
-import {
-  buildTrackedInventorySummary,
-  buildTrackedInventorySummaryFromSnapshots,
-  type TrackedInventorySummary,
-} from "~/utils/combineAllTrackedInventories"
+import { useSelectedClaim } from "~/hooks/useSelectedClaim"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import type {
   PlayerInventories,
   ClaimInventoriesResponse,
@@ -16,6 +12,11 @@ import type {
   ClaimInventory,
 } from "~/types/inventory"
 import type { TrackedInventorySnapshot, InventorySource } from "~/types/inventory-tracking"
+import {
+  buildTrackedInventorySummary,
+  buildTrackedInventorySummaryFromSnapshots,
+  type TrackedInventorySummary,
+} from "~/utils/combineAllTrackedInventories"
 
 export interface TrackedInventorySummaryResult extends TrackedInventorySummary {
   player: ReturnType<typeof useSelectedPlayer>["player"]

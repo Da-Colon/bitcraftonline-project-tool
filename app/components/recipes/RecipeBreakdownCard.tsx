@@ -20,12 +20,15 @@ import {
   Box,
   Divider,
 } from "@chakra-ui/react"
-import { GameDataIcon } from "~/components/GameDataIcon"
-import type { RecipeBreakdownItem } from "~/types/recipes"
+
+import { RawMaterialsView } from "./RawMaterialsView"
 import { RecipeBreakdownTable } from "./RecipeBreakdownTable"
 import { TierSummaryView } from "./TierSummaryView"
-import { RawMaterialsView } from "./RawMaterialsView"
+
+import { GameDataIcon } from "~/components/GameDataIcon"
 import { TrackedInventoryView } from "~/components/inventory/TrackedInventoryView"
+import type { RecipeBreakdownItem } from "~/types/recipes"
+
 
 interface RecipeBreakdownCardProps {
   breakdown: RecipeBreakdownItem[]

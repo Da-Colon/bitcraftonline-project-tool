@@ -1,4 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+
 import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server";
 
 type Cached<T> = { data: T; fetchedAt: number };

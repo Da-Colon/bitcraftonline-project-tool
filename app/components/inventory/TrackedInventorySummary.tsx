@@ -1,3 +1,4 @@
+import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import {
   Box,
   Text,
@@ -11,9 +12,9 @@ import {
   Icon,
   Link as ChakraLink,
 } from "@chakra-ui/react"
-import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import { Link as RemixLink } from "@remix-run/react"
 import { useState } from "react"
+
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import type { InventorySource, TrackedInventorySnapshot } from "~/types/inventory-tracking"
 

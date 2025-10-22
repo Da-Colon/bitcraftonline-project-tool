@@ -16,8 +16,9 @@ import {
   Button,
   VStack,
 } from "@chakra-ui/react"
-import type { RecipeBreakdownItem } from "~/types/recipes"
+
 import { GameDataIcon } from "~/components/GameDataIcon"
+import type { RecipeBreakdownItem } from "~/types/recipes"
 
 interface RecipeBreakdownTableProps {
   breakdown: RecipeBreakdownItem[]

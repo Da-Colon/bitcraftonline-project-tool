@@ -1,5 +1,5 @@
 // BitCraft Data Parser
-import {
+import type {
   BitCraftItem,
   BitCraftRecipe,
   ParsedItem,

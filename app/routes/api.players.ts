@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+
 import { BitJita } from "~/utils/bitjita.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

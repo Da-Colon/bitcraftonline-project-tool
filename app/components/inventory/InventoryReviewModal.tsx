@@ -22,6 +22,7 @@ import {
   TableContainer,
   Badge,
 } from "@chakra-ui/react";
+
 import type { PlayerInventoryResponse } from "~/routes/api.player.inventory";
 import type { Item } from "~/types/recipes";
 

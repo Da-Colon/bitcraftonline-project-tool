@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import type { ClaimInventoriesResponse } from "~/types/inventory";
 
 export function useClaimInventories(claimId?: string) {

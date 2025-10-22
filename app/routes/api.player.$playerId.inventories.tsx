@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
-import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server"
+
 import { getGameDataIconLookup } from "~/services/gamedata-icon-lookup.server"
+import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server"
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { playerId } = params

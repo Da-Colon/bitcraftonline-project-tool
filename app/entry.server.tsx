@@ -1,10 +1,11 @@
+import { CacheProvider } from "@emotion/react";
+import createEmotionServer from "@emotion/server/create-instance";
 import type { AppLoadContext, EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { renderToString } from "react-dom/server";
-import { CacheProvider } from "@emotion/react";
-import createEmotionServer from "@emotion/server/create-instance";
-import createEmotionCache from "./createEmotionCache";
+
 import { ServerStyleContext } from "./context";
+import createEmotionCache from "./createEmotionCache";
 
 export default function handleRequest(
   request: Request,
@@ -59,7 +60,7 @@ export default function handleRequest(
   headers.set("X-Frame-Options", "DENY");
   headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
 
-  return new Response("<!DOCTYPE html>" + markup, {
+  return new Response(`<!DOCTYPE html>${  markup}`, {
     status: responseStatusCode,
     headers,
   });

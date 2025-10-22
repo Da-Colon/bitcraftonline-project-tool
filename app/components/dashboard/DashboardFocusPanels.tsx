@@ -1,3 +1,4 @@
+import { StarIcon } from "@chakra-ui/icons"
 import {
   Badge,
   Button,
@@ -10,7 +11,6 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react"
-import { StarIcon } from "@chakra-ui/icons"
 import { Link as RemixLink } from "@remix-run/react"
 
 interface DashboardFocusPanelsProps {

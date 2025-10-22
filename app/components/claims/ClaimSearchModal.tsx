@@ -14,9 +14,10 @@ import {
   Box,
 } from "@chakra-ui/react"
 import { useCallback } from "react"
-import type { PlayerClaim } from "~/types/player"
+
 import { usePlayerClaims } from "~/hooks/usePlayerClaims"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import type { PlayerClaim } from "~/types/player"
 
 interface ClaimSearchModalProps {
   isOpen: boolean;

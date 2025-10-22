@@ -1,3 +1,4 @@
+import { SettingsIcon, StarIcon, InfoIcon, CheckCircleIcon } from "@chakra-ui/icons"
 import {
   Box,
   Container,
@@ -11,7 +12,6 @@ import {
   Divider,
   useColorModeValue,
 } from "@chakra-ui/react"
-import { SettingsIcon, StarIcon, InfoIcon, CheckCircleIcon } from "@chakra-ui/icons"
 import { useNavigate } from "@remix-run/react"
 
 export function AboutPage() {

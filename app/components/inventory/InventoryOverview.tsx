@@ -1,3 +1,4 @@
+import { ExternalLinkIcon, SettingsIcon, StarIcon, CheckCircleIcon } from "@chakra-ui/icons"
 import {
   Box,
   SimpleGrid,
@@ -16,8 +17,8 @@ import {
   Progress,
   Divider,
 } from "@chakra-ui/react"
-import { ExternalLinkIcon, SettingsIcon, StarIcon, CheckCircleIcon } from "@chakra-ui/icons"
 import { Link as RemixLink } from "@remix-run/react"
+
 import type { PlayerInventories } from "~/types/inventory"
 
 interface InventoryOverviewProps {

@@ -1,3 +1,4 @@
+import { SearchIcon, CloseIcon } from "@chakra-ui/icons"
 import {
   Box,
   Text,
@@ -13,14 +14,15 @@ import {
   InputLeftElement,
   Badge,
 } from "@chakra-ui/react"
-import { SearchIcon, CloseIcon } from "@chakra-ui/icons"
 import { useState } from "react"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { usePlayerInventories } from "~/hooks/usePlayerInventories"
-import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
+
 import { InventoryList } from "./InventoryList"
 import { InventoryOverview } from "./InventoryOverview"
+
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useDebounce } from "~/hooks/useDebounce"
+import { usePlayerInventories } from "~/hooks/usePlayerInventories"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import type { Inventory } from "~/types/inventory"
 
 export function PersonalInventoriesView() {

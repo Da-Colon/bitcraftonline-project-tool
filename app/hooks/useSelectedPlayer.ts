@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+
 import { SELECTED_PLAYER_KEY, type SelectedPlayer } from "~/constants/storage";
 
 export function useSelectedPlayer() {

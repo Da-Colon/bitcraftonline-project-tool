@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
+
+import { usePlayerHousing } from "./usePlayerHousing"
+
 import type { PlayerInventories, BitJitaInventoriesResponse } from "~/types/inventory"
 import { transformBitJitaInventories } from "~/utils/inventoryTransform"
-import { usePlayerHousing } from "./usePlayerHousing"
 
 export function usePlayerInventories(playerId?: string) {
   const [inventories, setInventories] = useState<PlayerInventories | null>(null)

@@ -1,7 +1,10 @@
-import { VStack, Text, Box, Spinner, Icon, Center } from "@chakra-ui/react";
 import { SearchIcon, WarningIcon } from "@chakra-ui/icons";
-import type { Player } from "~/types/player";
+import { VStack, Text, Box, Spinner, Icon, Center } from "@chakra-ui/react";
+
 import { PlayerCard } from "./PlayerCard";
+
+import type { Player } from "~/types/player";
+
 
 type PlayerResultsProps = {
   players: Player[];

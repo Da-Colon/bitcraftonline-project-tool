@@ -2,11 +2,11 @@
  * Utilities for creating and managing inventory snapshots
  */
 
+import type { Inventory, ClaimInventory } from "~/types/inventory"
 import type {
   TrackedInventorySnapshot,
   InventorySnapshotMetadata,
 } from "~/types/inventory-tracking"
-import type { Inventory, ClaimInventory } from "~/types/inventory"
 
 export function createInventorySnapshot(
   inventory: Inventory | ClaimInventory,

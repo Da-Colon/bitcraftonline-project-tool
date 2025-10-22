@@ -1,3 +1,4 @@
+import { CloseIcon } from "@chakra-ui/icons"
 import {
   Badge,
   Box,
@@ -12,11 +13,11 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react"
-import { CloseIcon } from "@chakra-ui/icons"
-import { useCallback } from "react"
 import { Link as RemixLink, useLocation, useNavigate } from "@remix-run/react"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import { useCallback } from "react"
+
 import { usePlayerDetails } from "~/hooks/usePlayerDetails"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 
 interface PlayerHeaderProps {}
 

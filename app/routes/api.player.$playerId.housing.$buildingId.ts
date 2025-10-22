@@ -1,6 +1,7 @@
 import { type LoaderFunctionArgs, json } from "@remix-run/node"
-import { getPlayerHousingDetails } from "~/utils/bitjita.server"
+
 import type { BitJitaHousingDetailsResponse } from "~/types/inventory"
+import { getPlayerHousingDetails } from "~/utils/bitjita.server"
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { playerId, buildingId } = params

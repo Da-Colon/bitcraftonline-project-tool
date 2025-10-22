@@ -1,5 +1,6 @@
 import { Box, Image, type BoxProps } from "@chakra-ui/react"
 import { useState, useMemo, useEffect } from "react"
+
 import {
   convertIconAssetNameToPath,
   getFallbackIconPath,

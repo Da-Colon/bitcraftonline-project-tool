@@ -4,14 +4,15 @@
  */
 
 import { useState, useEffect, useCallback } from "react"
+
 import { inventoryStorageService } from "~/services/inventory-storage.service"
-import { createInventorySnapshot, getSnapshotMetadata } from "~/utils/inventory-snapshot"
+import type { Inventory, ClaimInventory } from "~/types/inventory"
 import type {
   TrackedInventorySnapshot,
   InventorySnapshotMetadata,
   InventorySource,
 } from "~/types/inventory-tracking"
-import type { Inventory, ClaimInventory } from "~/types/inventory"
+import { createInventorySnapshot, getSnapshotMetadata } from "~/utils/inventory-snapshot"
 
 export function usePlayerInventoryTracking(playerId: string | null) {
   const [snapshots, setSnapshots] = useState<TrackedInventorySnapshot[]>([])

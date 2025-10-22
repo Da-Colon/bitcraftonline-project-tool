@@ -1,7 +1,8 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
+
+import { getGameDataIconLookup } from "~/services/gamedata-icon-lookup.server"
 import { BitJita } from "~/utils/bitjita.server"
 import type { BitJitaInventoriesResponse } from "~/utils/bitjita.server"
-import { getGameDataIconLookup } from "~/services/gamedata-icon-lookup.server"
 import { normalizeItemId } from "~/utils/itemId"
 
 export interface PlayerInventoryItem {

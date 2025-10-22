@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+
 import type { PlayerDetail } from "~/types/player"
 import { xpToLevel } from "~/utils/levels"
 import { getSkillDef } from "~/utils/skills"

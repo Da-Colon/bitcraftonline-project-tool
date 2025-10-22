@@ -1,6 +1,7 @@
-import type { RecipeBreakdownItem, TierCalculationResult, InventoryItem } from "~/types/recipes"
 import { RecipeCalculator } from "./recipe-calculator.server"
+
 import { enhanceItemWithIcon } from "~/services/gamedata-icon-lookup.server"
+import type { RecipeBreakdownItem, TierCalculationResult, InventoryItem } from "~/types/recipes"
 
 export class EnhancedRecipeCalculator extends RecipeCalculator {
   /**

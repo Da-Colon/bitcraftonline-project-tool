@@ -16,13 +16,15 @@ import {
   WrapItem,
   useDisclosure,
 } from "@chakra-ui/react"
-import { PlayerHeader } from "~/components/player/PlayerHeader"
-import { DashboardOverview } from "./DashboardOverview"
-import { PlayerSelectionView } from "~/components/player/PlayerSelectionView"
-import { DashboardLayout } from "./DashboardLayout"
+
 import { DashboardFocusPanels } from "./DashboardFocusPanels"
-import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
+import { DashboardLayout } from "./DashboardLayout"
+import { DashboardOverview } from "./DashboardOverview"
+
+import { PlayerHeader } from "~/components/player/PlayerHeader"
+import { PlayerSelectionView } from "~/components/player/PlayerSelectionView"
 import { useRecipeSelection } from "~/hooks/useRecipeSelection"
+import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
 
 export function Dashboard() {
   const {

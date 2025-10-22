@@ -1,3 +1,4 @@
+import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
 import {
   VStack,
   Box,
@@ -13,11 +14,11 @@ import {
   useToast,
 } from "@chakra-ui/react"
 import { useState } from "react"
-import { ChevronDownIcon, ChevronRightIcon } from "@chakra-ui/icons"
-import type { ClaimInventory } from "~/types/inventory"
+
 import { InventoryContents } from "~/components/inventory/InventoryContents"
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+import type { ClaimInventory } from "~/types/inventory"
 import { getSnapshotAge } from "~/utils/inventory-snapshot"
 
 interface ClaimInventoryListProps {

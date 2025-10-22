@@ -9,6 +9,7 @@ import {
   StatNumber,
   VStack,
 } from "@chakra-ui/react"
+
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 
 interface DashboardOverviewProps {

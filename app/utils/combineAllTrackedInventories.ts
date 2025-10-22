@@ -1,4 +1,3 @@
-import { normalizeItemId } from "~/utils/itemId"
 import type {
   PlayerInventories,
   ClaimInventoriesResponse,
@@ -7,6 +6,7 @@ import type {
   ClaimInventory,
 } from "~/types/inventory"
 import type { TrackedInventorySnapshot } from "~/types/inventory-tracking"
+import { normalizeItemId } from "~/utils/itemId"
 
 export interface CombinedItemSource {
   inventoryId: string

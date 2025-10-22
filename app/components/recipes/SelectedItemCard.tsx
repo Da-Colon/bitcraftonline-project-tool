@@ -14,8 +14,9 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
 } from "@chakra-ui/react"
-import type { Item } from "~/types/recipes"
+
 import { GameDataIcon } from "~/components/GameDataIcon"
+import type { Item } from "~/types/recipes"
 
 interface SelectedItemCardProps {
   selectedItem: Item

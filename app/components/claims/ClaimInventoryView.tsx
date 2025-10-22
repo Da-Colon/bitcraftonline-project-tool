@@ -1,3 +1,4 @@
+import { ExternalLinkIcon } from "@chakra-ui/icons"
 import {
   Box,
   Text,
@@ -15,16 +16,19 @@ import {
   Badge,
 } from "@chakra-ui/react"
 import { useState } from "react"
-import { ExternalLinkIcon } from "@chakra-ui/icons"
-import { useClaimInventories } from "~/hooks/useClaimInventories"
-import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { useSelectedClaim } from "~/hooks/useSelectedClaim"
+
 import { ClaimInventoryList } from "./ClaimInventoryList"
-import { ClaimSearchModal } from "./ClaimSearchModal"
 import { ClaimOverview } from "./ClaimOverview"
-import { TrackedInventorySummary } from "~/components/inventory/TrackedInventorySummary"
+import { ClaimSearchModal } from "./ClaimSearchModal"
+
 import { useConfirmationDialog } from "~/components/ConfirmationDialog"
+import { TrackedInventorySummary } from "~/components/inventory/TrackedInventorySummary"
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
+import { useClaimInventories } from "~/hooks/useClaimInventories"
+import { useSelectedClaim } from "~/hooks/useSelectedClaim"
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+
+
 
 export function ClaimInventoryView() {
   const { player } = useSelectedPlayer()

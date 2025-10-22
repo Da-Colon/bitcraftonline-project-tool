@@ -1,10 +1,11 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react"
-import type { LinksFunction, MetaFunction } from "@remix-run/node"
 import { ChakraProvider } from "@chakra-ui/react"
-import { useContext, useEffect } from "react"
 import { withEmotionCache } from "@emotion/react"
+import type { LinksFunction, MetaFunction } from "@remix-run/node"
+import { Links, Meta, Outlet, Scripts, ScrollRestoration , isRouteErrorResponse, useRouteError } from "@remix-run/react"
+import { useContext, useEffect } from "react"
+
 import { ServerStyleContext, ClientStyleContext } from "./context"
-import { isRouteErrorResponse, useRouteError } from "@remix-run/react"
+
 import { migrateInventoryTracking } from "~/utils/migrate-inventory-tracking"
 
 interface DocumentProps {

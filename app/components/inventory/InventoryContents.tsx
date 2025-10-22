@@ -1,7 +1,9 @@
 import { SimpleGrid, Box, Text, HStack, Badge } from "@chakra-ui/react"
-import type { InventoryItem } from "~/types/inventory"
+
 import { InventoryTierTable } from "./InventoryTierTable"
+
 import { GameDataIcon } from "~/components/GameDataIcon"
+import type { InventoryItem } from "~/types/inventory"
 
 interface InventoryContentsProps {
   items: InventoryItem[]

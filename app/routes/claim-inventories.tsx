@@ -1,11 +1,12 @@
 import { Badge, Box, Button, Flex, Heading, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
-import { Suspense, lazy } from "react";
 import { Link as RemixLink } from "@remix-run/react";
-import { PlayerHeader } from "~/components/player/PlayerHeader";
+import { Suspense, lazy } from "react";
+
 import { ClaimInventoryView } from "~/components/claims/ClaimInventoryView";
 import { DashboardLayout } from "~/components/dashboard/DashboardLayout";
-import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
+import { PlayerHeader } from "~/components/player/PlayerHeader";
 import { PlayerInventoryTrackingProvider } from "~/contexts/PlayerInventoryTrackingContext";
+import { useSelectedPlayer } from "~/hooks/useSelectedPlayer";
 
 const PlayerSelectionView = lazy(() =>
   import("~/components/player/PlayerSelectionView").then((m) => ({ default: m.PlayerSelectionView }))

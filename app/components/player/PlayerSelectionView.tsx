@@ -1,3 +1,4 @@
+import { SearchIcon } from "@chakra-ui/icons"
 import {
   Box,
   Container,
@@ -11,11 +12,12 @@ import {
   Flex,
   Badge,
 } from "@chakra-ui/react"
-import { SearchIcon } from "@chakra-ui/icons"
 import { useState } from "react"
+
+import { PlayerResults } from "./PlayerResults"
+
 import { usePlayerSearch } from "~/hooks/usePlayerSearch"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { PlayerResults } from "./PlayerResults"
 
 export function PlayerSelectionView() {
   const { savePlayer } = useSelectedPlayer()

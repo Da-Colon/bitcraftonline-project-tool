@@ -1,3 +1,4 @@
+import { WarningIcon } from "@chakra-ui/icons"
 import {
   Modal,
   ModalOverlay,
@@ -12,7 +13,6 @@ import {
   Icon,
   useDisclosure,
 } from "@chakra-ui/react"
-import { WarningIcon } from "@chakra-ui/icons"
 import { useState } from "react"
 
 interface ConfirmationDialogProps {

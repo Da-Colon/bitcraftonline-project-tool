@@ -1,12 +1,14 @@
-import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "~/types/recipes"
-import { parseItem, parseRecipe, parseExtractionRecipe } from "~/services/bitcraft-parser"
-import type { BitCraftItem, BitCraftRecipe, BitCraftExtractionRecipe } from "~/types/bitcraft-data"
-import { enhanceItemsWithIcons } from "~/services/gamedata-icon-lookup.server"
-
-// Import BitCraft JSON data directly from GameData submodule
-import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
 import recipesJson from "../../GameData/BitCraft_GameData/server/region/crafting_recipe_desc.json" assert { type: "json" }
 import extractionRecipesJson from "../../GameData/BitCraft_GameData/server/region/extraction_recipe_desc.json" assert { type: "json" }
+import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
+
+import { parseItem, parseRecipe, parseExtractionRecipe } from "~/services/bitcraft-parser"
+import { enhanceItemsWithIcons } from "~/services/gamedata-icon-lookup.server"
+import type { BitCraftItem, BitCraftRecipe, BitCraftExtractionRecipe } from "~/types/bitcraft-data"
+
+// Import BitCraft JSON data directly from GameData submodule
+
+import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "~/types/recipes"
 
 export class RecipeCalculator {
   private items: Map<string, Item>

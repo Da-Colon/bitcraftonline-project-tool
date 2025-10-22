@@ -10,6 +10,7 @@ import {
   Badge,
   Box,
 } from "@chakra-ui/react"
+
 import type { InventoryItem } from "~/types/inventory"
 import { aggregateItemListByTier } from "~/utils/tierAggregation"
 
