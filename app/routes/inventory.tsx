@@ -1,4 +1,4 @@
-import { Badge, Box, Button, HStack, Heading, Text, VStack } from "@chakra-ui/react";
+import { Badge, Box, Button, Flex, Heading, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
 import { Suspense, lazy } from "react";
 import { Link as RemixLink } from "@remix-run/react";
 import { PlayerHeader } from "~/components/player/PlayerHeader";
@@ -27,27 +27,32 @@ export default function InventoryRoute() {
       <DashboardLayout
         hero={
           <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
-            <VStack spacing={4} align="flex-start" maxW="3xl">
-              <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
-                Personal Inventory Command
-              </Text>
-              <Heading size="2xl" lineHeight="1.1" color="white">
+            <Flex direction="column" align="flex-start" maxW="3xl" w="full" gap={{ base: 2, md: 3 }}>
+              <Heading
+                fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
+                lineHeight={{ base: "1.15", md: "1.1" }}
+                color="white"
+              >
                 Keep it tidy, {player.username}.
               </Heading>
-              <Text fontSize={{ base: "lg", md: "xl" }} color="whiteAlpha.900">
+              <Text fontSize={{ base: "md", md: "xl" }} color="whiteAlpha.900" maxW="2xl">
                 Review every stash, choose what stays tracked, and sync with claim stores before your
                 next BitCraft session.
               </Text>
 
-              <HStack spacing={3} flexWrap="wrap">
-                <Badge colorScheme="teal" px={3} py={1} borderRadius="full">
-                  Personal caches ready to sync
-                </Badge>
-                <Badge colorScheme="purple" px={3} py={1} borderRadius="full">
-                  Track + plan without leaving
-                </Badge>
-              </HStack>
-            </VStack>
+              <Wrap spacing={{ base: 1, md: 2 }} justify={{ base: "flex-start", sm: "flex-start" }}>
+                <WrapItem>
+                  <Badge colorScheme="teal" px={2} py={0.5} borderRadius="full" fontSize="xs">
+                    Personal caches ready to sync
+                  </Badge>
+                </WrapItem>
+                <WrapItem>
+                  <Badge colorScheme="purple" px={2} py={0.5} borderRadius="full" fontSize="xs">
+                    Track + plan without leaving
+                  </Badge>
+                </WrapItem>
+              </Wrap>
+            </Flex>
           </Box>
         }
       >

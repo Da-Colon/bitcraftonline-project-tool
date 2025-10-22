@@ -11,13 +11,11 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Stack,
   Text,
   Wrap,
   WrapItem,
   useDisclosure,
 } from "@chakra-ui/react"
-import { Link as RemixLink } from "@remix-run/react"
 import { PlayerHeader } from "~/components/player/PlayerHeader"
 import { DashboardOverview } from "./DashboardOverview"
 import { PlayerSelectionView } from "~/components/player/PlayerSelectionView"
@@ -33,7 +31,6 @@ export function Dashboard() {
     combinedItems,
     trackedCount,
     totalQuantity,
-    allInventories,
   } = useTrackedInventorySummary()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { selectedItem, targetQuantity } = useRecipeSelection()

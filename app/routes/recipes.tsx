@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
 import { useLoaderData, useFetcher } from "@remix-run/react"
-import { Badge, Box, Button, Divider, Heading, HStack, Stack, Text, VStack } from "@chakra-ui/react"
+import { Badge, Box, Button, Divider, Flex, Heading, Stack, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react"
 import { PlayerHeader } from "~/components/player/PlayerHeader"
 import { RecipeOverview } from "~/components/RecipeOverview"
 import { ItemSearchCard } from "~/components/recipes/ItemSearchCard"
@@ -108,32 +108,39 @@ export default function RecipesRoute() {
 
   const hero = (
     <Box px={{ base: 6, md: 10 }} py={{ base: 8, md: 12 }}>
-      <VStack spacing={4} align="flex-start" maxW="4xl">
-        <Text textTransform="uppercase" fontSize="sm" letterSpacing="widest" color="whiteAlpha.800">
-          Recipe Planning Suite
-        </Text>
-        <Heading size="2xl" lineHeight="1.1" color="white">
+      <Flex direction="column" align="flex-start" maxW="3xl" w="full" gap={{ base: 2, md: 3 }}>
+        <Heading
+          fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
+          lineHeight={{ base: "1.15", md: "1.1" }}
+          color="white"
+        >
           Chart tonight's crafting with inventory-powered insights.
         </Heading>
-        <Text fontSize={{ base: "lg", md: "xl" }} color="whiteAlpha.900">
+        <Text fontSize={{ base: "md", md: "xl" }} color="whiteAlpha.900" maxW="2xl">
           Search every BitCraft recipe, see live deficits, and let your tracked inventories shoulder
           the math. Cozy planning vibes meet production-ready clarity.
         </Text>
 
-        <HStack spacing={3} flexWrap="wrap">
-          <Badge colorScheme="teal" px={3} py={1} borderRadius="full">
-            {uniqueInventoryItems} inventory sources
-          </Badge>
-          <Badge colorScheme="purple" px={3} py={1} borderRadius="full">
-            {totalInventoryItems.toLocaleString()} materials on hand
-          </Badge>
-          {selectedItem && (
-            <Badge colorScheme="pink" px={3} py={1} borderRadius="full">
-              Focused on {selectedItem.name}
+        <Wrap spacing={{ base: 1, md: 2 }} justify={{ base: "flex-start", sm: "flex-start" }}>
+          <WrapItem>
+            <Badge colorScheme="teal" px={2} py={0.5} borderRadius="full" fontSize="xs">
+              {uniqueInventoryItems} inventory sources
             </Badge>
+          </WrapItem>
+          <WrapItem>
+            <Badge colorScheme="purple" px={2} py={0.5} borderRadius="full" fontSize="xs">
+              {totalInventoryItems.toLocaleString()} materials on hand
+            </Badge>
+          </WrapItem>
+          {selectedItem && (
+            <WrapItem>
+              <Badge colorScheme="pink" px={2} py={0.5} borderRadius="full" fontSize="xs">
+                Focused on {selectedItem.name}
+              </Badge>
+            </WrapItem>
           )}
-        </HStack>
-      </VStack>
+        </Wrap>
+      </Flex>
     </Box>
   )
 
