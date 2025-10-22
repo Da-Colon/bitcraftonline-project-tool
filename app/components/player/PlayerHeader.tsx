@@ -2,20 +2,18 @@ import {
   Badge,
   Box,
   Button,
-  Circle,
   Container,
   Flex,
-  HStack,
   IconButton,
   Link,
   Spinner,
-  Stack,
   Text,
   Tooltip,
   VStack,
   useToast,
 } from "@chakra-ui/react"
-import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons"
+import { CloseIcon } from "@chakra-ui/icons"
+import { GameDataIcon } from "~/components/GameDataIcon"
 import { useCallback } from "react"
 import { Link as RemixLink, useLocation, useNavigate } from "@remix-run/react"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
@@ -37,27 +35,6 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const { player, clearPlayer } = useSelectedPlayer()
   const { detail, loading, derived } = usePlayerDetails(player?.entityId)
 
-  const copyId = useCallback(async () => {
-    if (!player?.entityId) return
-    try {
-      await navigator.clipboard.writeText(player.entityId)
-      toast({
-        title: "Copied",
-        description: "Player ID copied to clipboard",
-        status: "success",
-        duration: 1500,
-        isClosable: true,
-      })
-    } catch {
-      toast({
-        title: "Copy failed",
-        description: "Could not copy player ID",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      })
-    }
-  }, [player?.entityId, toast])
 
   const handleChangePlayer = useCallback(() => {
     clearPlayer()
@@ -94,150 +71,104 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
       boxShadow="0 18px 34px rgba(10, 16, 30, 0.55)"
       backdropFilter="blur(18px)"
     >
-      <Container maxW="container.xl" py={{ base: 4, md: 5 }}>
-        <VStack spacing={{ base: 6, md: 7 }} align="stretch" color="whiteAlpha.900">
-          <Flex
-            direction={{ base: "column", lg: "row" }}
-            align={{ base: "flex-start", lg: "center" }}
-            justify="space-between"
-            gap={{ base: 4, lg: 6 }}
-            wrap={{ base: "wrap", lg: "nowrap" }}
+      <Container maxW="container.xl" py={{ base: 3, md: 4 }}>
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          align={{ base: "stretch", md: "flex-end" }}
+          justify="space-between"
+          gap={{ base: 3, md: 4 }}
+          color="whiteAlpha.900"
+        >
+          {/* Player Info Card */}
+          <Box
+            bg="rgba(255, 255, 255, 0.05)"
+            border="1px solid rgba(255, 255, 255, 0.1)"
+            borderRadius="lg"
+            px={3}
+            py={2}
+            minW={0}
+            flex="1"
+            maxW="280px"
           >
-            <Flex direction="column" gap={{ base: 3, md: 4 }} minW={0} flex="1">
-              <Flex align={{ base: "flex-start", md: "center" }} wrap="wrap" columnGap={{ base: 4, md: 5 }} rowGap={3}>
-                <Flex align={{ base: "flex-start", sm: "center" }} gap={3} minW={0} flexShrink={0}>
-                  <Circle size="12px" bg={signedIn ? "teal.400" : "gray.500"} mt={{ base: 1, sm: 0 }} />
-                  <Flex direction="column" minW={0}>
-                    <Text fontSize="xs" textTransform="uppercase" letterSpacing="widest" color="whiteAlpha.700">
-                      Player focus
-                    </Text>
-                    <Flex align="center" wrap="wrap" columnGap={3} rowGap={2}>
-                      <Link
-                        href={`https://bitjita.com/players/${player.entityId}`}
-                        isExternal
-                        fontWeight="semibold"
-                        fontSize={{ base: "lg", md: "xl" }}
-                        color="white"
-                        _hover={{ color: "teal.200", textDecoration: "none" }}
-                      >
-                        {player.username}
-                      </Link>
-                      <Tooltip label="Copy player ID" placement="bottom">
-                        <IconButton
-                          aria-label="Copy player ID"
-                          size="xs"
-                          variant="ghost"
-                          icon={<CopyIcon />}
-                          onClick={copyId}
-                          color="whiteAlpha.900"
-                          _hover={{ bg: "whiteAlpha.200", color: "white" }}
-                        />
-                      </Tooltip>
-                    </Flex>
-                  </Flex>
-                </Flex>
-
-                <Flex align="center" wrap="wrap" columnGap={3} rowGap={2}>
-                  <Badge
-                    variant="subtle"
-                    colorScheme={signedIn ? "teal" : "purple"}
-                    bg={signedIn ? "rgba(45, 212, 191, 0.28)" : "rgba(192, 132, 252, 0.28)"}
-                    color="white"
-                    borderRadius="full"
-                    px={3}
-                    py={1}
-                    textTransform="capitalize"
-                  >
-                    {signedIn ? "online" : "offline"}
-                  </Badge>
-                  {!loading && highest && (
-                    <Badge
-                      colorScheme="teal"
-                      variant="solid"
-                      bg="rgba(20, 184, 166, 0.32)"
-                      borderRadius="full"
-                      px={4}
-                      py={1}
-                      color="white"
-                      boxShadow="inset 0 0 0 1px rgba(45, 212, 191, 0.4)"
-                    >
-                      {`${highest.name} Lv ${highest.level}`}
-                    </Badge>
-                  )}
-                  {!loading && (
-                    <Badge
-                      colorScheme="purple"
-                      variant="subtle"
-                      bg="rgba(139, 92, 246, 0.26)"
-                      borderRadius="full"
-                      px={4}
-                      py={1}
-                      color="white"
-                      boxShadow="inset 0 0 0 1px rgba(192, 132, 252, 0.35)"
-                    >
-                      {locationName}
-                    </Badge>
-                  )}
-                  <Badge
-                    variant="outline"
-                    borderColor="whiteAlpha.400"
-                    color="whiteAlpha.800"
-                    borderRadius="full"
-                    px={4}
-                    py={1}
-                    fontWeight="medium"
-                  >
-                    ID: {player.entityId}
-                  </Badge>
-                </Flex>
+            {/* Row 1: Name and Online Dot */}
+            <Flex align="center" justify="space-between" mb={1}>
+              <Tooltip label="View on Bitjita" placement="bottom">
+                <Link
+                  href={`https://bitjita.com/players/${player.entityId}`}
+                  isExternal
+                  fontWeight="bold"
+                  fontSize={{ base: "sm", md: "md" }}
+                  color="white"
+                  _hover={{ color: "teal.200", textDecoration: "none" }}
+                >
+                  {player.username}
+                </Link>
+              </Tooltip>
+              <Flex align="center" gap={2}>
+                <Box
+                  w={2}
+                  h={2}
+                  borderRadius="full"
+                  bg={signedIn ? "teal.400" : "gray.500"}
+                  boxShadow={signedIn ? "0 0 8px rgba(45, 212, 191, 0.5)" : "none"}
+                />
+                <Tooltip label="Change Player" placement="bottom">
+                  <IconButton
+                    aria-label="Change Player"
+                    size="xs"
+                    variant="ghost"
+                    icon={<CloseIcon />}
+                    onClick={handleChangePlayer}
+                    color="whiteAlpha.600"
+                    _hover={{ bg: "whiteAlpha.200", color: "white" }}
+                    w={4}
+                    h={4}
+                    minW={4}
+                  />
+                </Tooltip>
               </Flex>
-
-              {loading && (
-                <Flex align="center" gap={2} color="whiteAlpha.800">
-                  <Spinner size="sm" color="teal.200" />
-                  <Text fontSize="sm">Syncing player data…</Text>
-                </Flex>
+            </Flex>
+            
+            {/* Row 2: Skill + Location */}
+            <Flex align="center" justify="space-between" gap={2}>
+              {!loading && highest && (
+                <Tooltip label={highest.name} placement="bottom">
+                  <Flex align="center" gap={1}>
+                    <GameDataIcon
+                      iconAssetName={highest.title}
+                      size="14px"
+                      alt={highest.name}
+                    />
+                    <Text fontSize="xs" color="whiteAlpha.900">
+                      Lv {highest.level}
+                    </Text>
+                  </Flex>
+                </Tooltip>
+              )}
+              {!loading && (
+                <Text fontSize="xs" color="whiteAlpha.600" textAlign="right" flex="1">
+                  {locationName}
+                </Text>
               )}
             </Flex>
 
-            <Button
-              size="sm"
-              colorScheme="teal"
-              bg="teal.400"
-              _hover={{ bg: "teal.500" }}
-              _active={{ bg: "teal.600" }}
-              borderRadius="full"
-              px={5}
-              onClick={handleChangePlayer}
-              boxShadow="0 10px 24px rgba(13, 148, 136, 0.45)"
-              w={{ base: "full", lg: "auto" }}
-            >
-              Change Player
-            </Button>
-          </Flex>
+            {loading && (
+              <Flex align="center" gap={2} color="whiteAlpha.800" mt={1}>
+                <Spinner size="xs" color="teal.200" />
+                <Text fontSize="xs">Syncing...</Text>
+              </Flex>
+            )}
+          </Box>
 
+          {/* Navigation */}
           <Flex
             as="nav"
             align="center"
-            justify={{ base: "flex-start", md: "center" }}
-            gap={{ base: 2, md: 3 }}
-            bg="rgba(255, 255, 255, 0.06)"
-            border="1px solid rgba(148, 163, 184, 0.25)"
-            borderRadius="full"
-            px={{ base: 3, md: 4 }}
-            py={{ base: 1, md: 1.5 }}
-            boxShadow="0 12px 30px rgba(15, 23, 42, 0.35)"
-            overflowX="auto"
+            justify="center"
+            gap={{ base: 1, md: 2 }}
             minW={0}
-            w="full"
-            maxW={{ base: "full", md: "min(100%, 580px)" }}
-            mx="auto"
-            sx={{
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
+            flex="1"
+            maxW="600px"
           >
             {NAV_LINKS.map((link) => {
               const active = isActiveLink(link.to)
@@ -246,26 +177,33 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
                   key={link.to}
                   as={RemixLink}
                   to={link.to}
-                  size="sm"
+                  size="md"
                   variant="ghost"
-                  borderRadius="full"
-                  px={{ base: 3, md: 4 }}
+                  px={{ base: 4, md: 6 }}
+                  py={2}
                   flexShrink={0}
-                  color={active ? "white" : "whiteAlpha.800"}
-                  fontWeight={active ? "semibold" : "medium"}
-                  bg={active ? "rgba(45, 212, 191, 0.24)" : "transparent"}
-                  boxShadow={active ? "0 0 0 1px rgba(45, 212, 191, 0.35)" : "none"}
-                  _hover={{ bg: "whiteAlpha.200", color: "white" }}
-                  _active={{ bg: "teal.500", color: "gray.900" }}
+                  color={active ? "white" : "whiteAlpha.600"}
+                  fontWeight={active ? "bold" : "medium"}
+                  fontSize={{ base: "sm", md: "md" }}
+                  bg={active ? "rgba(45, 212, 191, 0.15)" : "transparent"}
+                  borderBottom={active ? "2px solid" : "2px solid transparent"}
+                  borderColor={active ? "teal.400" : "transparent"}
+                  _hover={{ 
+                    bg: "rgba(255, 255, 255, 0.1)", 
+                    color: "white",
+                    borderColor: "whiteAlpha.300"
+                  }}
+                  _active={{ bg: "rgba(45, 212, 191, 0.2)" }}
                   aria-current={active ? "page" : undefined}
                   whiteSpace="nowrap"
+                  transition="all 0.2s"
                 >
                   {link.label}
                 </Button>
               )
             })}
           </Flex>
-        </VStack>
+        </Flex>
       </Container>
     </Box>
   )
