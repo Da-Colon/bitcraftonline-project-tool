@@ -42,7 +42,8 @@ export function InventoryOverview({
   ]
 
   const totalInventories = allInventories.length
-  const totalItems = allInventories.reduce((sum, inv) => sum + inv.items.length, 0)
+  const totalItems = allInventories.reduce((sum, inv) => 
+    sum + inv.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0)
   const totalUniqueItems = new Set(
     allInventories.flatMap((inv) => inv.items.map((item) => item.itemId))
   ).size
@@ -78,7 +79,7 @@ export function InventoryOverview({
   return (
     <VStack spacing={6} align="stretch">
       {/* Main Stats Cards */}
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4}>
+      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
         <Card {...glassCardProps} borderColor="rgba(94, 234, 212, 0.35)">
           <CardBody>
             <Stat>
