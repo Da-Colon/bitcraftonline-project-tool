@@ -8,6 +8,8 @@
  */
 const ITEM_NAME_MAPPINGS: Record<string, string> = {
   'AncientLorePage': 'AncientPage',
+  'ToolScrap': 'AncientScrap',
+  'GiantSkitchShell': 'SwarmCrabShell', // Map to similar shell item
   // Add more mappings as needed
 }
 
