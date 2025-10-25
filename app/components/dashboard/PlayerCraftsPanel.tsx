@@ -16,7 +16,7 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 import { useFetcher } from "@remix-run/react";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 
 import type { Craft } from "~/types/crafts";
 
@@ -30,16 +30,13 @@ export function PlayerCraftsPanel({ playerId }: PlayerCraftsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Load crafts when playerId changes
-  const loadCrafts = useCallback(() => {
+  React.useEffect(() => {
     if (playerId) {
       activeFetcher.load(`/api/players/${playerId}/crafts?completed=false`);
       completedFetcher.load(`/api/players/${playerId}/crafts?completed=true`);
     }
-  }, [playerId, activeFetcher, completedFetcher]);
-
-  React.useEffect(() => {
-    loadCrafts();
-  }, [loadCrafts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerId]);
 
   const activeCrafts = activeFetcher.data?.crafts || [];
   const completedCrafts = completedFetcher.data?.crafts || [];
