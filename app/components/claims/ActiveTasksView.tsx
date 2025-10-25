@@ -13,6 +13,7 @@ import {
   Spinner,
   Progress,
   Divider,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useFetcher } from "@remix-run/react";
 import React, { useState } from "react";
@@ -144,11 +145,11 @@ export function ActiveTasksView({ claimId, playerId }: ActiveTasksViewProps) {
                     </Text>
                   </Box>
                 ) : (
-                  <VStack spacing={2} align="stretch">
+                  <SimpleGrid columns={{ base: 1, md: 2, lg: 2 }} spacing={3}>
                     {activeCrafts.map((craft) => (
                       <CraftCard key={craft.entityId} craft={craft} isActive={true} />
                     ))}
-                  </VStack>
+                  </SimpleGrid>
                 )}
               </Box>
 
@@ -172,11 +173,11 @@ export function ActiveTasksView({ claimId, playerId }: ActiveTasksViewProps) {
                       </Badge>
                     </HStack>
 
-                    <VStack spacing={2} align="stretch">
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 2 }} spacing={3}>
                       {completedCrafts.map((craft) => (
                         <CraftCard key={craft.entityId} craft={craft} isActive={false} />
                       ))}
-                    </VStack>
+                    </SimpleGrid>
                   </Box>
                 </>
               )}
@@ -190,35 +191,30 @@ export function ActiveTasksView({ claimId, playerId }: ActiveTasksViewProps) {
 
 // Individual craft card component
 function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
-  const cardBg = isActive 
-    ? "rgba(45, 212, 191, 0.08)" 
-    : "rgba(192, 132, 252, 0.08)";
-  const cardBorder = isActive 
-    ? "teal.300" 
-    : "purple.300";
-  const statusColor = isActive 
-    ? "orange.100" 
-    : "purple.100";
-  const statusBg = isActive 
-    ? "rgba(251, 146, 60, 0.12)" 
-    : "rgba(192, 132, 252, 0.12)";
-
   return (
     <Box
-      p={4}
-      bg={cardBg}
+      p={3}
+      bg={isActive ? "rgba(45, 212, 191, 0.25)" : "rgba(192, 132, 252, 0.25)"}
       borderRadius="lg"
-      border="1px solid"
-      borderColor={cardBorder}
+      border="2px solid"
+      borderColor={isActive ? "teal.400" : "purple.400"}
+      backdropFilter="blur(12px)"
+      boxShadow="xl"
+      _hover={{
+        bg: isActive ? "rgba(45, 212, 191, 0.35)" : "rgba(192, 132, 252, 0.35)",
+        transform: "translateY(-3px)",
+        boxShadow: "2xl"
+      }}
+      transition="all 0.2s"
     >
-      <VStack spacing={2} align="stretch">
+      <VStack spacing={1.5} align="stretch">
         <HStack justify="space-between" align="start">
-          <VStack align="start" spacing={1} flex={1}>
+          <VStack align="start" spacing={0.5} flex={1}>
             <Text color="white" fontSize="md" fontWeight="medium">
-              {craft.craftedItem?.[0]?.name || `Craft ${craft.entityId}`}
+              {craft.buildingName || "Crafting Station"}
             </Text>
             {craft.buildingName && (
-              <Text color="whiteAlpha.700" fontSize="sm">
+              <Text color="whiteAlpha.700" fontSize="xs">
                 🏗️ {craft.buildingName}
               </Text>
             )}
@@ -228,10 +224,8 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
           </VStack>
           <Badge
             colorScheme={isActive ? "orange" : "purple"}
-            variant="subtle"
+            variant="solid"
             fontSize="xs"
-            bg={statusBg}
-            color={statusColor}
           >
             {isActive ? "Active" : "Completed"}
           </Badge>
@@ -257,30 +251,36 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
           </Box>
         )}
 
-        {/* Craft Info */}
-        <Text color="whiteAlpha.600" fontSize="xs">
-          📦 {craft.craftCount} items • {craft.actionsRequiredPerItem} actions each
-        </Text>
+        {/* Craft Info - More Compact */}
+        <HStack spacing={4} fontSize="xs" color="whiteAlpha.600">
+          <Text>📦 {craft.craftCount} items</Text>
+          <Text>⚡ {craft.actionsRequiredPerItem} actions each</Text>
+        </HStack>
 
-        {/* Output Items */}
+        {/* Output Items - Fixed X1 Bug */}
         {craft.craftedItem && craft.craftedItem.length > 0 && (
           <Box>
             <Text color="whiteAlpha.700" fontSize="xs" fontWeight="medium" mb={1}>
               {isActive ? "Will Produce:" : "Produced:"}
             </Text>
             <HStack spacing={2} flexWrap="wrap">
-              {craft.craftedItem.map((item, index) => (
-                <Badge
-                  key={index}
-                  colorScheme={isActive ? "teal" : "purple"}
-                  variant="subtle"
-                  fontSize="xs"
-                  bg={isActive ? "rgba(45, 212, 191, 0.12)" : "rgba(192, 132, 252, 0.12)"}
-                  color={isActive ? "teal.100" : "purple.100"}
-                >
-                  {item.name} x{item.quantity}
-                </Badge>
-              ))}
+              {craft.craftedItem.map((item, index) => {
+                const totalOutput = item.quantity * craft.craftCount;
+                const displayText = totalOutput > 1 
+                  ? `${item.name} ×${totalOutput}` 
+                  : item.name;
+                
+                return (
+                  <Badge
+                    key={index}
+                    colorScheme={isActive ? "teal" : "purple"}
+                    variant="solid"
+                    fontSize="xs"
+                  >
+                    {displayText}
+                  </Badge>
+                );
+              })}
             </HStack>
           </Box>
         )}

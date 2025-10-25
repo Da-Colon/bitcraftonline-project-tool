@@ -496,10 +496,35 @@ export class BitJitaService {
     try {
       const crafts = await BitJita.getCrafts(params);
 
-      const craftsData = crafts as { craftResults?: { [key: string]: unknown; id: string }[] };
+      const craftsData = crafts as { 
+        craftResults?: { [key: string]: unknown; id: string }[],
+        items?: { id: number; name: string }[]
+      };
+      
+      // Transform the crafts to include proper item names
+      const transformedCrafts = (craftsData.craftResults || []).map((craft: Record<string, unknown>) => {
+        const items = craftsData.items || [];
+        
+        // Transform craftedItem to include proper names
+        const craftedItem = ((craft.craftedItem as Array<{ item_id: number; quantity: number }>) || []).map((item) => {
+          const itemData = items.find(i => i.id === item.item_id);
+          return {
+            itemId: item.item_id,
+            name: itemData?.name || `Item ${item.item_id}`,
+            quantity: item.quantity
+          };
+        });
+        
+        return {
+          ...craft,
+          craftedItem,
+          id: String(craft.entityId)
+        };
+      });
+      
       const response: CraftsResponse = {
-        crafts: craftsData.craftResults || [],
-        totalCount: craftsData.craftResults?.length || 0,
+        crafts: transformedCrafts,
+        totalCount: transformedCrafts.length,
       };
 
       // Cache the response
