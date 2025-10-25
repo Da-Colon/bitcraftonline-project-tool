@@ -146,7 +146,7 @@ export function PlayerCraftsPanel({ playerId }: PlayerCraftsPanelProps) {
                 ) : (
                   <VStack spacing={2} align="stretch">
                     {activeCrafts.map((craft) => (
-                      <CraftCard key={craft.id} craft={craft} isActive={true} />
+                      <CraftCard key={craft.entityId} craft={craft} isActive={true} />
                     ))}
                   </VStack>
                 )}
@@ -174,7 +174,7 @@ export function PlayerCraftsPanel({ playerId }: PlayerCraftsPanelProps) {
 
                     <VStack spacing={2} align="stretch">
                       {completedCrafts.slice(0, 5).map((craft) => (
-                        <CraftCard key={craft.id} craft={craft} isActive={false} />
+                        <CraftCard key={craft.entityId} craft={craft} isActive={false} />
                       ))}
                     </VStack>
                     {completedCrafts.length > 5 && (
@@ -220,7 +220,7 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
         <HStack justify="space-between" align="start">
           <VStack align="start" spacing={1} flex={1}>
             <Text color="white" fontSize="md" fontWeight="medium">
-              {craft.name}
+              {craft.craftedItem?.[0]?.name || `Craft ${craft.entityId}`}
             </Text>
             {craft.buildingName && (
               <Text color="whiteAlpha.700" fontSize="sm">
@@ -240,7 +240,7 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
             bg={statusBg}
             color={statusColor}
           >
-            {craft.status}
+            {isActive ? "Active" : "Completed"}
           </Badge>
         </HStack>
         
@@ -252,11 +252,11 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
                 Progress
               </Text>
               <Text color="whiteAlpha.700" fontSize="xs">
-                {craft.progress}%
+                {Math.round((craft.progress / craft.totalActionsRequired) * 100)}%
               </Text>
             </HStack>
             <Progress
-              value={craft.progress}
+              value={(craft.progress / craft.totalActionsRequired) * 100}
               size="sm"
               colorScheme="teal"
               bg="whiteAlpha.200"
@@ -264,27 +264,19 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
           </Box>
         )}
 
-        {/* Time Info */}
-        {craft.estimatedTime && isActive && (
-          <Text color="whiteAlpha.600" fontSize="xs">
-            ⏱️ Est. {craft.estimatedTime} remaining
-          </Text>
-        )}
-
-        {craft.endTime && !isActive && (
-          <Text color="whiteAlpha.600" fontSize="xs">
-            ✅ Completed {new Date(craft.endTime).toLocaleDateString()}
-          </Text>
-        )}
+        {/* Craft Info */}
+        <Text color="whiteAlpha.600" fontSize="xs">
+          📦 {craft.craftCount} items • {craft.actionsRequiredPerItem} actions each
+        </Text>
 
         {/* Output Items */}
-        {craft.output && craft.output.length > 0 && (
+        {craft.craftedItem && craft.craftedItem.length > 0 && (
           <Box>
             <Text color="whiteAlpha.700" fontSize="xs" fontWeight="medium" mb={1}>
               {isActive ? "Will Produce:" : "Produced:"}
             </Text>
             <HStack spacing={2} flexWrap="wrap">
-              {craft.output.map((item, index) => (
+              {craft.craftedItem.map((item, index) => (
                 <Badge
                   key={index}
                   colorScheme={isActive ? "teal" : "purple"}

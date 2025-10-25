@@ -1,35 +1,29 @@
 export interface Craft {
-  id: string;
-  name: string;
-  description?: string;
-  status: string;
-  progress?: number;
-  estimatedTime?: number;
-  startTime?: string;
-  endTime?: string;
-  buildingName?: string;
-  buildingEntityId?: string;
-  playerName?: string;
-  playerEntityId?: string;
-  claimName?: string;
-  claimEntityId?: string;
-  regionId?: number;
-  skillId?: number;
-  skillName?: string;
-  resources?: Array<{
-    itemId: number;
-    name: string;
-    quantity: number;
-    required: number;
-  }>;
-  output?: Array<{
+  entityId: string;
+  buildingEntityId: string;
+  ownerEntityId: string;
+  regionId: number;
+  progress: number;
+  recipeId: number;
+  craftCount: number;
+  lockExpiration: string;
+  actionsRequiredPerItem: number;
+  craftedItem: Array<{
     itemId: number;
     name: string;
     quantity: number;
   }>;
-  completed?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  levelRequirements: Array<any>;
+  toolRequirements: Array<any>;
+  buildingName: string;
+  ownerUsername: string;
+  claimEntityId: string;
+  claimName: string;
+  claimLocationX: number;
+  claimLocationZ: number;
+  totalActionsRequired: number;
+  completed: boolean;
+  isPublic: boolean;
 }
 
 export interface CraftsResponse {

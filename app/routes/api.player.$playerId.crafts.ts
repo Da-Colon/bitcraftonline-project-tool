@@ -31,8 +31,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 
     const response: CraftsResponse = {
-      crafts: crafts.crafts || [],
-      totalCount: crafts.crafts?.length || 0,
+      crafts: crafts.craftResults || [],
+      totalCount: crafts.craftResults?.length || 0,
     };
 
     CACHE.set(cacheKey, { data: response, fetchedAt: now });
