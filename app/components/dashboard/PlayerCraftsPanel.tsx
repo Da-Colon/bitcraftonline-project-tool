@@ -263,6 +263,9 @@ function CraftCard({ craft, isActive }: { craft: Craft; isActive: boolean }) {
         <HStack spacing={4} fontSize="xs" color="whiteAlpha.600">
           <Text>📦 {craft.craftCount} items</Text>
           <Text>⚡ {craft.actionsRequiredPerItem} actions each</Text>
+          <Text fontWeight="semibold" color="teal.200">
+            🔥 {craft.totalActionsRequired} total effort
+          </Text>
         </HStack>
 
         {/* Output Items - Fixed X1 Bug */}
