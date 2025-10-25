@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 
 import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server";
@@ -99,7 +100,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const items = Array.isArray((body as any)?.items) ? ((body as any).items as ProjectItem[]) : null;
+  const bodyWithItems = body as { items?: ProjectItem[] };
+  const items = Array.isArray(bodyWithItems?.items) ? bodyWithItems.items : null;
   if (!items) {
     return json({ error: "'items' array is required" }, { status: 400 });
   }

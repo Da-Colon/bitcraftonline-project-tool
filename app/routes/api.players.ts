@@ -18,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         "Cache-Control": "private, max-age=10, stale-while-revalidate=30",
       },
     });
-  } catch (err: any) {
-    return json({ error: err?.message || "Proxy error" }, { status: 503 });
+  } catch (err: unknown) {
+    return json({ error: err instanceof Error ? err.message : "Proxy error" }, { status: 503 });
   }
 }

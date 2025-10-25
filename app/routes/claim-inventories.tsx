@@ -1,5 +1,4 @@
-import { Badge, Box, Button, Flex, Heading, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
-import { Link as RemixLink } from "@remix-run/react";
+import { Badge, Box, Flex, Heading, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react";
 import { Suspense, lazy } from "react";
 
 import { ClaimInventoryView } from "~/components/claims/ClaimInventoryView";

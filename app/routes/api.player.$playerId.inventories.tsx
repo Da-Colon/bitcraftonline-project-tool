@@ -21,7 +21,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
           const numericId = parseInt(itemId)
           const iconAssetName = iconLookup.getIconAssetName(numericId)
           if (iconAssetName) {
-            ;(item as any).iconAssetName = iconAssetName
+            ;(item as Record<string, unknown>).iconAssetName = iconAssetName
           }
         }
       }
