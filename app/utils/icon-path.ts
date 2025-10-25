@@ -3,12 +3,28 @@
  */
 
 /**
+ * Maps item names that have mismatches between JSON data and actual file names
+ * Some items in the JSON have different names than their actual icon files
+ */
+const ITEM_NAME_MAPPINGS: Record<string, string> = {
+  'AncientLorePage': 'AncientPage',
+  // Add more mappings as needed
+}
+
+/**
+ * Gets the corrected item name if there's a mapping, otherwise returns the original
+ */
+function getCorrectedItemName(itemName: string): string {
+  return ITEM_NAME_MAPPINGS[itemName] || itemName
+}
+
+/**
  * Converts a GameData icon_asset_name to a usable asset path
  *
  * Handles various patterns (assets maintain directory structure):
  * - "GeneratedIcons/Items/AncientGear" -> "/assets/GeneratedIcons/Items/AncientGear.png"
  * - "GeneratedIcons/Other/GeneratedIcons/Items/Tools/LuminiteAxe" -> "/assets/GeneratedIcons/Items/Tools/LuminiteAxe.png" (cleans duplicated paths)
- * - "Items/HexCoin[,3,10,500]" -> "/assets/GeneratedIcons/Items/HexCoin.png" (removes brackets, adds GeneratedIcons prefix)
+ * - "Items/HexCoin[,3,10,500]" -> "/assets/OldGeneratedIcons/Items/HexCoin.png" (removes brackets, uses OldGeneratedIcons for Items/ prefix)
  * - "GeneratedIcons/Cargo/Animals/GrassBird" -> "/assets/GeneratedIcons/Cargo/GrassBird.png"
  * - "\\u0018" -> null (invalid/empty)
  * - "" -> null (empty)
@@ -48,10 +64,14 @@ export function convertIconAssetNameToPath(
     cleanPath = cleanPath.replace("GeneratedIcons/GeneratedIcons/", "GeneratedIcons/")
   }
 
-  // Handle paths that don't start with "GeneratedIcons/" but should be in GeneratedIcons/Items/
-  // This handles cases like "Items/HexCoin" -> "GeneratedIcons/Items/HexCoin"
+  // Handle paths that don't start with "GeneratedIcons/" but should be in OldGeneratedIcons/Items/
+  // This handles cases like "Items/HexCoin" -> "OldGeneratedIcons/Items/HexCoin"
+  // Most Items/ prefixed items are in OldGeneratedIcons, not GeneratedIcons
   if (!cleanPath.startsWith("GeneratedIcons/") && cleanPath.startsWith("Items/")) {
-    cleanPath = `GeneratedIcons/${cleanPath}`
+    // Extract the item name and apply any necessary corrections
+    const itemName = cleanPath.replace("Items/", "")
+    const correctedItemName = getCorrectedItemName(itemName)
+    cleanPath = `OldGeneratedIcons/Items/${correctedItemName}`
   }
 
   // Add .png extension if not already present
