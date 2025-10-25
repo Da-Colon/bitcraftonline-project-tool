@@ -31,7 +31,8 @@ export function aggregateItemListByTier(items: InventoryItem[]): CategoryTierSum
       categoryMap.set(category, new Map());
     }
     
-    const tierMap = categoryMap.get(category)!;
+    const tierMap = categoryMap.get(category);
+    if (!tierMap) return;
     const currentQuantity = tierMap.get(tier) || 0;
     tierMap.set(tier, currentQuantity + item.quantity);
   });

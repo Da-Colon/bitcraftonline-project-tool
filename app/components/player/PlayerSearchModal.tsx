@@ -20,11 +20,11 @@ import {
   Alert,
   AlertIcon,
 } from "@chakra-ui/react"
-import { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback, useEffect } from "react";
 
 import { InventoryReviewModal } from "~/components/inventory/InventoryReviewModal"
 import { usePlayerInventorySelections } from "~/hooks/usePlayerInventorySelections"
-import type { PlayerInventoryResponse } from "~/routes/api.player.inventory"
+import type { PlayerInventoryResponse } from "~/routes/api.inventory.player"
 import type { Item } from "~/types/recipes"
 
 interface PlayerSearchModalProps {
@@ -59,7 +59,7 @@ export function PlayerSearchModal({
     setAvailableInventories([])
     try {
       const response = await fetch(
-        `/api/player/inventory?playerName=${encodeURIComponent(playerName)}`
+        `/api/inventory/player?playerName=${encodeURIComponent(playerName)}`
       )
       if (!response.ok) {
         const error = await response.json()
@@ -90,10 +90,10 @@ export function PlayerSearchModal({
             ? existingSelections.selectedInventories.filter((inv) => sources.includes(inv))
             : sources,
       })
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -109,7 +109,7 @@ export function PlayerSearchModal({
     try {
       const params = new URLSearchParams({ playerName })
       selectedInventories.forEach((inv) => params.append("inventoryTypes", inv))
-      const response = await fetch(`/api/player/inventory?${params.toString()}`)
+      const response = await fetch(`/api/inventory/player?${params.toString()}`)
       if (!response.ok) {
         const error = await response.json()
         throw new Error(error.error || "Failed to fetch inventory details")
@@ -123,10 +123,10 @@ export function PlayerSearchModal({
       })
 
       onOpenReview()
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -260,7 +260,7 @@ export function PlayerSearchModal({
                     ))}
                   </VStack>
                 ) : (
-                  <Text color="gray.500">Click 'Fetch Sources' to begin.</Text>
+                  <Text color="gray.500">Click &apos;Fetch Sources&apos; to begin.</Text>
                 )}
               </FormControl>
             </VStack>

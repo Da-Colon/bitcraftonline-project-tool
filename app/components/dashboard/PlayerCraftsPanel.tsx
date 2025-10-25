@@ -15,7 +15,7 @@ import {
   Divider,
 } from "@chakra-ui/react";
 import { useFetcher } from "@remix-run/react";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 
 import type { Craft } from "~/types/crafts";
 
@@ -29,12 +29,16 @@ export function PlayerCraftsPanel({ playerId }: PlayerCraftsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Load crafts when playerId changes
-  React.useEffect(() => {
+  const loadCrafts = useCallback(() => {
     if (playerId) {
-      activeFetcher.load(`/api/player/${playerId}/crafts?completed=false`);
-      completedFetcher.load(`/api/player/${playerId}/crafts?completed=true`);
+      activeFetcher.load(`/api/players/${playerId}/crafts?completed=false`);
+      completedFetcher.load(`/api/players/${playerId}/crafts?completed=true`);
     }
-  }, [playerId]);
+  }, [playerId, activeFetcher, completedFetcher]);
+
+  React.useEffect(() => {
+    loadCrafts();
+  }, [loadCrafts]);
 
   const activeCrafts = activeFetcher.data?.crafts || [];
   const completedCrafts = completedFetcher.data?.crafts || [];

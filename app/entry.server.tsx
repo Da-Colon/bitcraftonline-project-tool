@@ -1,6 +1,6 @@
 import { CacheProvider } from "@emotion/react";
 import createEmotionServer from "@emotion/server/create-instance";
-import type { AppLoadContext, EntryContext } from "@remix-run/node";
+import type { EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import { renderToString } from "react-dom/server";
 
@@ -11,8 +11,7 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
-  _loadContext: AppLoadContext
+  remixContext: EntryContext
 ) {
   // First render to string to collect Emotion styles
   const cache = createEmotionCache();
@@ -28,7 +27,7 @@ export default function handleRequest(
 
   // Second render with styles available via context so <Document> can inline them
   const markup = renderToString(
-    <ServerStyleContext.Provider value={chunks.styles as any}>
+    <ServerStyleContext.Provider value={chunks.styles}>
       <CacheProvider value={cache}>
         <RemixServer context={remixContext} url={request.url} />
       </CacheProvider>

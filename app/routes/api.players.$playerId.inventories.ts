@@ -1,11 +1,10 @@
 /**
- * @fileoverview Claim Inventories API Endpoint
+ * @fileoverview Player Inventories API Endpoint
  * 
- * GET /api/claims/:claimId/inventories
+ * GET /api/players/:playerId/inventories
  * 
- * Fetches claim inventories with data transformation to our expected format.
- * Transforms BitJita response structure and enriches with normalized item IDs.
- * Uses 1-minute cache since claim data changes frequently.
+ * Fetches player inventories with icon enrichment from GameData.
+ * Uses 1-minute cache since inventory data changes frequently.
  * 
  * @dependencies BitJitaService, StandardErrorResponse
  * @caching 1min cache with stale-while-revalidate
@@ -17,38 +16,38 @@ import { BitJitaService } from "~/services/bitjita.service";
 import { ServiceError, type StandardErrorResponse } from "~/types/api-responses";
 
 /**
- * GET /api/claims/:claimId/inventories
+ * GET /api/players/:playerId/inventories
  * 
- * Get claim inventories with transformed data structure
+ * Get player inventories with enriched icon data
  * 
- * @param {string} claimId - Claim entity ID
- * @returns {TransformedClaimInventories} Transformed claim inventories
- * @throws {400} When claim ID is missing
- * @throws {404} When claim not found
+ * @param {string} playerId - Player entity ID
+ * @returns {BitJitaInventoriesResponse} Player inventories with iconAssetName enriched
+ * @throws {400} When player ID is missing
+ * @throws {404} When player inventories not found
  * @throws {503} When external service unavailable
  * 
  * @example
- * GET /api/claims/123/inventories
- * Returns: { claimId: "123", claimName: "Claim 123", inventories: [...] }
+ * GET /api/players/123/inventories
+ * Returns: { inventories: [...], items: {...}, cargos: [...] }
  */
 export async function loader({ params }: LoaderFunctionArgs) {
-  const { claimId } = params;
+  const { playerId } = params;
 
   // Validate required parameter
-  if (!claimId) {
+  if (!playerId) {
     return json<StandardErrorResponse>(
-      { error: "Claim ID is required" },
+      { error: "Player ID is required" },
       { status: 400 }
     );
   }
 
   try {
-    // Use service layer with automatic caching, error handling, and data transformation
-    const data = await BitJitaService.getClaimInventories(claimId);
+    // Use service layer with automatic caching, error handling, and icon enrichment
+    const data = await BitJitaService.getPlayerInventories(playerId);
     
     return json(data, {
       headers: {
-        // 1-minute cache since claim data changes frequently
+        // 1-minute cache since inventory data changes frequently
         "Cache-Control": "private, max-age=60, stale-while-revalidate=60",
       },
     });
@@ -67,7 +66,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     }
 
     // Unexpected errors
-    // console.error("Unexpected error fetching claim inventories:", error);
+    // console.error("Unexpected error fetching player inventories:", error);
     return json<StandardErrorResponse>(
       { error: "Internal server error" },
       { status: 500 }

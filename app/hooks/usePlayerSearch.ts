@@ -29,7 +29,7 @@ export function usePlayerSearch(query: string, opts: UsePlayerSearchOptions = {}
     const controller = new AbortController();
     abortRef.current = controller;
     const q = encodeURIComponent(debounced.trim());
-    const url = `/api/players?q=${q}`;
+    const url = `/api/players/search?q=${q}`;
 
     setLoading(true);
     fetch(url, { signal: controller.signal })

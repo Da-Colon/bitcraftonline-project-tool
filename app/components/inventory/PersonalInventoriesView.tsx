@@ -8,7 +8,6 @@ import {
   Button,
   Heading,
   Divider,
-  useToast,
   Input,
   InputGroup,
   InputLeftElement,
@@ -16,8 +15,6 @@ import {
 } from "@chakra-ui/react"
 import { useState } from "react"
 
-import { InventoryList } from "./InventoryList"
-import { InventoryOverview } from "./InventoryOverview"
 
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useDebounce } from "~/hooks/useDebounce"
@@ -25,22 +22,22 @@ import { usePlayerInventories } from "~/hooks/usePlayerInventories"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import type { Inventory } from "~/types/inventory"
 
+import { InventoryList } from "./InventoryList"
+import { InventoryOverview } from "./InventoryOverview"
+
 export function PersonalInventoriesView() {
   const { player } = useSelectedPlayer()
   const { inventories, loading, error } = usePlayerInventories(player?.entityId)
   const {
-    snapshots,
-    trackInventory,
-    untrackInventory,
-    trackInventories,
-    untrackAll,
+    // snapshots,
+    // trackInventory,
+    // untrackInventory,
     isTracked,
-    isLoading: trackingLoading,
-    error: trackingError,
+    // isLoading: trackingLoading,
+    // error: trackingError,
   } = useSharedPlayerInventoryTracking()
   const [searchQuery, setSearchQuery] = useState("")
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
-  const toast = useToast()
 
   // Filter inventories by item name
   const filterInventoriesByItem = (
@@ -158,69 +155,6 @@ export function PersonalInventoriesView() {
   ]
   const isSearchActive = debouncedSearchQuery.trim().length > 0
 
-  const handleTrackAll = async () => {
-    try {
-      const personalInventories = inventories.personal || []
-      const bankInventories = inventories.banks || []
-      const storageInventories = inventories.storage || []
-      const recoveryInventories = inventories.recovery || []
-      const housingInventories = inventories.housing || []
-
-      // Track each type separately with appropriate source
-      if (personalInventories.length > 0) {
-        await trackInventories(personalInventories, "personal")
-      }
-      if (bankInventories.length > 0) {
-        await trackInventories(bankInventories, "bank")
-      }
-      if (storageInventories.length > 0) {
-        await trackInventories(storageInventories, "storage")
-      }
-      if (recoveryInventories.length > 0) {
-        await trackInventories(recoveryInventories, "recovery")
-      }
-      if (housingInventories.length > 0) {
-        await trackInventories(housingInventories, "housing")
-      }
-
-      toast({
-        title: "All Inventories Tracked",
-        description: `Now tracking ${allInventories.length} inventories`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      })
-    } catch (error) {
-      toast({
-        title: "Error Tracking Inventories",
-        description: "Failed to track some inventories",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-    }
-  }
-
-  const handleUntrackAll = async () => {
-    try {
-      await untrackAll()
-      toast({
-        title: "All Tracking Cleared",
-        description: "No inventories are being tracked",
-        status: "info",
-        duration: 3000,
-        isClosable: true,
-      })
-    } catch (error) {
-      toast({
-        title: "Error Clearing Tracking",
-        description: "Failed to clear tracking",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-    }
-  }
 
   return (
     <VStack spacing={8} align="stretch">
@@ -240,8 +174,6 @@ export function PersonalInventoriesView() {
       <InventoryOverview
         inventories={inventories}
         trackedCount={trackedCount}
-        onTrackAll={handleTrackAll}
-        onUntrackAll={handleUntrackAll}
       />
 
       {/* Divider */}

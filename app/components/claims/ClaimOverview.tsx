@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, SettingsIcon, StarIcon, CheckCircleIcon } from "@chakra-ui/icons"
+import { CheckCircleIcon } from "@chakra-ui/icons"
 import {
   Box,
   SimpleGrid,
@@ -12,13 +12,13 @@ import {
   VStack,
   Text,
   Badge,
-  Button,
+  // Button,
   Icon,
   Progress,
   Divider,
   Tooltip,
 } from "@chakra-ui/react"
-import { Link as RemixLink } from "@remix-run/react"
+// import { Link as RemixLink } from "@remix-run/react"
 
 import type { ClaimInventoriesResponse } from "~/types/inventory"
 
@@ -26,18 +26,12 @@ interface ClaimOverviewProps {
   claimData: ClaimInventoriesResponse
   trackedCount: number
   totalTrackedCount?: number
-  onTrackAll: () => void
-  onUntrackAll: () => void
-  onChangeClaim: () => void
 }
 
 export function ClaimOverview({
   claimData,
   trackedCount,
   totalTrackedCount,
-  onTrackAll,
-  onUntrackAll,
-  onChangeClaim,
 }: ClaimOverviewProps) {
   // Calculate overview stats
   const totalInventories = claimData.inventories.length

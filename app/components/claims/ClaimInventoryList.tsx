@@ -13,10 +13,9 @@ import type { ClaimInventory } from "~/types/inventory"
 
 interface ClaimInventoryListProps {
   inventories: ClaimInventory[]
-  viewMode?: "list" | "tier"
 }
 
-export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInventoryListProps) {
+export function ClaimInventoryList({ inventories }: ClaimInventoryListProps) {
   const { player } = useSelectedPlayer()
   const { isTracked, trackInventory, untrackInventory, getSnapshot } =
     useSharedPlayerInventoryTracking()
@@ -57,8 +56,8 @@ export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInve
           isClosable: true,
         })
       }
-    } catch (error) {
-      console.error("Failed to track/untrack inventory:", error)
+    } catch {
+      // console.error("Failed to track/untrack inventory:", error)
       toast({
         title: "Error",
         description: `Failed to ${checked ? "track" : "untrack"} inventory`,
@@ -127,7 +126,7 @@ export function ClaimInventoryList({ inventories, viewMode = "list" }: ClaimInve
             key={inventory.id}
             inventory={inventory}
             tracked={tracked}
-            snapshot={snapshot}
+            snapshot={snapshot || null}
             expanded={isExpanded}
             viewMode={inventoryViewModes[inventory.id] || "list"}
             onTrackingChange={(checked) => handleTrackingChange(inventory, checked)}

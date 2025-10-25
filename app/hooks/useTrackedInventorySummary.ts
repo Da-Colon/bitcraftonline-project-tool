@@ -63,7 +63,7 @@ export function useTrackedInventorySummary(): TrackedInventorySummaryResult {
   } = useClaimInventories(claim?.claimId)
   const {
     snapshots,
-    metadata,
+    // metadata,
     isLoading: trackingLoading,
     error: trackingError,
     trackInventory,

@@ -12,27 +12,23 @@ import {
   VStack,
   Text,
   Badge,
-  Button,
+  // Button,
   Icon,
-  Progress,
+  // Progress,
   Divider,
 } from "@chakra-ui/react"
-import { Link as RemixLink } from "@remix-run/react"
+// import { Link as RemixLink } from "@remix-run/react"
 
 import type { PlayerInventories } from "~/types/inventory"
 
 interface InventoryOverviewProps {
   inventories: PlayerInventories
   trackedCount: number
-  onTrackAll: () => void
-  onUntrackAll: () => void
 }
 
 export function InventoryOverview({
   inventories,
   trackedCount,
-  onTrackAll,
-  onUntrackAll,
 }: InventoryOverviewProps) {
   // Calculate overview stats
   const allInventories = [
@@ -56,7 +52,7 @@ export function InventoryOverview({
   )
 
   // Calculate tracking progress
-  const trackingProgress = totalInventories > 0 ? (trackedCount / totalInventories) * 100 : 0
+  // const trackingProgress = totalInventories > 0 ? (trackedCount / totalInventories) * 100 : 0
 
   // Get tier distribution across all inventories
   const tierCounts = allInventories.reduce((acc, inventory) => {

@@ -29,8 +29,7 @@ export function useSelectedClaim() {
           // Clear claim if no stored data for this player
           setClaim(null);
         }
-      } catch (error) {
-        console.warn("Failed to load selected claim from localStorage:", error);
+      } catch {
         setClaim(null);
       }
     } else if (!player?.entityId) {
@@ -49,8 +48,8 @@ export function useSelectedClaim() {
         } else {
           localStorage.removeItem(storageKey);
         }
-      } catch (error) {
-        console.warn("Failed to save selected claim to localStorage:", error);
+      } catch {
+        // Ignore localStorage errors
       }
     }
   }, [claim, player?.entityId]);

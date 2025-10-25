@@ -19,7 +19,7 @@ import React, { useState } from "react";
 
 import type { ActiveTasksViewProps, Craft } from "~/types/crafts";
 
-export function ActiveTasksView({ claimId, claimName, playerId }: ActiveTasksViewProps) {
+export function ActiveTasksView({ claimId, playerId }: ActiveTasksViewProps) {
   const fetcher = useFetcher<{ crafts?: Craft[]; totalCount?: number; error?: string }>();
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -28,6 +28,7 @@ export function ActiveTasksView({ claimId, claimName, playerId }: ActiveTasksVie
     if (claimId) {
       fetcher.load(`/api/claims/${claimId}/crafts`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
 
   const crafts = fetcher.data?.crafts || [];

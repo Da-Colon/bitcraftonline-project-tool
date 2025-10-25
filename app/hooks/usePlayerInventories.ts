@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
 
-import { usePlayerHousing } from "./usePlayerHousing"
 
 import type { PlayerInventories, BitJitaInventoriesResponse } from "~/types/inventory"
 import { transformBitJitaInventories } from "~/utils/inventoryTransform"
+
+import { usePlayerHousing } from "./usePlayerHousing"
 
 export function usePlayerInventories(playerId?: string) {
   const [inventories, setInventories] = useState<PlayerInventories | null>(null)
@@ -28,7 +29,7 @@ export function usePlayerInventories(playerId?: string) {
       setError(null)
 
       try {
-        const response = await fetch(`/api/player/${playerId}/inventories`)
+        const response = await fetch(`/api/players/${playerId}/inventories`)
         if (!response.ok) {
           if (response.status === 503) {
             const errorData = await response.json().catch(() => ({}))

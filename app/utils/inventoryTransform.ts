@@ -54,8 +54,8 @@ export function transformBitJitaInventories(
 
 function transformPockets(
   pockets: BitJitaInventory["pockets"],
-  items: Record<string, any>,
-  cargos?: Record<string, any>
+  items: Record<string, unknown>,
+  cargos?: Record<string, unknown>
 ): InventoryItem[] {
   return pockets
     .filter((pocket) => pocket.contents) // Only include pockets with contents
@@ -64,14 +64,16 @@ function transformPockets(
       const itemId = normalizeItemId(pocket.contents.itemId)
       const gameItem = items[rawId] || cargos?.[rawId]
 
+      const item = gameItem as { name?: string; tier?: number; tag?: string; rarityStr?: string; iconAssetName?: string } | undefined
+      
       return {
         itemId,
         quantity: pocket.contents.quantity,
-        name: gameItem?.name,
-        tier: gameItem?.tier,
-        category: gameItem?.tag,
-        rarity: gameItem?.rarityStr,
-        iconAssetName: gameItem?.iconAssetName,
+        name: item?.name,
+        tier: item?.tier,
+        category: item?.tag,
+        rarity: item?.rarityStr,
+        iconAssetName: item?.iconAssetName,
       }
     })
 }

@@ -1,66 +1,94 @@
+/**
+ * @fileoverview Claim Crafts API Endpoint
+ * 
+ * GET /api/claims/:claimId/crafts
+ * 
+ * Fetches all crafts (active and completed) for a specific claim.
+ * Combines both active and completed crafts into a single response.
+ * Uses 2-minute cache since craft data changes moderately.
+ * 
+ * @dependencies BitJitaService, StandardErrorResponse, CraftsResponse
+ * @caching 2min cache with stale-while-revalidate
+ */
+
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 
-import { BitJita, BitJitaHttpError } from "~/utils/bitjita.server";
-import type { CraftsResponse } from "~/types/crafts";
+import { BitJitaService } from "~/services/bitjita.service";
+import { ServiceError, type CraftsResponse, type StandardErrorResponse } from "~/types/api-responses";
 
-type Cached<T> = { data: T; fetchedAt: number };
-const CACHE = new Map<string, Cached<any>>();
-const TTL_MS = 2 * 60 * 1000; // 2 minutes (shorter than other endpoints since crafts change more frequently)
-
+/**
+ * GET /api/claims/:claimId/crafts
+ * 
+ * Get all crafts (active and completed) for a claim
+ * 
+ * @param {string} claimId - Claim entity ID
+ * @returns {CraftsResponse} Combined crafts data with total count
+ * @throws {400} When claim ID is missing
+ * @throws {404} When claim not found
+ * @throws {503} When external service unavailable
+ * 
+ * @example
+ * GET /api/claims/123/crafts
+ * Returns: { crafts: [...], totalCount: 10 }
+ */
 export async function loader({ params }: LoaderFunctionArgs) {
   const { claimId } = params;
 
+  // Validate required parameter
   if (!claimId) {
-    return json({ error: "Missing claim ID" }, { status: 400 });
-  }
-
-  const now = Date.now();
-  const cacheKey = claimId;
-  const cached = CACHE.get(cacheKey);
-  if (cached && now - cached.fetchedAt < TTL_MS) {
-    return json(cached.data, { headers: { "Cache-Control": "private, max-age=30" } });
+    return json<StandardErrorResponse>(
+      { error: "Claim ID is required" },
+      { status: 400 }
+    );
   }
 
   try {
-    // Fetch ALL active crafts for the claim
-    const activeCrafts = await BitJita.getCrafts({
-      claimEntityId: claimId,
-      completed: false,
-    });
+    // Fetch both active and completed crafts for the claim
+    const [activeCrafts, completedCrafts] = await Promise.all([
+      BitJitaService.getCrafts({
+        claimEntityId: claimId,
+        completed: false,
+      }),
+      BitJitaService.getCrafts({
+        claimEntityId: claimId,
+        completed: true,
+      }),
+    ]);
 
-    // Fetch ALL completed crafts for the claim
-    const completedCrafts = await BitJita.getCrafts({
-      claimEntityId: claimId,
-      completed: true,
-    });
-
+    // Combine both responses
     const response: CraftsResponse = {
       crafts: [
-        ...(activeCrafts.craftResults || []),
-        ...(completedCrafts.craftResults || []),
+        ...(activeCrafts.crafts || []),
+        ...(completedCrafts.crafts || []),
       ],
-      totalCount: (activeCrafts.craftResults?.length || 0) + (completedCrafts.craftResults?.length || 0),
+      totalCount: (activeCrafts.totalCount || 0) + (completedCrafts.totalCount || 0),
     };
-
-    CACHE.set(cacheKey, { data: response, fetchedAt: now });
-    return json(response, {
-      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=30" },
+    
+    return json<CraftsResponse>(response, {
+      headers: {
+        // 2-minute cache since craft data changes moderately
+        "Cache-Control": "private, max-age=120, stale-while-revalidate=120",
+      },
     });
   } catch (error) {
-    console.error("Failed to fetch crafts for claim:", error);
-    
-    if (error instanceof BitJitaHttpError) {
-      return json(
+    // Service layer throws standardized ServiceError
+    if (error instanceof ServiceError) {
+      return json<StandardErrorResponse>(
         {
-          error: "External API Error",
-          service: "BitJita API",
-          detail: error.body || error.message,
+          error: error.message,
+          detail: error.detail,
+          service: error.service,
           isExternalError: true,
         },
         { status: error.status }
       );
     }
 
-    return json({ error: "Failed to fetch active tasks" }, { status: 500 });
+    // Unexpected errors
+    // console.error("Unexpected error fetching claim crafts:", error);
+    return json<StandardErrorResponse>(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

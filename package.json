@@ -11,12 +11,22 @@
     "typecheck": "tsc",
     "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint:check": "eslint . --ext .ts,.tsx --max-warnings 0",
+    "lint:app": "eslint app --ext .ts,.tsx --max-warnings 0",
+    "lint:app:fix": "eslint app --ext .ts,.tsx --fix",
+    "lint:routes": "eslint app/routes --ext .ts,.tsx --max-warnings 0",
+    "lint:services": "eslint app/services --ext .ts,.tsx --max-warnings 0",
+    "lint:types": "eslint app/types --ext .ts,.tsx --max-warnings 0",
+    "lint:components": "eslint app/components --ext .ts,.tsx --max-warnings 0",
+    "lint:hooks": "eslint app/hooks --ext .ts,.tsx --max-warnings 0",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:data": "node scripts/tests/test-bitcraft-data.mjs",
-    "test:search": "node scripts/tests/test-search.mjs"
+    "test:search": "node scripts/tests/test-search.mjs",
+    "check": "npm run typecheck && npm run lint && npm run test:run",
+    "check:ci": "npm run typecheck && npm run lint && npm run test:run && npm run build"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

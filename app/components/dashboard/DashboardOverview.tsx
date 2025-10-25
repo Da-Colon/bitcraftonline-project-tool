@@ -7,7 +7,7 @@ import {
   StatHelpText,
   StatLabel,
   StatNumber,
-  VStack,
+  // VStack,
 } from "@chakra-ui/react"
 
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"

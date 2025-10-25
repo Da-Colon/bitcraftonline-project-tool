@@ -23,7 +23,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 
-import type { PlayerInventoryResponse } from "~/routes/api.player.inventory";
+import type { PlayerInventoryResponse } from "~/routes/api.inventory.player";
 import type { Item } from "~/types/recipes";
 
 interface InventoryReviewModalProps {
@@ -53,7 +53,8 @@ export function InventoryReviewModal({ isOpen, onClose, inventoryData, itemMap, 
       aggregatedItems.set(item.id, { item, quantity: 0, sources: new Set() });
     }
 
-    const entry = aggregatedItems.get(item.id)!;
+    const entry = aggregatedItems.get(item.id);
+    if (!entry) continue;
     entry.quantity += invItem.quantity;
     entry.sources.add(invItem.location);
   }
@@ -78,7 +79,7 @@ export function InventoryReviewModal({ isOpen, onClose, inventoryData, itemMap, 
         <ModalCloseButton />
         <ModalBody>
           <VStack align="stretch" spacing={4}>
-            <Text>Found {sortedItems.length} unique item(s) in {inventoryData.playerName}'s inventory. Review the items below before applying them to your tracking list.</Text>
+            <Text>Found {sortedItems.length} unique item(s) in {inventoryData.playerName}&apos;s inventory. Review the items below before applying them to your tracking list.</Text>
             <TableContainer>
               <Table variant="simple">
                 <Thead>

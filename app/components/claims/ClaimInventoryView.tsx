@@ -15,19 +15,19 @@ import {
   Icon,
   Badge,
 } from "@chakra-ui/react"
-import { useState } from "react"
+// import { useState } from "react"
 
-import { ActiveTasksView } from "./ActiveTasksView"
-import { ClaimInventoryList } from "./ClaimInventoryList"
-import { ClaimOverview } from "./ClaimOverview"
-import { ClaimSearchModal } from "./ClaimSearchModal"
 
-import { useConfirmationDialog } from "~/components/ConfirmationDialog"
 import { TrackedInventorySummary } from "~/components/inventory/TrackedInventorySummary"
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useClaimInventories } from "~/hooks/useClaimInventories"
 import { useSelectedClaim } from "~/hooks/useSelectedClaim"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+
+import { ActiveTasksView } from "./ActiveTasksView"
+import { ClaimInventoryList } from "./ClaimInventoryList"
+import { ClaimOverview } from "./ClaimOverview"
+import { ClaimSearchModal } from "./ClaimSearchModal"
 
 
 
@@ -37,15 +37,12 @@ export function ClaimInventoryView() {
   const { inventories, loading, error } = useClaimInventories(claim?.claimId)
   const {
     snapshots,
-    trackInventories,
-    untrackByClaim,
     getSnapshotsByClaim,
-    getTrackingSummary,
-    isLoading,
+    // getTrackingSummary,
+    // isLoading,
   } = useSharedPlayerInventoryTracking()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const toast = useToast()
-  const { confirm, ConfirmationDialog } = useConfirmationDialog()
 
   const handleSelectClaim = (claimId: string, claimName: string) => {
     selectClaim(claimId, claimName)
@@ -69,66 +66,6 @@ export function ClaimInventoryView() {
     })
   }
 
-  const handleTrackAll = async () => {
-    if (!inventories) return
-    try {
-      await trackInventories(inventories.inventories, "claim")
-      toast({
-        title: "All Buildings Tracked",
-        description: `Now tracking ${inventories.inventories.length} claim buildings`,
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      })
-    } catch (error) {
-      toast({
-        title: "Error Tracking Buildings",
-        description: "Failed to track some buildings",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-    }
-  }
-
-  const handleUntrackAll = async () => {
-    if (!claim?.claimId) return
-
-    try {
-      await untrackByClaim(claim.claimId)
-      toast({
-        title: "Claim Tracking Cleared",
-        description: `No buildings from ${claim.claimName} are being tracked`,
-        status: "info",
-        duration: 3000,
-        isClosable: true,
-      })
-    } catch (error) {
-      toast({
-        title: "Error Clearing Tracking",
-        description: "Failed to clear claim tracking",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      })
-    }
-  }
-
-  const handleUntrackAllWithConfirmation = () => {
-    if (!claim?.claimId) return
-
-    const currentClaimTrackedCount = getSnapshotsByClaim(claim.claimId).length
-
-    confirm({
-      title: "Untrack This Claim's Inventories",
-      message: `This will untrack ${currentClaimTrackedCount} building${
-        currentClaimTrackedCount !== 1 ? "s" : ""
-      } from ${claim.claimName}. Your personal and other claim inventories will not be affected.`,
-      confirmText: "Untrack This Claim",
-      severity: "warning",
-      onConfirm: handleUntrackAll,
-    })
-  }
 
   if (!claim) {
     return (
@@ -370,9 +307,6 @@ export function ClaimInventoryView() {
         claimData={inventories}
         trackedCount={claimTrackedCount}
         totalTrackedCount={snapshots.length}
-        onTrackAll={handleTrackAll}
-        onUntrackAll={handleUntrackAllWithConfirmation}
-        onChangeClaim={onOpen}
       />
 
       <Divider borderColor="whiteAlpha.200" />
@@ -389,7 +323,6 @@ export function ClaimInventoryView() {
       <ClaimInventoryList inventories={inventories.inventories} />
 
       <ClaimSearchModal isOpen={isOpen} onClose={onClose} onSelectClaim={handleSelectClaim} />
-      {ConfirmationDialog}
     </VStack>
   )
 }

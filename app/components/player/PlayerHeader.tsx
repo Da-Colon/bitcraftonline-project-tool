@@ -1,6 +1,6 @@
 import { CloseIcon } from "@chakra-ui/icons"
 import {
-  Badge,
+  // Badge,
   Box,
   Button,
   Container,
@@ -10,17 +10,17 @@ import {
   Spinner,
   Text,
   Tooltip,
-  VStack,
+  // VStack,
   useToast,
 } from "@chakra-ui/react"
 import { Link as RemixLink, useLocation, useNavigate } from "@remix-run/react"
 import { useCallback } from "react"
 
+import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { usePlayerDetails } from "~/hooks/usePlayerDetails"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
-import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 
-interface PlayerHeaderProps {}
+// interface PlayerHeaderProps {}
 
 const NAV_LINKS = [
   { label: "Dashboard", to: "/" },
@@ -29,7 +29,7 @@ const NAV_LINKS = [
   { label: "Recipes", to: "/recipes" },
 ] as const
 
-export function PlayerHeader({}: PlayerHeaderProps = {}) {
+export function PlayerHeader() {
   const toast = useToast()
   const navigate = useNavigate()
   const location = useLocation()
@@ -37,7 +37,7 @@ export function PlayerHeader({}: PlayerHeaderProps = {}) {
   const { detail, loading, derived } = usePlayerDetails(player?.entityId)
   
   // Get tracking info for polling indicator
-  let snapshots: any[] = []
+  let snapshots: unknown[] = []
   try {
     const tracking = useSharedPlayerInventoryTracking()
     snapshots = tracking.snapshots

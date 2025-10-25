@@ -1,9 +1,10 @@
-/* eslint-disable no-console */
+ 
 import { describe, it, expect, beforeAll } from "vitest"
+
+// import { TierCalculationResult } from "~/types/recipes"
 
 import { EnhancedRecipeCalculator } from "./enhanced-recipe-calculator.server"
 
-import { TierCalculationResult } from "~/types/recipes"
 
 
 describe("EnhancedRecipeCalculator", () => {
@@ -193,7 +194,7 @@ describe("EnhancedRecipeCalculator", () => {
       expect(result.breakdown.length).toBeGreaterThan(100)
 
       // Group by tier
-      const byTier: Record<number, any[]> = {}
+      const byTier: Record<number, unknown[]> = {}
       result.breakdown.forEach(item => {
         if (!byTier[item.tier]) byTier[item.tier] = []
         byTier[item.tier].push(item)
@@ -244,7 +245,7 @@ describe("EnhancedRecipeCalculator", () => {
       expect(result.breakdown.length).toBeGreaterThan(100) // Should have many items across all tiers
 
       // Group by tier to verify ALL tiers are processed
-      const byTier: Record<number, any[]> = {}
+      const byTier: Record<number, unknown[]> = {}
       result.breakdown.forEach(item => {
         if (!byTier[item.tier]) byTier[item.tier] = []
         byTier[item.tier].push(item)

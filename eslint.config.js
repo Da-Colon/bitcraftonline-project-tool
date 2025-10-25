@@ -91,7 +91,7 @@ export default [
       'react-hooks/exhaustive-deps': 'warn',
       
       // General code quality
-      'no-console': 'warn',
+      'no-console': ['warn', { allow: ['error'] }],
       'no-debugger': 'error',
       'no-duplicate-imports': 'error',
       'no-unreachable': 'error',
@@ -122,6 +122,20 @@ export default [
     files: ['vite.config.ts', 'vitest.config.ts'],
     rules: {
       'no-console': 'off', // Allow console in config files
+    },
+  },
+  {
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        console: 'readonly',
+        process: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off', // Allow console in scripts
+      'no-unused-vars': 'warn', // Allow unused vars in scripts
     },
   },
   {

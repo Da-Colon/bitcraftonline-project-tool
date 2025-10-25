@@ -40,7 +40,7 @@ export function parseItem(bitCraftItem: BitCraftItem): ParsedItem {
 }
 
 // Parse BitCraft recipe inputs to our format
-function parseRecipeInputs(consumedItemStacks: any[]): ParsedRecipeInput[] {
+function parseRecipeInputs(consumedItemStacks: unknown[]): ParsedRecipeInput[] {
   const inputs: ParsedRecipeInput[] = []
 
   // Each consumed item stack has format: [itemId, quantity, ...]
@@ -62,7 +62,7 @@ function parseRecipeInputs(consumedItemStacks: any[]): ParsedRecipeInput[] {
 }
 
 // Parse BitCraft recipe outputs to get primary output
-function parseRecipeOutput(craftedItemStacks: any[]): { itemId: string; quantity: number } | null {
+function parseRecipeOutput(craftedItemStacks: unknown[]): { itemId: string; quantity: number } | null {
   // Get the first crafted item as the primary output
   if (craftedItemStacks.length > 0) {
     const stack = craftedItemStacks[0]
@@ -101,13 +101,23 @@ export function parseRecipe(bitCraftRecipe: BitCraftRecipe): ParsedRecipe | null
 }
 
 // Parse extraction recipe to get raw materials
-export function parseExtractionRecipe(extractionRecipe: any): ParsedRecipe | null {
-  const inputs = parseRecipeInputs(extractionRecipe.consumed_item_stacks)
+export function parseExtractionRecipe(extractionRecipe: unknown): ParsedRecipe | null {
+  if (!extractionRecipe || typeof extractionRecipe !== 'object') {
+    return null
+  }
+  
+  const recipe = extractionRecipe as { consumed_item_stacks?: unknown[]; extracted_item_stacks?: unknown[] }
+  
+  if (!recipe.consumed_item_stacks || !recipe.extracted_item_stacks) {
+    return null
+  }
+  
+  const inputs = parseRecipeInputs(recipe.consumed_item_stacks)
 
   // Extract output items from extracted_item_stacks
   // Format: [[0, [itemId, quantity, ...]], probability]
-  if (extractionRecipe.extracted_item_stacks.length > 0) {
-    const stack = extractionRecipe.extracted_item_stacks[0]
+  if (recipe.extracted_item_stacks.length > 0) {
+    const stack = recipe.extracted_item_stacks[0]
     if (Array.isArray(stack) && stack.length >= 1) {
       const itemInfo = stack[0]
       if (Array.isArray(itemInfo) && itemInfo.length >= 2) {
@@ -118,7 +128,7 @@ export function parseExtractionRecipe(extractionRecipe: any): ParsedRecipe | nul
 
           if (typeof itemId === "number" && typeof quantity === "number") {
             return {
-              id: convertId(extractionRecipe.id),
+              id: convertId((recipe as { id: number }).id),
               outputItemId: convertId(itemId),
               outputQuantity: quantity,
               inputs: inputs,

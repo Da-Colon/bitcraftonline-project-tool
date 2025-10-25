@@ -30,7 +30,7 @@ export function usePlayerHousing(playerId?: string) {
 
       try {
         // First, get the list of housing buildings
-        const housingResponse = await fetch(`/api/player/${playerId}/housing`)
+        const housingResponse = await fetch(`/api/players/${playerId}/housing`)
         if (!housingResponse.ok) {
           if (housingResponse.status === 404) {
             // Player has no housing, this is fine
@@ -63,15 +63,13 @@ export function usePlayerHousing(playerId?: string) {
         const housingInventoriesPromises = housingData.map(async (housing) => {
           try {
             const detailsResponse = await fetch(
-              `/api/player/${playerId}/housing/${housing.buildingEntityId}`
+              `/api/players/${playerId}/housing/${housing.buildingEntityId}`
             )
             if (!detailsResponse.ok) {
-              console.warn(`Failed to fetch details for housing ${housing.buildingEntityId}`)
               return null
             }
             return (await detailsResponse.json()) as BitJitaHousingDetailsResponse
-          } catch (err) {
-            console.warn(`Error fetching housing details for ${housing.buildingEntityId}:`, err)
+          } catch {
             return null
           }
         })

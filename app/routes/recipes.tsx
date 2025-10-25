@@ -1,6 +1,6 @@
-import { Badge, Box, Button, Divider, Flex, Heading, Stack, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react"
+import { Badge, Box, Divider, Flex, Heading, Text, VStack, Wrap, WrapItem } from "@chakra-ui/react"
 import { json, type LoaderFunctionArgs } from "@remix-run/node"
-import { useLoaderData, useFetcher , Link as RemixLink } from "@remix-run/react"
+import { useLoaderData, useFetcher } from "@remix-run/react"
 import { useState, useEffect, useMemo } from "react"
 
 import { DashboardLayout } from "~/components/dashboard/DashboardLayout"
@@ -38,7 +38,7 @@ export default function RecipesRoute() {
   const [searchResults, setSearchResults] = useState<Item[]>(items)
 
   // Use persistent recipe selection
-  const { selectedItem, targetQuantity, updateSelectedItem, updateTargetQuantity, clearSelection } =
+  const { selectedItem, targetQuantity, updateSelectedItem, clearSelection } =
     useRecipeSelection()
 
   // Get combined inventory data
@@ -57,7 +57,8 @@ export default function RecipesRoute() {
       const params = new URLSearchParams({ q: debouncedSearchQuery })
       searchFetcher.load(`/recipes?${params}`)
     }
-  }, [debouncedSearchQuery]) // Only depend on the debounced query, not the fetcher
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchQuery])
 
   const handleItemSelect = (item: Item) => {
     updateSelectedItem(item)
@@ -65,12 +66,12 @@ export default function RecipesRoute() {
     // Calculation is triggered by the effect that watches selectedItem/id, debouncedQuantity, and inventoryKey
   }
 
-  const handleQuantityChange = (newQuantity: number) => {
-    updateTargetQuantity(newQuantity)
-    // Calculation is triggered by the effect
-  }
+  // const handleQuantityChange = (newQuantity: number) => {
+  //   updateTargetQuantity(newQuantity)
+  //   // Calculation is triggered by the effect
+  // }
 
-  const breakdown = (calculationFetcher.data as any)?.breakdown || []
+  const breakdown = (calculationFetcher.data as { breakdown?: RecipeBreakdownItem[] })?.breakdown || []
   const isLoading = calculationFetcher.state !== "idle"
   
 
@@ -91,11 +92,12 @@ export default function RecipesRoute() {
       method: "post",
       action: "/api/recipes/calculate",
     })
-  }, [selectedItem?.id, debouncedQuantity, inventoryKey])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItem, debouncedQuantity, inventoryKey])
 
   // Keep last good search results to prevent flicker during fetcher transitions
   useEffect(() => {
-    const data = (searchFetcher.data as any)?.items as Item[] | undefined
+    const data = (searchFetcher.data as { items?: Item[] })?.items
     if (data) {
       setSearchResults(data)
     } else if (debouncedSearchQuery.length <= 2) {
@@ -114,7 +116,7 @@ export default function RecipesRoute() {
           lineHeight={{ base: "1.15", md: "1.1" }}
           color="white"
         >
-          Chart tonight's crafting with inventory-powered insights.
+          Chart tonight&apos;s crafting with inventory-powered insights.
         </Heading>
         <Text fontSize={{ base: "md", md: "xl" }} color="whiteAlpha.900" maxW="2xl">
           Search every BitCraft recipe, see live deficits, and let your tracked inventories shoulder
@@ -165,7 +167,6 @@ export default function RecipesRoute() {
             combinedInventory={combinedInventory}
             selectedItem={selectedItem}
             breakdown={breakdown}
-            isCalculating={isLoading}
           />
 
           {/* Divider */}

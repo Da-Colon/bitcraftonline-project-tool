@@ -4,7 +4,7 @@ import { loadAndParseBitCraftData } from '../bitcraft/bitcraft-data-loader.js';
 console.log('Testing search functionality with BitCraft data...');
 
 // Load the data
-const { items, recipes } = loadAndParseBitCraftData();
+const { items } = loadAndParseBitCraftData();
 
 // Create a simple search function like the one in RecipeCalculator
 function searchItems(query, itemsList) {

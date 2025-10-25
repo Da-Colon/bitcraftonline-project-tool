@@ -31,11 +31,11 @@ export interface BitCraftRecipe {
   name: string // Recipe name
   time_requirement: number // Time to complete
   stamina_requirement: number // Stamina cost
-  building_requirement: any[] // Building requirements
+  building_requirement: unknown[] // Building requirements
   level_requirements: number[][] // Level requirements
   tool_requirements: number[][] // Tool requirements
-  consumed_item_stacks: any[] // Input items (format: [itemId, quantity, ...])
-  crafted_item_stacks: any[] // Output items (format: [itemId, quantity, ...])
+  consumed_item_stacks: unknown[] // Input items (format: [itemId, quantity, ...])
+  crafted_item_stacks: unknown[] // Output items (format: [itemId, quantity, ...])
   actions_required: number // Number of actions
 }
 
@@ -43,8 +43,8 @@ export interface BitCraftRecipe {
 export interface BitCraftExtractionRecipe {
   id: number // Recipe ID
   resource_id: number // Resource ID
-  extracted_item_stacks: any[] // Items extracted (format: [[0, [itemId, quantity, ...]], probability])
-  consumed_item_stacks: any[] // Items consumed
+  extracted_item_stacks: unknown[] // Items extracted (format: [[0, [itemId, quantity, ...]], probability])
+  consumed_item_stacks: unknown[] // Items consumed
   tool_requirements: number[][] // Tool requirements
   level_requirements: number[][] // Level requirements
 }

@@ -1,9 +1,10 @@
 // GameData Icon Lookup Service
 // Provides fallback lookup for iconAssetName when API data is missing it
 
+import type { BitCraftItem } from "~/types/bitcraft-data"
+
 import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
 
-import type { BitCraftItem } from "~/types/bitcraft-data"
 
 // Create a lookup map from item ID to icon_asset_name
 class GameDataIconLookup {

@@ -14,10 +14,11 @@ import {
 } from "@chakra-ui/react"
 import { useState } from "react"
 
-import { PlayerResults } from "./PlayerResults"
 
 import { usePlayerSearch } from "~/hooks/usePlayerSearch"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+
+import { PlayerResults } from "./PlayerResults"
 
 export function PlayerSelectionView() {
   const { savePlayer } = useSelectedPlayer()

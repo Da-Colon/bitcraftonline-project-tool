@@ -1,7 +1,7 @@
-import { RecipeCalculator } from "./recipe-calculator.server"
+import { enhanceItemWithIcon } from "~/services/gamedata-icon-lookup.server";
+import type { RecipeBreakdownItem, TierCalculationResult, InventoryItem } from "~/types/recipes";
 
-import { enhanceItemWithIcon } from "~/services/gamedata-icon-lookup.server"
-import type { RecipeBreakdownItem, TierCalculationResult, InventoryItem } from "~/types/recipes"
+import { RecipeCalculator } from "./recipe-calculator.server";
 
 export class EnhancedRecipeCalculator extends RecipeCalculator {
   /**
@@ -84,7 +84,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     stack: Set<string> = new Set()
   ): void {
     if (stack.has(itemId)) {
-      console.warn(`Cycle detected for item: ${itemId}`)
       return
     }
 
@@ -124,7 +123,10 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
 
       recipe.inputs.forEach((input) => {
         const requiredQuantity = input.quantity * craftingBatches
-        dependencies.get(itemId)!.add(input.itemId)
+        const itemDependencies = dependencies.get(itemId)
+        if (itemDependencies) {
+          itemDependencies.add(input.itemId)
+        }
         this.buildCompleteRecipeTree(input.itemId, requiredQuantity, breakdown, dependencies, stack)
       })
     }
@@ -226,7 +228,8 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
 
       // If we can skip batches, reduce children accordingly
       if (batchesSkipped > 0) {
-        const children = dependencies.get(item.itemId)!
+        const children = dependencies.get(item.itemId)
+        if (!children) continue
         for (const childId of children) {
           const childItem = breakdown.get(childId)
           if (!childItem) continue
@@ -300,7 +303,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     stack: Set<string> = new Set()
   ): void {
     if (stack.has(itemId)) {
-      console.warn(`Cycle detected for item: ${itemId}`)
       return
     }
 

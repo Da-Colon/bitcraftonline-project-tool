@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, SettingsIcon, CheckCircleIcon, InfoIcon } from "@chakra-ui/icons"
+import { CheckCircleIcon, InfoIcon } from "@chakra-ui/icons"
 import {
   Box,
   SimpleGrid,
@@ -25,14 +25,12 @@ interface RecipeOverviewProps {
   combinedInventory: InventoryItem[]
   selectedItem: Item | null
   breakdown: RecipeBreakdownItem[]
-  isCalculating: boolean
 }
 
 export function RecipeOverview({
   combinedInventory,
   selectedItem,
   breakdown,
-  isCalculating,
 }: RecipeOverviewProps) {
   // Calculate overview stats
   const totalInventoryItems = combinedInventory.reduce((sum, item) => sum + item.quantity, 0)

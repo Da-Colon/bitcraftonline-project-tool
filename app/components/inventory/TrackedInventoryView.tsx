@@ -1,9 +1,10 @@
 import { Badge, Box, Button, HStack, Spinner, Text, VStack, useToast } from "@chakra-ui/react"
 
-import { InventoryTierTable } from "./InventoryTierTable"
 
 import { useTrackedInventorySummary } from "~/hooks/useTrackedInventorySummary"
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
+
+import { InventoryTierTable } from "./InventoryTierTable"
 
 export function TrackedInventoryView() {
   const { player, loading, error, snapshots, combinedItems, untrackAll } =
@@ -63,7 +64,7 @@ export function TrackedInventoryView() {
         duration: 3000,
         isClosable: true,
       })
-    } catch (error) {
+    } catch {
       toast({
         title: "Error Clearing Tracking",
         description: "Failed to clear tracking",

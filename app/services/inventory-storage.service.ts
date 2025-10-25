@@ -78,29 +78,24 @@ class InventoryStorageService {
           getRequest.onerror = () => reject(getRequest.error)
         })
       }
-    } catch (error) {
-      console.warn("IndexedDB save failed, falling back to localStorage:", error)
+    } catch {
+      // Ignore IndexedDB errors, fallback to localStorage
     }
 
     // Always save to localStorage as fallback
-    try {
-      const existing = this.loadFromLocalStorage()
-      if (!existing[playerId]) {
-        existing[playerId] = {
-          playerId,
-          trackedInventories: {},
-          lastUpdated: new Date().toISOString(),
-        }
+    const existing = this.loadFromLocalStorage()
+    if (!existing[playerId]) {
+      existing[playerId] = {
+        playerId,
+        trackedInventories: {},
+        lastUpdated: new Date().toISOString(),
       }
-
-      existing[playerId].trackedInventories[inventorySnapshot.id] = inventorySnapshot
-      existing[playerId].lastUpdated = new Date().toISOString()
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
-    } catch (error) {
-      console.error("Failed to save to localStorage:", error)
-      throw error
     }
+
+    existing[playerId].trackedInventories[inventorySnapshot.id] = inventorySnapshot
+    existing[playerId].lastUpdated = new Date().toISOString()
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
   }
 
   async loadTrackedInventories(): Promise<InventoryTrackingStorage> {
@@ -128,8 +123,8 @@ class InventoryStorageService {
           return result
         }
       }
-    } catch (error) {
-      console.warn("IndexedDB load failed, falling back to localStorage:", error)
+    } catch {
+      // Ignore IndexedDB errors, fallback to localStorage
     }
 
     // Fallback to localStorage
@@ -173,21 +168,16 @@ class InventoryStorageService {
           getRequest.onerror = () => reject(getRequest.error)
         })
       }
-    } catch (error) {
-      console.warn("IndexedDB remove failed, falling back to localStorage:", error)
+    } catch {
+      // Ignore IndexedDB errors, fallback to localStorage
     }
 
     // Always update localStorage as fallback
-    try {
-      const existing = this.loadFromLocalStorage()
-      if (existing[playerId]) {
-        delete existing[playerId].trackedInventories[inventoryId]
-        existing[playerId].lastUpdated = new Date().toISOString()
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
-      }
-    } catch (error) {
-      console.error("Failed to remove from localStorage:", error)
-      throw error
+    const existing = this.loadFromLocalStorage()
+    if (existing[playerId]) {
+      delete existing[playerId].trackedInventories[inventoryId]
+      existing[playerId].lastUpdated = new Date().toISOString()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
     }
   }
 
@@ -204,19 +194,14 @@ class InventoryStorageService {
           deleteRequest.onerror = () => reject(deleteRequest.error)
         })
       }
-    } catch (error) {
-      console.warn("IndexedDB clear failed, falling back to localStorage:", error)
+    } catch {
+      // Ignore IndexedDB errors, fallback to localStorage
     }
 
     // Always update localStorage as fallback
-    try {
-      const existing = this.loadFromLocalStorage()
-      delete existing[playerId]
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
-    } catch (error) {
-      console.error("Failed to clear from localStorage:", error)
-      throw error
-    }
+    const existing = this.loadFromLocalStorage()
+    delete existing[playerId]
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing))
   }
 
   async getClaimTrackedInventories(
@@ -287,8 +272,7 @@ class InventoryStorageService {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       return raw ? JSON.parse(raw) : {}
-    } catch (error) {
-      console.warn("Failed to load from localStorage:", error)
+    } catch {
       return {}
     }
   }

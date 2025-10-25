@@ -3,12 +3,11 @@
  * Ensures all components use the same hook instance and state
  */
 
-import type { ReactNode } from "react";
-import { createContext, useContext } from "react"
+import { createContext, useContext, type ReactNode } from "react"
 
 import { usePlayerInventoryTracking } from "~/hooks/usePlayerInventoryTracking"
-import type { Inventory, ClaimInventory } from "~/types/inventory"
-import type { TrackedInventorySnapshot, InventorySnapshotMetadata } from "~/types/inventory-tracking"
+// import type { Inventory, ClaimInventory } from "~/types/inventory"
+// import type { TrackedInventorySnapshot, InventorySnapshotMetadata } from "~/types/inventory-tracking"
 
 type PlayerInventoryTrackingContextType = ReturnType<typeof usePlayerInventoryTracking>
 

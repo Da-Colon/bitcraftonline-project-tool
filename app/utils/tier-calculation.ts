@@ -32,20 +32,29 @@ export function calculateTierReductions(
       itemsByCategory.set(category, new Map());
     }
     
-    const categoryTiers = itemsByCategory.get(category)!;
+    let categoryTiers = itemsByCategory.get(category);
+    if (!categoryTiers) {
+      categoryTiers = new Map();
+      itemsByCategory.set(category, categoryTiers);
+    }
+    
     if (!categoryTiers.has(item.tier)) {
       categoryTiers.set(item.tier, []);
     }
-    categoryTiers.get(item.tier)!.push(item);
+    const tierItems = categoryTiers.get(item.tier);
+    if (tierItems) {
+      tierItems.push(item);
+    }
   }
   
   // For each category, check if higher tier available items can reduce lower tier requirements
-  for (const [category, tierMap] of itemsByCategory) {
+  for (const [, tierMap] of itemsByCategory) {
     const sortedTiers = Array.from(tierMap.keys()).sort((a, b) => b - a); // Highest tier first
     
     for (let i = 0; i < sortedTiers.length; i++) {
       const higherTier = sortedTiers[i];
-      const higherTierItems = tierMap.get(higherTier)!;
+      const higherTierItems = tierMap.get(higherTier);
+      if (!higherTierItems) continue;
       
       // Check if we have any available items of this higher tier
       for (const higherItem of higherTierItems) {
@@ -55,7 +64,8 @@ export function calculateTierReductions(
         // Calculate how much this higher tier item can reduce lower tier requirements
         for (let j = i + 1; j < sortedTiers.length; j++) {
           const lowerTier = sortedTiers[j];
-          const lowerTierItems = tierMap.get(lowerTier)!;
+          const lowerTierItems = tierMap.get(lowerTier);
+          if (!lowerTierItems) continue;
           
           const tierDifference = higherTier - lowerTier;
           if (tierDifference <= 0) continue;
@@ -79,12 +89,15 @@ export function calculateTierReductions(
                 reductions.set(lowerItem.id, []);
               }
               
-              reductions.get(lowerItem.id)!.push({
-                itemId: lowerItem.id,
-                reducedQuantity: actualReduction,
-                sourceItemId: higherItem.id,
-                sourceQuantity: usedHigherTierQuantity,
-              });
+              const itemReductions = reductions.get(lowerItem.id);
+              if (itemReductions) {
+                itemReductions.push({
+                  itemId: lowerItem.id,
+                  reducedQuantity: actualReduction,
+                  sourceItemId: higherItem.id,
+                  sourceQuantity: usedHigherTierQuantity,
+                });
+              }
             }
           }
         }

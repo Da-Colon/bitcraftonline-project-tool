@@ -10,13 +10,13 @@ import {
   Card,
   CardBody,
   Icon,
-  Link as ChakraLink,
+  // Link as ChakraLink,
 } from "@chakra-ui/react"
 import { Link as RemixLink } from "@remix-run/react"
 import { useState } from "react"
 
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
-import type { InventorySource, TrackedInventorySnapshot } from "~/types/inventory-tracking"
+import type { InventorySource } from "~/types/inventory-tracking"
 
 interface TrackedInventorySummaryProps {
   currentClaimId?: string
@@ -58,7 +58,9 @@ export function TrackedInventorySummary({
     byClaim: snapshots
       .filter(s => s.source === 'claim' && s.claimId)
       .reduce((acc, snapshot) => {
-        acc[snapshot.claimId!] = (acc[snapshot.claimId!] || 0) + 1
+        if (snapshot.claimId) {
+          acc[snapshot.claimId] = (acc[snapshot.claimId] || 0) + 1
+        }
         return acc
       }, {} as Record<string, number>)
   }

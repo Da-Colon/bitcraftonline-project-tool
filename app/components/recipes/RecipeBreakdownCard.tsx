@@ -17,17 +17,18 @@ import {
   Text,
   Badge,
   Button,
-  Box,
+  // Box,
   Divider,
 } from "@chakra-ui/react"
+
+import { GameDataIcon } from "~/components/GameDataIcon"
+import { TrackedInventoryView } from "~/components/inventory/TrackedInventoryView"
+import type { RecipeBreakdownItem } from "~/types/recipes"
 
 import { RawMaterialsView } from "./RawMaterialsView"
 import { RecipeBreakdownTable } from "./RecipeBreakdownTable"
 import { TierSummaryView } from "./TierSummaryView"
 
-import { GameDataIcon } from "~/components/GameDataIcon"
-import { TrackedInventoryView } from "~/components/inventory/TrackedInventoryView"
-import type { RecipeBreakdownItem } from "~/types/recipes"
 
 
 interface RecipeBreakdownCardProps {

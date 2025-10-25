@@ -13,8 +13,9 @@ import {
 } from "@chakra-ui/react"
 import { Link as RemixLink } from "@remix-run/react"
 
-import { PlayerCraftsPanel } from "./PlayerCraftsPanel"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
+
+import { PlayerCraftsPanel } from "./PlayerCraftsPanel"
 
 interface DashboardFocusPanelsProps {
   selectedRecipe: {
@@ -66,7 +67,7 @@ export function DashboardFocusPanels({
             ) : (
               <VStack align="stretch" spacing={4} flex={1}>
                 <Text color="whiteAlpha.800" fontSize="sm">
-                  You haven't pinned a recipe yet. Pick a project to start planning your next play
+                  You haven&apos;t pinned a recipe yet. Pick a project to start planning your next play
                   session.
                 </Text>
               </VStack>

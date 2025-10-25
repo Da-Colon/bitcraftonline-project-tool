@@ -33,20 +33,20 @@ export async function migrateInventoryTracking(): Promise<void> {
       return
     }
 
-    console.log(`Migrating ${oldTrackedIds.length} tracked inventories from old format`)
+    // Migrating tracked inventories from old format
 
     // Create a migration snapshot for the current player
     // We'll need to get the current player from the existing system
     const selectedPlayerRaw = localStorage.getItem("selectedPlayer")
     if (!selectedPlayerRaw) {
-      console.warn("No selected player found during migration, skipping")
+      // No selected player found during migration, skipping
       localStorage.setItem(MIGRATION_COMPLETE_KEY, "true")
       return
     }
 
     const selectedPlayer = JSON.parse(selectedPlayerRaw)
     if (!selectedPlayer?.entityId) {
-      console.warn("Invalid selected player data during migration, skipping")
+      // Invalid selected player data during migration, skipping
       localStorage.setItem(MIGRATION_COMPLETE_KEY, "true")
       return
     }
@@ -72,9 +72,9 @@ export async function migrateInventoryTracking(): Promise<void> {
     localStorage.removeItem(OLD_TRACKING_KEY)
     localStorage.setItem(MIGRATION_COMPLETE_KEY, "true")
 
-    console.log("Inventory tracking migration completed successfully")
-  } catch (error) {
-    console.error("Failed to migrate inventory tracking:", error)
+    // Inventory tracking migration completed successfully
+  } catch {
+    // Failed to migrate inventory tracking
     // Don't mark as complete if migration failed
   }
 }

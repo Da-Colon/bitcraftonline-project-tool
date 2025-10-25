@@ -1,5 +1,5 @@
-import { Box, Image, type BoxProps } from "@chakra-ui/react"
-import { useState, useMemo, useEffect } from "react"
+import { Box, Image, type BoxProps } from "@chakra-ui/react";
+import React, { useState, useMemo, useEffect } from "react";
 
 import {
   convertIconAssetNameToPath,

@@ -13,8 +13,10 @@ import {
   Button,
 } from "@chakra-ui/react"
 
-import { InventoryContents } from "./InventoryContents"
+import type { TrackedInventorySnapshot } from "~/types/inventory-tracking"
 import { getSnapshotAge } from "~/utils/inventory-snapshot"
+
+import { InventoryContents } from "./InventoryContents"
 
 interface InventoryItem {
   id: string
@@ -33,7 +35,7 @@ interface InventoryItem {
 interface InventoryCardBaseProps {
   inventory: InventoryItem
   tracked: boolean
-  snapshot: any
+  snapshot: { items: Array<{ itemId: string; quantity: number; tier?: number }> } | null
   expanded: boolean
   viewMode: "list" | "tier"
   onTrackingChange: (checked: boolean) => void
@@ -53,7 +55,7 @@ export function InventoryCardBase({
   onViewModeToggle,
   showClaimBadge = false,
 }: InventoryCardBaseProps) {
-  const snapshotAge = snapshot ? getSnapshotAge(snapshot) : null
+  const snapshotAge = snapshot ? getSnapshotAge(snapshot as TrackedInventorySnapshot) : null
 
   return (
     <Card

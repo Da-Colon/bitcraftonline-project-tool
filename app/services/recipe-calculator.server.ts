@@ -1,14 +1,12 @@
-import recipesJson from "../../GameData/BitCraft_GameData/server/region/crafting_recipe_desc.json" assert { type: "json" }
-import extractionRecipesJson from "../../GameData/BitCraft_GameData/server/region/extraction_recipe_desc.json" assert { type: "json" }
-import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
 
 import { parseItem, parseRecipe, parseExtractionRecipe } from "~/services/bitcraft-parser"
 import { enhanceItemsWithIcons } from "~/services/gamedata-icon-lookup.server"
 import type { BitCraftItem, BitCraftRecipe, BitCraftExtractionRecipe } from "~/types/bitcraft-data"
-
-// Import BitCraft JSON data directly from GameData submodule
-
 import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "~/types/recipes"
+
+import recipesJson from "../../GameData/BitCraft_GameData/server/region/crafting_recipe_desc.json" assert { type: "json" }
+import extractionRecipesJson from "../../GameData/BitCraft_GameData/server/region/extraction_recipe_desc.json" assert { type: "json" }
+import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
 
 export class RecipeCalculator {
   private items: Map<string, Item>
@@ -102,12 +100,6 @@ export class RecipeCalculator {
   ): void {
     if (stack.has(itemId)) {
       // Cycle detected - treat as raw material to break the cycle
-      const item = this.getItem(itemId)
-      const itemName = item?.name || itemId
-      console.warn(
-        `Cycle detected in recipes for item: ${itemId} (${itemName}) - treating as raw material`
-      )
-
       // Add to raw materials to break the cycle
       const currentRaw = rawMaterials.get(itemId) || 0
       rawMaterials.set(itemId, currentRaw + quantity)
@@ -159,7 +151,10 @@ export class RecipeCalculator {
       if (!categories.has(item.category)) {
         categories.set(item.category, [])
       }
-      categories.get(item.category)!.push(item)
+      const categoryItems = categories.get(item.category)
+      if (categoryItems) {
+        categoryItems.push(item)
+      }
     })
 
     return categories

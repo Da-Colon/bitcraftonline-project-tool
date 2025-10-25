@@ -6,26 +6,25 @@ import {
 } from "@chakra-ui/react"
 import { useState } from "react"
 
-import { InventoryCardBase } from "./InventoryCardBase"
 
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import { useSelectedPlayer } from "~/hooks/useSelectedPlayer"
 import type { PlayerInventories, Inventory } from "~/types/inventory"
 import type { InventorySource } from "~/types/inventory-tracking"
 
+import { InventoryCardBase } from "./InventoryCardBase"
+
 interface InventoryListProps {
   inventories: PlayerInventories
-  viewMode?: "list" | "tier"
   isFiltered?: boolean
 }
 
 export function InventoryList({
   inventories,
-  viewMode = "list",
   isFiltered = false,
 }: InventoryListProps) {
   const { player } = useSelectedPlayer()
-  const { isTracked, trackInventory, untrackInventory, getSnapshot, snapshots } =
+  const { isTracked, trackInventory, untrackInventory, getSnapshot } =
     useSharedPlayerInventoryTracking()
   const [expandedInventories, setExpandedInventories] = useState<Set<string>>(new Set())
   const [inventoryViewModes, setInventoryViewModes] = useState<Record<string, "list" | "tier">>({})
@@ -64,8 +63,8 @@ export function InventoryList({
           isClosable: true,
         })
       }
-    } catch (error) {
-      console.error("Failed to track/untrack inventory:", error)
+    } catch {
+      // console.error("Failed to track/untrack inventory:", error)
       toast({
         title: "Error",
         description: `Failed to ${checked ? "track" : "untrack"} inventory`,
@@ -119,7 +118,7 @@ export function InventoryList({
                 key={inventory.id}
                 inventory={inventory}
                 tracked={tracked}
-                snapshot={snapshot}
+                snapshot={snapshot || null}
                 expanded={isExpanded}
                 viewMode={inventoryViewModes[inventory.id] || "list"}
                 onTrackingChange={(checked) => handleTrackingChange(inventory, source, checked)}
@@ -168,7 +167,7 @@ export function InventoryList({
             <VStack spacing={2} align="start" fontSize="sm" color="whiteAlpha.700">
               <Text>• The player data is still loading</Text>
               <Text>• The player has no accessible inventories</Text>
-              <Text>• There's a temporary connection issue</Text>
+              <Text>• There&apos;s a temporary connection issue</Text>
             </VStack>
           )}
           <Text fontSize="sm" color="whiteAlpha.600" mt={4}>

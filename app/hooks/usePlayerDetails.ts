@@ -21,7 +21,7 @@ export function usePlayerDetails(id: string | null | undefined) {
       setError(null)
       try {
         if (!id) return
-        const res = await fetch(`/api/player/${encodeURIComponent(id)}`)
+        const res = await fetch(`/api/players/${encodeURIComponent(id)}`)
         if (!res.ok) {
           if (res.status === 503) {
             const errorData = await res.json().catch(() => ({}))
@@ -34,8 +34,8 @@ export function usePlayerDetails(id: string | null | undefined) {
         }
         const data: PlayerDetail = await res.json()
         if (active) setDetail(data)
-      } catch (e: any) {
-        if (active) setError(e?.message || "Failed to load player")
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : "Failed to load player")
       } finally {
         if (active) setLoading(false)
       }

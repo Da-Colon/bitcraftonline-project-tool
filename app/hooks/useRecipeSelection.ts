@@ -23,8 +23,8 @@ export function useRecipeSelection() {
         setSelectedItem(selection.selectedItem)
         setTargetQuantity(selection.targetQuantity)
       }
-    } catch (error) {
-      console.warn("Failed to load recipe selection from localStorage:", error)
+    } catch {
+      // Ignore localStorage errors
     }
   }, [])
 
@@ -38,8 +38,8 @@ export function useRecipeSelection() {
 
     try {
       localStorage.setItem(RECIPE_SELECTION_KEY, JSON.stringify(selection))
-    } catch (error) {
-      console.warn("Failed to save recipe selection to localStorage:", error)
+    } catch {
+      // Ignore localStorage errors
     }
   }, [])
 
@@ -67,8 +67,8 @@ export function useRecipeSelection() {
     setTargetQuantity(1)
     try {
       localStorage.removeItem(RECIPE_SELECTION_KEY)
-    } catch (error) {
-      console.warn("Failed to clear recipe selection from localStorage:", error)
+    } catch {
+      // Ignore localStorage errors
     }
   }, [])
 
@@ -82,8 +82,8 @@ export function useRecipeSelection() {
 
             setSelectedItem(selection.selectedItem)
             setTargetQuantity(selection.targetQuantity)
-          } catch (error) {
-            console.warn("Failed to parse recipe selection from storage event:", error)
+          } catch {
+            // Ignore localStorage errors
           }
         } else {
           setSelectedItem(null)

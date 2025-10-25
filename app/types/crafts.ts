@@ -13,8 +13,8 @@ export interface Craft {
     name: string;
     quantity: number;
   }>;
-  levelRequirements: Array<any>;
-  toolRequirements: Array<any>;
+  levelRequirements: Array<unknown>;
+  toolRequirements: Array<unknown>;
   buildingName: string;
   ownerUsername: string;
   claimEntityId: string;

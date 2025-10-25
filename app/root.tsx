@@ -2,11 +2,12 @@ import { ChakraProvider } from "@chakra-ui/react"
 import { withEmotionCache } from "@emotion/react"
 import type { LinksFunction, MetaFunction } from "@remix-run/node"
 import { Links, Meta, Outlet, Scripts, ScrollRestoration , isRouteErrorResponse, useRouteError } from "@remix-run/react"
-import { useContext, useEffect } from "react"
+import React, { useContext, useEffect } from "react";
+
+import { migrateInventoryTracking } from "~/utils/migrate-inventory-tracking"
 
 import { ServerStyleContext, ClientStyleContext } from "./context"
 
-import { migrateInventoryTracking } from "~/utils/migrate-inventory-tracking"
 
 interface DocumentProps {
   children: React.ReactNode
@@ -48,12 +49,12 @@ const Document = withEmotionCache(({ children }: DocumentProps, emotionCache) =>
     const tags = emotionCache.sheet.tags
     emotionCache.sheet.flush()
     tags.forEach((tag) => {
-      ;(emotionCache.sheet as any)._insertTag(tag)
+      ;(emotionCache.sheet as unknown as { _insertTag: (tag: unknown) => void })._insertTag(tag)
     })
     if (clientStyleData?.cache.sheet) {
       clientStyleData.cache.sheet.container = document.head
     }
-  }, [])
+  }, [clientStyleData?.cache.sheet, emotionCache.sheet])
 
   return (
     <html lang="en">
@@ -83,7 +84,9 @@ export default function App() {
   useEffect(() => {
     // Run migration on app initialization (non-blocking)
     setTimeout(() => {
-      migrateInventoryTracking().catch(console.error)
+      migrateInventoryTracking().catch(() => {
+        // Ignore migration errors
+      })
     }, 100)
   }, [])
 

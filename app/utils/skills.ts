@@ -9,13 +9,16 @@ export type SkillDef = {
 };
 
 const SKILL_MAP: Map<number, SkillDef> = new Map(
-  (skillDesc as any[]).map((s) => [s.id as number, {
-    id: s.id,
-    name: s.name,
-    title: s.title,
-    icon_asset_name: s.icon_asset_name,
-    max_level: s.max_level,
-  }])
+  (skillDesc as unknown[]).map((s) => {
+    const skill = s as { id: number; name: string; title: string; icon_asset_name?: string; max_level?: number }
+    return [skill.id, {
+      id: skill.id,
+      name: skill.name,
+      title: skill.title,
+      icon_asset_name: skill.icon_asset_name,
+      max_level: skill.max_level,
+    }]
+  })
 );
 
 export function getSkillDef(id: number): SkillDef | undefined {

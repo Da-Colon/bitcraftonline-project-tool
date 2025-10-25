@@ -43,7 +43,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       setMetadata(newMetadata)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tracked inventories")
-      console.error("Failed to load tracked inventories:", err)
     } finally {
       setIsLoading(false)
     }
@@ -283,8 +282,7 @@ export function usePlayerInventoryTracking(playerId: string | null) {
 
     try {
       return await inventoryStorageService.getTrackingSummaryBySource(playerId)
-    } catch (err) {
-      console.error("Failed to get tracking summary:", err)
+    } catch {
       return {
         total: 0,
         bySource: {},
