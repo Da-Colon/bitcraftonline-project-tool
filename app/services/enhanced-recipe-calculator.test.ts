@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { describe, it, expect, beforeAll } from "vitest"
 
 import { EnhancedRecipeCalculator } from "./enhanced-recipe-calculator.server"
@@ -73,7 +74,6 @@ describe("EnhancedRecipeCalculator", () => {
         // At least some items should still be needed
         const stillNeeded = itemsWithNoInventory.filter(item => item.deficit > 0)
         expect(stillNeeded.length).toBeGreaterThan(0)
-        console.log(`✅ Correctly preserved ${stillNeeded.length} items that are still needed`)
       } else {
         // If not in breakdown, it means it was fully satisfied and removed
         // This is also valid behavior

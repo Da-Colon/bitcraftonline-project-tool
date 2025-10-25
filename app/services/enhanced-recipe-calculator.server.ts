@@ -13,9 +13,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     targetQuantity: number,
     inventory: InventoryItem[]
   ): TierCalculationResult {
-    const DEBUG =
-      typeof process !== "undefined" &&
-      (process.env.RECIPE_DEBUG === "1" || process.env.NODE_ENV === "development")
 
     // Create inventory map - handle both formats
     const inventoryMap = new Map<string, number>()
@@ -28,26 +25,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     })
 
 
-    if (DEBUG) {
-      try {
-        const sampleKeys = Array.from(inventoryMap.keys()).slice(0, 10)
-        const direct = inventoryMap.get(targetItemId)
-        const fallback = targetItemId.startsWith("item_")
-          ? inventoryMap.get(targetItemId.replace(/^item_/, ""))
-          : inventoryMap.get(`item_${targetItemId}`)
-        console.debug(
-          `[EnhancedRecipeCalculator] calc start: target=${targetItemId} qty=${targetQuantity} invCount=${
-            inventory.length
-          } mapSize=${inventoryMap.size} match=${
-            direct ?? fallback ?? 0
-          } sampleKeys=${JSON.stringify(sampleKeys)}`
-        )
-      } catch {
-        // ignore debug errors
-      }
-    }
 
-    const startTime = DEBUG ? Date.now() : 0
 
     // Pass 1: Build complete recipe tree with full requirements
     const breakdown = new Map<string, RecipeBreakdownItem>()
@@ -58,13 +36,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     this.applyInventoryReductions(targetItemId, breakdown, dependencies, inventoryMap)
     
 
-    if (DEBUG) {
-      const duration = Date.now() - startTime
-      const maxDepth = this.calculateMaxDepth(targetItemId, new Set())
-      console.debug(
-        `[EnhancedRecipeCalculator] calc performance: duration=${duration}ms depth=${maxDepth} items=${breakdown.size}`
-      )
-    }
 
     // Convert to array and sort by tier (higher tier items first for display)
     const adjustedBreakdown = Array.from(breakdown.values()).sort((a, b) => b.tier - a.tier)
@@ -81,24 +52,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       totalDeficit,
     }
 
-    if (DEBUG) {
-      try {
-        const matched = adjustedBreakdown
-          .filter((b) => b.currentInventory > 0)
-          .slice(0, 10)
-          .map((b) => ({
-            id: b.itemId,
-            have: b.currentInventory,
-            need: b.recipeRequired,
-            deficit: b.deficit,
-          }))
-        console.debug(
-          `[EnhancedRecipeCalculator] calc end: matchedItemsSample=${JSON.stringify(matched)}`
-        )
-      } catch {
-        // ignore debug errors
-      }
-    }
 
     return result
   }
