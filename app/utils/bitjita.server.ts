@@ -121,6 +121,23 @@ export async function getPlayerHousingDetails(playerId: string, buildingId: stri
   )
 }
 
+export async function getCrafts(params: {
+  claimEntityId?: string;
+  playerEntityId?: string;
+  regionId?: number;
+  completed?: boolean;
+  skillId?: number;
+}): Promise<any> {
+  const queryParams = new URLSearchParams();
+  if (params.claimEntityId) queryParams.set('claimEntityId', params.claimEntityId);
+  if (params.playerEntityId) queryParams.set('playerEntityId', params.playerEntityId);
+  if (params.regionId) queryParams.set('regionId', params.regionId.toString());
+  if (params.completed !== undefined) queryParams.set('completed', params.completed.toString());
+  if (params.skillId) queryParams.set('skillId', params.skillId.toString());
+  
+  return fetchJson(`/api/crafts?${queryParams.toString()}`);
+}
+
 export const BitJita = {
   searchPlayers,
   getPlayerById,
@@ -128,6 +145,7 @@ export const BitJita = {
   getClaimInventories,
   getPlayerHousing,
   getPlayerHousingDetails,
+  getCrafts,
   fetchJson,
   BitJitaHttpError,
 }

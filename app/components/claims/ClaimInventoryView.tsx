@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react"
 import { useState } from "react"
 
+import { ActiveTasksView } from "./ActiveTasksView"
 import { ClaimInventoryList } from "./ClaimInventoryList"
 import { ClaimOverview } from "./ClaimOverview"
 import { ClaimSearchModal } from "./ClaimSearchModal"
@@ -356,6 +357,13 @@ export function ClaimInventoryView() {
       <TrackedInventorySummary
         currentClaimId={claim?.claimId}
         currentClaimName={claim?.claimName}
+      />
+
+      {/* Active Tasks */}
+      <ActiveTasksView 
+        claimId={claim?.claimId} 
+        claimName={claim?.claimName}
+        playerId={player?.entityId}
       />
 
       <ClaimOverview
