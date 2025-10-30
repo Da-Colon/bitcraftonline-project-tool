@@ -177,9 +177,9 @@ describe("EnhancedRecipeCalculator", () => {
       // Verify that items with inventory show correct actualRequired calculations
       const itemsWithInventory = result.breakdown.filter((item) => item.currentInventory > 0)
       for (const item of itemsWithInventory) {
-        // The actualRequired should be at most recipeRequired - currentInventory
+        // The actualRequired should be at most max(0, recipeRequired - currentInventory)
         // but could be less if parent items are satisfied
-        expect(item.actualRequired).toBeLessThanOrEqual(item.recipeRequired - item.currentInventory)
+        expect(item.actualRequired).toBeLessThanOrEqual(Math.max(0, item.recipeRequired - item.currentInventory))
         expect(item.deficit).toBe(item.actualRequired)
       }
 
@@ -271,8 +271,8 @@ describe("EnhancedRecipeCalculator", () => {
       expect(itemsWithInventory.length).toBeGreaterThan(0)
 
       for (const item of itemsWithInventory) {
-        // actualRequired should never exceed recipeRequired - currentInventory
-        expect(item.actualRequired).toBeLessThanOrEqual(item.recipeRequired - item.currentInventory)
+        // actualRequired should never exceed max(0, recipeRequired - currentInventory)
+        expect(item.actualRequired).toBeLessThanOrEqual(Math.max(0, item.recipeRequired - item.currentInventory))
         expect(item.deficit).toBe(item.actualRequired)
       }
 
@@ -283,7 +283,7 @@ describe("EnhancedRecipeCalculator", () => {
       if (proficientCodex) {
         expect(proficientCodex.recipeRequired).toBeGreaterThan(0)
         expect(proficientCodex.currentInventory).toBe(5)
-        expect(proficientCodex.actualRequired).toBeLessThanOrEqual(proficientCodex.recipeRequired - 5)
+        expect(proficientCodex.actualRequired).toBeLessThanOrEqual(Math.max(0, proficientCodex.recipeRequired - 5))
         console.log(`✅ Proficient Codex cascade: recipeRequired=${proficientCodex.recipeRequired}, actualRequired=${proficientCodex.actualRequired}`)
       }
 
@@ -292,7 +292,7 @@ describe("EnhancedRecipeCalculator", () => {
       if (simplePlank) {
         expect(simplePlank.recipeRequired).toBeGreaterThan(0)
         expect(simplePlank.currentInventory).toBe(200)
-        expect(simplePlank.actualRequired).toBeLessThanOrEqual(simplePlank.recipeRequired - 200)
+        expect(simplePlank.actualRequired).toBeLessThanOrEqual(Math.max(0, simplePlank.recipeRequired - 200))
         console.log(`✅ Simple Plank cascade: recipeRequired=${simplePlank.recipeRequired}, actualRequired=${simplePlank.actualRequired}`)
       }
 
@@ -301,7 +301,7 @@ describe("EnhancedRecipeCalculator", () => {
       if (woodLog) {
         expect(woodLog.recipeRequired).toBeGreaterThan(0)
         expect(woodLog.currentInventory).toBe(1000)
-        expect(woodLog.actualRequired).toBeLessThanOrEqual(woodLog.recipeRequired - 1000)
+        expect(woodLog.actualRequired).toBeLessThanOrEqual(Math.max(0, woodLog.recipeRequired - 1000))
         console.log(`✅ Wood Log cascade: recipeRequired=${woodLog.recipeRequired}, actualRequired=${woodLog.actualRequired}`)
       }
 
@@ -583,7 +583,7 @@ describe("EnhancedRecipeCalculator", () => {
         if (found) {
           expect(found.recipeRequired).toBeGreaterThan(0) // Immutable
           expect(found.currentInventory).toBe(item.expectedReduction)
-          expect(found.actualRequired).toBeLessThanOrEqual(found.recipeRequired - item.expectedReduction)
+          expect(found.actualRequired).toBeLessThanOrEqual(Math.max(0, found.recipeRequired - item.expectedReduction))
           expect(found.deficit).toBe(found.actualRequired)
           console.log(`✅ ${item.name}: REDUCED - recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
         }

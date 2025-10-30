@@ -6,7 +6,7 @@ import { parseItem, parseRecipe, parseExtractionRecipe } from './bitcraft-parser
 // Load items from BitCraft GameData
 export function loadBitCraftItems() {
   try {
-    const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'server', 'region', 'item_desc.json');
+    const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'static', 'item_desc.json');
     const rawData = fs.readFileSync(gameDataPath, 'utf-8');
     const items = JSON.parse(rawData);
     return items;
@@ -19,7 +19,7 @@ export function loadBitCraftItems() {
 // Load crafting recipes from BitCraft GameData
 export function loadBitCraftRecipes() {
   try {
-    const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'server', 'region', 'crafting_recipe_desc.json');
+    const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'static', 'crafting_recipe_desc.json');
     const rawData = fs.readFileSync(gameDataPath, 'utf-8');
     const recipes = JSON.parse(rawData);
     return recipes;
@@ -32,7 +32,7 @@ export function loadBitCraftRecipes() {
 // Load extraction recipes from BitCraft GameData
 export function loadBitCraftExtractionRecipes() {
   try {
-    const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'server', 'region', 'extraction_recipe_desc.json');
+    const gameDataPath = path.join(process.cwd(), 'GameData', 'BitCraft_GameData', 'static', 'extraction_recipe_desc.json');
     const rawData = fs.readFileSync(gameDataPath, 'utf-8');
     const recipes = JSON.parse(rawData);
     return recipes;

@@ -4,9 +4,9 @@ import { enhanceItemsWithIcons } from "~/services/gamedata-icon-lookup.server"
 import type { BitCraftItem, BitCraftRecipe, BitCraftExtractionRecipe } from "~/types/bitcraft-data"
 import type { Item, Recipe, ProjectItem, ProjectBreakdown } from "~/types/recipes"
 
-import recipesJson from "../../GameData/BitCraft_GameData/server/region/crafting_recipe_desc.json" assert { type: "json" }
-import extractionRecipesJson from "../../GameData/BitCraft_GameData/server/region/extraction_recipe_desc.json" assert { type: "json" }
-import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
+import recipesJson from "../../GameData/BitCraft_GameData/static/crafting_recipe_desc.json" assert { type: "json" }
+import extractionRecipesJson from "../../GameData/BitCraft_GameData/static/extraction_recipe_desc.json" assert { type: "json" }
+import itemsJson from "../../GameData/BitCraft_GameData/static/item_desc.json" assert { type: "json" }
 
 export class RecipeCalculator {
   private items: Map<string, Item>

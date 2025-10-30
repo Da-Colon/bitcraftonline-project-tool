@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const ITEM_DESC_PATH = './GameData/BitCraft_GameData/server/region/item_desc.json';
+const ITEM_DESC_PATH = './GameData/BitCraft_GameData/static/item_desc.json';
 
 // Load the item data
 const itemData = JSON.parse(fs.readFileSync(ITEM_DESC_PATH, 'utf8'));

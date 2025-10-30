@@ -3,7 +3,7 @@
 
 import type { BitCraftItem } from "~/types/bitcraft-data"
 
-import itemsJson from "../../GameData/BitCraft_GameData/server/region/item_desc.json" assert { type: "json" }
+import itemsJson from "../../GameData/BitCraft_GameData/static/item_desc.json" assert { type: "json" }
 
 
 // Create a lookup map from item ID to icon_asset_name

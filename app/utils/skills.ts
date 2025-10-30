@@ -1,4 +1,4 @@
-import skillDesc from "../../GameData/BitCraft_GameData/server/region/skill_desc.json";
+import skillDesc from "../../GameData/BitCraft_GameData/static/skill_desc.json";
 
 export type SkillDef = {
   id: number;
