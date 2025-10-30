@@ -2,10 +2,8 @@
 /// <reference types="vite/client" />
 
 // Client-side Vite env variables
-interface ImportMetaEnv {
-  readonly VITE_BITJITA_BASE_URL: string;
-}
+interface ImportMetaEnv {}
 
 interface ImportMeta {
-  readonly env: ImportMetaEnv;
+  readonly env: ImportMetaEnv
 }
