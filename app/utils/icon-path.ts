@@ -66,6 +66,12 @@ export function convertIconAssetNameToPath(
     cleanPath = cleanPath.replace("GeneratedIcons/GeneratedIcons/", "GeneratedIcons/")
   }
 
+  // Handle missing asset for Outpost Research by mapping to an existing research icon
+  // GameData provides ".../Items/OutpostResearch" but no matching asset exists in public/assets
+  if (cleanPath.endsWith("/Items/OutpostResearch") || cleanPath.endsWith("/Items/OutpostResearch.png")) {
+    cleanPath = "GeneratedIcons/Items/ResearchStone"
+  }
+
   // Handle paths that don't start with "GeneratedIcons/" but should be in OldGeneratedIcons/Items/
   // This handles cases like "Items/HexCoin" -> "OldGeneratedIcons/Items/HexCoin"
   // Most Items/ prefixed items are in OldGeneratedIcons, not GeneratedIcons

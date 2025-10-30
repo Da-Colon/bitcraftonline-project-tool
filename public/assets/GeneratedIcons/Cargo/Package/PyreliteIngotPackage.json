@@ -49,8 +49,8 @@
 	"m_IsPolygon": false,
 	"m_Name": "PyreliteIngotPackage",
 	"m_Offset": {
-		"m_X": -6.0000014,
-		"m_Y": -0.50000054
+		"m_X": 0,
+		"m_Y": 0
 	},
 	"m_PackingTag": "",
 	"m_PhysicsShape": [
@@ -152,24 +152,20 @@
 				"m_Y": -0.45
 			},
 			{
-				"m_X": 0,
-				"m_Y": -0.26
-			},
-			{
-				"m_X": 0.03,
-				"m_Y": -0.35999998
+				"m_X": 0.049999997,
+				"m_Y": -0.25
 			},
 			{
 				"m_X": 0.01,
-				"m_Y": -0.44
+				"m_Y": -0.42999998
 			},
 			{
-				"m_X": 0.08,
-				"m_Y": -0.48999998
+				"m_X": 0.04,
+				"m_Y": -0.47
 			},
 			{
-				"m_X": 0.19,
-				"m_Y": -0.32999998
+				"m_X": 0.11,
+				"m_Y": -0.45
 			},
 			{
 				"m_X": 0.22,
@@ -202,8 +198,8 @@
 		]
 	],
 	"m_Pivot": {
-		"m_X": 0.46151313,
-		"m_Y": 0.4949417
+		"m_X": 0.5,
+		"m_Y": 0.5
 	},
 	"m_PixelsToUnits": 100,
 	"m_PrefabAsset": { "m_Collection": "cab-68cbb0beba737acfddbc2a7c01b61db6", "m_PathID": 0 },
@@ -216,7 +212,7 @@
 		},
 		"m_Bindpose": [],
 		"m_DownscaleMultiplier": 1,
-		"m_IndexBuffer": "CAAHAAUABgAFAAcAAAAFAAYABAAFAAAAAwAEAAAAAQADAAAAAgABAAAA",
+		"m_IndexBuffer": "AwAAAAEAAgABAAAA",
 		"m_SecondaryTextures": [],
 		"m_SettingsRaw": 64,
 		"m_SubMeshes": [
@@ -224,7 +220,7 @@
 				"m_BaseVertex": 0,
 				"m_FirstByte": 0,
 				"m_FirstVertex": 0,
-				"m_IndexCount": 21,
+				"m_IndexCount": 6,
 				"m_LocalAABB": {
 					"m_Center": {
 						"m_X": 0,
@@ -238,15 +234,15 @@
 					}
 				},
 				"m_Topology": 0,
-				"m_VertexCount": 9
+				"m_VertexCount": 4
 			}
 		],
 		"m_Texture": { "m_Collection": "cab-68cbb0beba737acfddbc2a7c01b61db6", "m_PathID": -7675312676362992537 },
 		"m_TextureRect": {
-			"m_Height": 98.84776,
-			"m_Width": 155.89737,
-			"m_X": 20.051317,
-			"m_Y": 3.0761204
+			"m_Height": 104,
+			"m_Width": 184,
+			"m_X": 0,
+			"m_Y": 0
 		},
 		"m_TextureRectOffset": {
 			"m_X": 0,
@@ -345,15 +341,15 @@
 					"m_Stream": 0
 				}
 			],
-			"m_Data": "PQpXPwAAAD8AAAAAFK5HP65H4b0AAAAAPQpXP1yPQj4AAAAAMzOzPkjh+r4AAAAArkdhvkjh+r4AAAAAPQrXvh+F674AAAAA4XoUvwAAAD8AAAAA7FE4vx+Faz4AAAAA7FE4v3sULr4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-			"m_VertexCount": 9
+			"m_Data": "H4Vrv7geBT8AAAAAH4VrP7geBb8AAAAAH4VrP7geBT8AAAAAH4Vrv7geBb8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+			"m_VertexCount": 4
 		}
 	},
 	"m_Rect": {
-		"m_Height": 98.84776,
-		"m_Width": 155.89737,
-		"m_X": 20.051317,
-		"m_Y": 3.0761204
+		"m_Height": 104,
+		"m_Width": 184,
+		"m_X": 0,
+		"m_Y": 0
 	},
 	"m_RenderDataKey": {
 		"Key": {
