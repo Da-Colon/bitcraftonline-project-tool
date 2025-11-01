@@ -87,6 +87,114 @@ function resolveSourceMetadata(inventory: InventorySource): CombinedItemSource {
   }
 }
 
+/**
+ * Aggregate items from inventories into a map keyed by normalized item ID
+ * 
+ * @param inventories - Array of inventories to aggregate
+ * @param getSource - Function to extract source metadata from an inventory
+ * @returns Map of normalized item ID to CombinedInventoryItem
+ */
+function aggregateItemsByInventory(
+  inventories: Inventory[],
+  getSource: (inventory: Inventory) => CombinedItemSource
+): Map<string, CombinedInventoryItem> {
+  const itemTotals = new Map<string, CombinedInventoryItem>()
+
+  for (const inventory of inventories) {
+    const source = getSource(inventory)
+
+    for (const item of inventory.items) {
+      const normalizedId = normalizeItemId(item.itemId)
+      if (!normalizedId) {
+        continue
+      }
+
+      const baseItem: InventoryItem =
+        normalizedId === item.itemId ? item : { ...item, itemId: normalizedId }
+      const existing = itemTotals.get(normalizedId)
+
+      if (existing) {
+        existing.totalQuantity += baseItem.quantity
+        existing.quantity = existing.totalQuantity
+        if (!existing.sources.some((src) => src.inventoryId === source.inventoryId)) {
+          existing.sources.push(source)
+        }
+      } else {
+        itemTotals.set(normalizedId, {
+          ...baseItem,
+          totalQuantity: baseItem.quantity,
+          quantity: baseItem.quantity,
+          sources: [source],
+        })
+      }
+    }
+  }
+
+  return itemTotals
+}
+
+/**
+ * Sort combined items by tier (descending), then name, then itemId
+ * 
+ * @param itemTotals - Map of aggregated items
+ * @returns Sorted array of CombinedInventoryItem
+ */
+function sortCombinedItems(
+  itemTotals: Map<string, CombinedInventoryItem>
+): CombinedInventoryItem[] {
+  return Array.from(itemTotals.values()).sort((a, b) => {
+    const tierA = a.tier ?? -1
+    const tierB = b.tier ?? -1
+    if (tierA !== tierB) {
+      return tierB - tierA
+    }
+
+    const nameA = a.name ?? ""
+    const nameB = b.name ?? ""
+    if (nameA && nameB) {
+      const byName = nameA.localeCompare(nameB)
+      if (byName !== 0) {
+        return byName
+      }
+    } else if (nameA) {
+      return -1
+    } else if (nameB) {
+      return 1
+    }
+
+    return a.itemId.localeCompare(b.itemId)
+  })
+}
+
+/**
+ * Build complete TrackedInventorySummary from aggregated items
+ * 
+ * @param itemTotals - Map of aggregated items
+ * @param allInventories - All known inventories
+ * @param inventoryIndex - Map for quick inventory lookup
+ * @param trackedInventories - Inventories that are actively tracked
+ * @returns Complete TrackedInventorySummary
+ */
+function buildSummaryFromAggregatedItems(
+  itemTotals: Map<string, CombinedInventoryItem>,
+  allInventories: Inventory[],
+  inventoryIndex: Map<string, Inventory>,
+  trackedInventories: Inventory[]
+): TrackedInventorySummary {
+  const combinedItems = sortCombinedItems(itemTotals)
+  const totalQuantity = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0)
+
+  return {
+    allInventories,
+    inventoryIndex,
+    trackedInventories,
+    combinedItems,
+    itemTotalsById: itemTotals,
+    totalQuantity,
+    uniqueItemCount: combinedItems.length,
+  }
+}
+
 export function buildTrackedInventorySummary(
   playerInventories: PlayerInventories | null,
   claimInventories: ClaimInventoriesResponse | null,
@@ -122,72 +230,17 @@ export function buildTrackedInventorySummary(
     }
   }
 
-  const itemTotals = new Map<string, CombinedInventoryItem>()
+  const itemTotals = aggregateItemsByInventory(
+    trackedInventories,
+    resolveSourceMetadata
+  )
 
-  for (const inventory of trackedInventories) {
-    const source = resolveSourceMetadata(inventory)
-
-    for (const item of inventory.items) {
-      const normalizedId = normalizeItemId(item.itemId)
-      if (!normalizedId) {
-        continue
-      }
-
-      const baseItem: InventoryItem =
-        normalizedId === item.itemId ? item : { ...item, itemId: normalizedId }
-      const existing = itemTotals.get(normalizedId)
-
-      if (existing) {
-        existing.totalQuantity += baseItem.quantity
-        existing.quantity = existing.totalQuantity
-        if (!existing.sources.some((src) => src.inventoryId === source.inventoryId)) {
-          existing.sources.push(source)
-        }
-      } else {
-        itemTotals.set(normalizedId, {
-          ...baseItem,
-          totalQuantity: baseItem.quantity,
-          quantity: baseItem.quantity,
-          sources: [source],
-        })
-      }
-    }
-  }
-
-  const combinedItems = Array.from(itemTotals.values()).sort((a, b) => {
-    const tierA = a.tier ?? -1
-    const tierB = b.tier ?? -1
-    if (tierA !== tierB) {
-      return tierB - tierA
-    }
-
-    const nameA = a.name ?? ""
-    const nameB = b.name ?? ""
-    if (nameA && nameB) {
-      const byName = nameA.localeCompare(nameB)
-      if (byName !== 0) {
-        return byName
-      }
-    } else if (nameA) {
-      return -1
-    } else if (nameB) {
-      return 1
-    }
-
-    return a.itemId.localeCompare(b.itemId)
-  })
-
-  const totalQuantity = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0)
-
-  return {
+  return buildSummaryFromAggregatedItems(
+    itemTotals,
     allInventories,
     inventoryIndex,
-    trackedInventories,
-    combinedItems,
-    itemTotalsById: itemTotals,
-    totalQuantity,
-    uniqueItemCount: combinedItems.length,
-  }
+    trackedInventories
+  )
 }
 
 export function combineAllTrackedInventories(
@@ -234,79 +287,26 @@ export function buildTrackedInventorySummaryFromSnapshots(
     inventoryIndex.set(inventory.id, inventory)
   })
 
-  const itemTotals = new Map<string, CombinedInventoryItem>()
-
-  for (const snapshot of snapshots) {
-    const source: CombinedItemSource = {
-      inventoryId: snapshot.id,
-      inventoryName: snapshot.name,
-      inventoryType: snapshot.type,
-      claimId: snapshot.claimId,
-      claimName: snapshot.claimName,
-      buildingName: snapshot.buildingName,
-    }
-
-    for (const item of snapshot.items) {
-      const normalizedId = normalizeItemId(item.itemId)
-      if (!normalizedId) {
-        continue
-      }
-
-      const baseItem: InventoryItem =
-        normalizedId === item.itemId ? item : { ...item, itemId: normalizedId }
-      const existing = itemTotals.get(normalizedId)
-
-      if (existing) {
-        existing.totalQuantity += baseItem.quantity
-        existing.quantity = existing.totalQuantity
-        if (!existing.sources.some((src) => src.inventoryId === source.inventoryId)) {
-          existing.sources.push(source)
-        }
-      } else {
-        itemTotals.set(normalizedId, {
-          ...baseItem,
-          totalQuantity: baseItem.quantity,
-          quantity: baseItem.quantity,
-          sources: [source],
-        })
-      }
+  const getSourceFromSnapshot = (inventory: Inventory): CombinedItemSource => {
+    const snapshot = snapshots.find((s) => s.id === inventory.id)
+    return {
+      inventoryId: inventory.id,
+      inventoryName: inventory.name,
+      inventoryType: inventory.type,
+      claimId: snapshot?.claimId,
+      claimName: snapshot?.claimName,
+      buildingName: inventory.buildingName,
     }
   }
 
-  const combinedItems = Array.from(itemTotals.values()).sort((a, b) => {
-    const tierA = a.tier ?? -1
-    const tierB = b.tier ?? -1
-    if (tierA !== tierB) {
-      return tierB - tierA
-    }
+  const itemTotals = aggregateItemsByInventory(allInventories, getSourceFromSnapshot)
 
-    const nameA = a.name ?? ""
-    const nameB = b.name ?? ""
-    if (nameA && nameB) {
-      const byName = nameA.localeCompare(nameB)
-      if (byName !== 0) {
-        return byName
-      }
-    } else if (nameA) {
-      return -1
-    } else if (nameB) {
-      return 1
-    }
-
-    return a.itemId.localeCompare(b.itemId)
-  })
-
-  const totalQuantity = combinedItems.reduce((sum, item) => sum + item.totalQuantity, 0)
-
-  return {
+  return buildSummaryFromAggregatedItems(
+    itemTotals,
     allInventories,
     inventoryIndex,
-    trackedInventories: allInventories,
-    combinedItems,
-    itemTotalsById: itemTotals,
-    totalQuantity,
-    uniqueItemCount: combinedItems.length,
-  }
+    allInventories
+  )
 }
 
 export function combineTrackedInventoriesFromSnapshots(
