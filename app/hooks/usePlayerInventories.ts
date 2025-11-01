@@ -3,11 +3,9 @@ import { useEffect, useMemo } from "react"
 
 import type { StandardErrorResponse } from "~/types/api-responses"
 import type { PlayerInventories, BitJitaInventoriesResponse } from "~/types/inventory"
+import { extractFetcherError } from "~/utils/error-handling"
 import { transformBitJitaInventories } from "~/utils/inventoryTransform"
-import {
-  isBitJitaInventoriesResponse,
-  isStandardErrorResponse,
-} from "~/utils/type-guards"
+import { isBitJitaInventoriesResponse } from "~/utils/type-guards"
 
 import { usePlayerHousing } from "./usePlayerHousing"
 
@@ -42,15 +40,7 @@ export function usePlayerInventories(playerId?: string) {
 
   // Extract error from fetcher response
   const error = useMemo<string | null>(() => {
-    if (fetcher.data && isStandardErrorResponse(fetcher.data)) {
-      const errorData = fetcher.data
-      return errorData.isExternalError
-        ? `${errorData.service || "External API"} Error: ${
-            errorData.detail || "Service unavailable"
-          }`
-        : errorData.detail || errorData.error || "Failed to fetch inventories"
-    }
-    return null
+    return extractFetcherError(fetcher.data, "Failed to fetch inventories")
   }, [fetcher.data])
 
   // Combine regular inventories with housing inventories

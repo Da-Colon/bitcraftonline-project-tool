@@ -9,6 +9,7 @@ import type {
   Inventory,
   InventoryItem,
 } from "~/types/inventory"
+import { extractFetcherError } from "~/utils/error-handling"
 import { normalizeItemId } from "~/utils/itemId"
 import {
   isBitJitaHousingResponse,
@@ -55,22 +56,9 @@ export function usePlayerHousing(playerId?: string) {
 
   // Extract error from fetcher response (skip 404 errors as they mean no housing)
   const error = useMemo<string | null>(() => {
-    if (housingFetcher.data && isStandardErrorResponse(housingFetcher.data)) {
-      const errorData = housingFetcher.data
-      // Handle 404 as no housing (not an error) - return null error
-      if (
-        errorData.error?.toLowerCase().includes("not found") ||
-        errorData.error?.toLowerCase().includes("404")
-      ) {
-        return null
-      }
-      return errorData.isExternalError
-        ? `${errorData.service || "External API"} Error: ${
-            errorData.detail || "Service unavailable"
-          }`
-        : errorData.detail || errorData.error || "Failed to fetch housing data"
-    }
-    return null
+    return extractFetcherError(housingFetcher.data, "Failed to fetch housing data", {
+      treat404AsNonError: true,
+    })
   }, [housingFetcher.data])
 
   // Fetch details for each housing building when housing data changes

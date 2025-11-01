@@ -3,10 +3,8 @@ import { useEffect, useMemo } from "react";
 
 import type { StandardErrorResponse } from "~/types/api-responses";
 import type { ClaimInventoriesResponse } from "~/types/inventory";
-import {
-  isClaimInventoriesResponse,
-  isStandardErrorResponse,
-} from "~/utils/type-guards";
+import { extractFetcherError } from "~/utils/error-handling";
+import { isClaimInventoriesResponse } from "~/utils/type-guards";
 
 export function useClaimInventories(claimId?: string) {
   const fetcher = useFetcher<ClaimInventoriesResponse | StandardErrorResponse>();
@@ -30,15 +28,7 @@ export function useClaimInventories(claimId?: string) {
 
   // Extract error from fetcher response
   const error = useMemo<string | null>(() => {
-    if (fetcher.data && isStandardErrorResponse(fetcher.data)) {
-      const errorData = fetcher.data;
-      return errorData.isExternalError
-        ? `${errorData.service || "External API"} Error: ${
-            errorData.detail || "Service unavailable"
-          }`
-        : errorData.detail || errorData.error || "Failed to fetch claim inventories";
-    }
-    return null;
+    return extractFetcherError(fetcher.data, "Failed to fetch claim inventories");
   }, [fetcher.data]);
 
   // Derive loading state
