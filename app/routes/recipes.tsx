@@ -38,7 +38,7 @@ export default function RecipesRoute() {
   const [searchResults, setSearchResults] = useState<Item[]>(items)
 
   // Use persistent recipe selection
-  const { selectedItem, targetQuantity, updateSelectedItem, clearSelection } =
+  const { selectedItem, targetQuantity, updateSelectedItem, updateTargetQuantity, clearSelection } =
     useRecipeSelection()
 
   // Get combined inventory data
@@ -66,10 +66,10 @@ export default function RecipesRoute() {
     // Calculation is triggered by the effect that watches selectedItem/id, debouncedQuantity, and inventoryKey
   }
 
-  // const handleQuantityChange = (newQuantity: number) => {
-  //   updateTargetQuantity(newQuantity)
-  //   // Calculation is triggered by the effect
-  // }
+  const handleQuantityChange = (newQuantity: number) => {
+    updateTargetQuantity(newQuantity)
+    // Calculation is triggered by the effect that watches debouncedQuantity
+  }
 
   const breakdown = (calculationFetcher.data as { breakdown?: RecipeBreakdownItem[] })?.breakdown || []
   const isLoading = calculationFetcher.state !== "idle"
@@ -92,8 +92,7 @@ export default function RecipesRoute() {
       method: "post",
       action: "/api/recipes/calculate",
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedItem, debouncedQuantity, inventoryKey])
+  }, [selectedItem?.id, debouncedQuantity, inventoryKey])
 
   // Keep last good search results to prevent flicker during fetcher transitions
   useEffect(() => {
@@ -205,6 +204,7 @@ export default function RecipesRoute() {
                 tier: selectedItem.tier,
                 iconAssetName: selectedItem.iconAssetName,
               }}
+              onQuantityChange={handleQuantityChange}
               onClearSelection={() => {
                 clearSelection()
                 setSearchQuery("")

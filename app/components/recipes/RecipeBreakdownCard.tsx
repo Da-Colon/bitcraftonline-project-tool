@@ -17,6 +17,11 @@ import {
   Text,
   Badge,
   Button,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
   // Box,
   Divider,
 } from "@chakra-ui/react"
@@ -38,6 +43,7 @@ interface RecipeBreakdownCardProps {
   onHideCompletedChange: (checked: boolean) => void
   isLoading: boolean
   onClearSelection: () => void
+  onQuantityChange?: (quantity: number) => void
   selectedItem?: {
     name: string
     quantity: number
@@ -54,6 +60,7 @@ export function RecipeBreakdownCard({
   onHideCompletedChange,
   isLoading,
   onClearSelection,
+  onQuantityChange,
   selectedItem,
 }: RecipeBreakdownCardProps) {
   // Calculate if recipe is complete
@@ -101,10 +108,51 @@ export function RecipeBreakdownCard({
                     <Text fontSize="lg" fontWeight="semibold" color="white">
                       {selectedItem.name}
                     </Text>
-                    <HStack spacing={2}>
-                      <Badge colorScheme="teal" variant="solid">
-                        x{selectedItem.quantity}
-                      </Badge>
+                    <HStack spacing={2} align="center">
+                      {onQuantityChange ? (
+                        <HStack spacing={2} align="center">
+                          <NumberInput
+                            value={selectedItem.quantity}
+                            onChange={(valueString, valueNumber) => {
+                              // Handle manual input: if user types a valid number >= 1, use it
+                              // If they clear the field or type invalid input, keep current value
+                              if (!isNaN(valueNumber) && valueNumber >= 1) {
+                                onQuantityChange(valueNumber)
+                              } else if (valueString === "" || valueString === "0") {
+                                // Allow temporary empty/zero state while typing
+                                onQuantityChange(1)
+                              }
+                            }}
+                            min={1}
+                            max={999999}
+                            size="sm"
+                            width="120px"
+                            allowMouseWheel
+                            bg="rgba(15,23,42,0.8)"
+                            borderColor="whiteAlpha.200"
+                            color="white"
+                            _hover={{ borderColor: "whiteAlpha.300" }}
+                            _focus={{ borderColor: "teal.400", boxShadow: "0 0 0 1px rgba(56,189,248,0.45)" }}
+                          >
+                            <NumberInputField
+                              textAlign="center"
+                              fontSize="sm"
+                              fontWeight="bold"
+                              bg="transparent"
+                              color="white"
+                              _placeholder={{ color: "whiteAlpha.500" }}
+                            />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper color="white" _active={{ bg: "whiteAlpha.200" }} />
+                              <NumberDecrementStepper color="white" _active={{ bg: "whiteAlpha.200" }} />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </HStack>
+                      ) : (
+                        <Badge colorScheme="teal" variant="solid">
+                          x{selectedItem.quantity}
+                        </Badge>
+                      )}
                       {selectedItem.tier !== undefined && selectedItem.tier !== null && (
                         <Badge colorScheme="purple" variant="solid">
                           T{selectedItem.tier}

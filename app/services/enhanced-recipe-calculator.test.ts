@@ -319,6 +319,115 @@ describe("EnhancedRecipeCalculator", () => {
       console.log(`✅ Flawless Codex cascade test: ${result.breakdown.length} items across ${tiers.length} tiers processed correctly`)
     })
 
+    it("should calculate correctly for multiple quantities of Tier 10 item (Flawless Codex)", () => {
+      // Test: Craft 5x Flawless Codex (no inventory)
+      // Expected: All requirements should scale linearly from highest tier down
+      // This verifies that quantity changes properly affect all tiers in the breakdown
+      const result = calculator.calculateWithInventory("item_673045961", 5, []) // 5x Flawless Codex
+
+      expect(result.breakdown).toBeDefined()
+      expect(result.breakdown.length).toBeGreaterThan(50)
+
+      // Group by tier to verify ALL tiers are present
+      const byTier: Record<number, unknown[]> = {}
+      result.breakdown.forEach(item => {
+        if (!byTier[item.tier]) byTier[item.tier] = []
+        byTier[item.tier].push(item)
+      })
+
+      const tiers = Object.keys(byTier).map(Number).sort((a, b) => b - a)
+      console.log(`✅ Quantity test: Crafting 5x Flawless Codex across ${tiers.length} tiers (${result.breakdown.length} total items)`)
+
+      // Verify target item (Tier 10)
+      const targetItem = result.breakdown.find((item) => item.itemId === "item_673045961")
+      expect(targetItem).toBeDefined()
+      expect(targetItem?.recipeRequired).toBe(5) // Should be exactly 5
+      expect(targetItem?.actualRequired).toBe(5) // No inventory
+      expect(targetItem?.tier).toBe(10)
+
+      // Verify Tier 10 research items scale correctly (should be 5 each)
+      const researchItems = [
+        { id: 'item_415346424', name: 'Flawless Stone Research', expectedRequired: 5 },
+        { id: 'item_544991481', name: 'Flawless Wood Research', expectedRequired: 5 },
+        { id: 'item_362774622', name: 'Flawless Metal Research', expectedRequired: 5 },
+        { id: 'item_1924457276', name: 'Flawless Leather Research', expectedRequired: 5 },
+        { id: 'item_434858722', name: 'Flawless Cloth Research', expectedRequired: 5 },
+      ]
+
+      researchItems.forEach(item => {
+        const found = result.breakdown.find(b => b.itemId === item.id)
+        if (found) {
+          expect(found.recipeRequired).toBe(item.expectedRequired)
+          expect(found.actualRequired).toBe(item.expectedRequired)
+          expect(found.tier).toBe(10)
+          console.log(`✅ ${item.name} (T10): recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
+        }
+      })
+
+      // Verify Flawless Study Journal scales (should be 5 * 5 = 25 per codex = 25 total for 5 codex)
+      const studyJournal = result.breakdown.find((item) => item.itemId === "item_1726162081")
+      if (studyJournal) {
+        expect(studyJournal.recipeRequired).toBe(25) // 5 codex * 5 per codex = 25
+        expect(studyJournal.actualRequired).toBe(25)
+        console.log(`✅ Flawless Study Journal: recipeRequired=${studyJournal.recipeRequired}, actualRequired=${studyJournal.actualRequired}`)
+      }
+
+      // Verify Refined Flawless Brick scales (should be 5)
+      const brick = result.breakdown.find((item) => item.itemId === "item_659145609")
+      if (brick) {
+        expect(brick.recipeRequired).toBe(5)
+        expect(brick.actualRequired).toBe(5)
+        console.log(`✅ Refined Flawless Brick: recipeRequired=${brick.recipeRequired}, actualRequired=${brick.actualRequired}`)
+      }
+
+      // Compare with baseline: calculate 1x and verify 5x is exactly 5x the quantities
+      const baselineResult = calculator.calculateWithInventory("item_673045961", 1, [])
+      
+      // Verify key items scale linearly
+      const keyItemIds = [
+        'item_673045961', // Flawless Codex
+        'item_415346424', // Flawless Stone Research
+        'item_544991481', // Flawless Wood Research
+        'item_1726162081', // Flawless Study Journal
+      ]
+
+      keyItemIds.forEach(itemId => {
+        const baselineItem = baselineResult.breakdown.find(b => b.itemId === itemId)
+        const scaledItem = result.breakdown.find(b => b.itemId === itemId)
+        
+        if (baselineItem && scaledItem) {
+          // recipeRequired should scale exactly by quantity (5x)
+          expect(scaledItem.recipeRequired).toBe(baselineItem.recipeRequired * 5)
+          expect(scaledItem.actualRequired).toBe(baselineItem.actualRequired * 5)
+          console.log(`✅ Linear scaling verified for ${itemId}: ${baselineItem.recipeRequired} -> ${scaledItem.recipeRequired}`)
+        }
+      })
+
+      // Verify all tiers are present (from Tier 10 down to Tier -1)
+      expect(tiers.length).toBeGreaterThan(5) // Should have multiple tiers
+
+      // Verify recipeRequired immutability across ALL items
+      const itemsWithZeroRecipeRequired = result.breakdown.filter((item) => item.recipeRequired === 0)
+      expect(itemsWithZeroRecipeRequired.length).toBe(0)
+
+      // Verify all items have positive recipeRequired that scales with quantity
+      result.breakdown.forEach(item => {
+        expect(item.recipeRequired).toBeGreaterThan(0)
+        expect(item.actualRequired).toBeGreaterThanOrEqual(0)
+      })
+
+      // Verify highest tier items (Tier 10) all scale correctly
+      const tier10Items = byTier[10] || []
+      tier10Items.forEach((item: unknown) => {
+        const typedItem = item as { itemId: string; recipeRequired: number; actualRequired: number }
+        // For tier 10 items, they should all have recipeRequired that makes sense for 5 codex
+        expect(typedItem.recipeRequired).toBeGreaterThan(0)
+        expect(typedItem.actualRequired).toBeGreaterThanOrEqual(0)
+      })
+
+      console.log(`✅ Multiple quantities test verified: 5x Flawless Codex calculates correctly across ${tiers.length} tiers`)
+    })
+
     it("Scenario 1: Top-level satisfaction cascade - 10/50 Flawless Codex", () => {
       // Test: Craft 50x Flawless Codex, have 10x in inventory
       // Expected: ALL children reduced by exactly 20% (10/50 = 0.2)
