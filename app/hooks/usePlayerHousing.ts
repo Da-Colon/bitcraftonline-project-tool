@@ -10,6 +10,10 @@ import type {
   InventoryItem,
 } from "~/types/inventory"
 import { normalizeItemId } from "~/utils/itemId"
+import {
+  isBitJitaHousingResponse,
+  isStandardErrorResponse,
+} from "~/utils/type-guards"
 
 export function usePlayerHousing(playerId?: string) {
   const housingFetcher = useFetcher<BitJitaHousingResponse | StandardErrorResponse>()
@@ -30,26 +34,29 @@ export function usePlayerHousing(playerId?: string) {
     if (!housingFetcher.data) {
       return null
     }
-    if ("error" in housingFetcher.data) {
+    if (isStandardErrorResponse(housingFetcher.data)) {
       // Check if it's a 404 (no housing) - return empty array
       // The API route returns 404 status, but we'll check the error message
-      const errorData = housingFetcher.data as StandardErrorResponse
+      const errorData = housingFetcher.data
       // If it's explicitly a not found error, treat as no housing
       if (
         errorData.error?.toLowerCase().includes("not found") ||
         errorData.error?.toLowerCase().includes("404")
       ) {
-        return [] as BitJitaHousingResponse
+        return []
       }
       return null
     }
-    return housingFetcher.data as BitJitaHousingResponse
+    if (isBitJitaHousingResponse(housingFetcher.data)) {
+      return housingFetcher.data
+    }
+    return null
   }, [housingFetcher.data])
 
   // Extract error from fetcher response (skip 404 errors as they mean no housing)
   const error = useMemo<string | null>(() => {
-    if (housingFetcher.data && "error" in housingFetcher.data) {
-      const errorData = housingFetcher.data as StandardErrorResponse
+    if (housingFetcher.data && isStandardErrorResponse(housingFetcher.data)) {
+      const errorData = housingFetcher.data
       // Handle 404 as no housing (not an error) - return null error
       if (
         errorData.error?.toLowerCase().includes("not found") ||
@@ -118,7 +125,6 @@ export function usePlayerHousing(playerId?: string) {
     }
 
     fetchHousingDetails()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerId, housingData])
 
   // Combine loading states

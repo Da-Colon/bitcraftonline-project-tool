@@ -4,6 +4,10 @@ import { useEffect, useMemo } from "react"
 import type { StandardErrorResponse } from "~/types/api-responses"
 import type { PlayerInventories, BitJitaInventoriesResponse } from "~/types/inventory"
 import { transformBitJitaInventories } from "~/utils/inventoryTransform"
+import {
+  isBitJitaInventoriesResponse,
+  isStandardErrorResponse,
+} from "~/utils/type-guards"
 
 import { usePlayerHousing } from "./usePlayerHousing"
 
@@ -26,11 +30,11 @@ export function usePlayerInventories(playerId?: string) {
 
   // Transform data from fetcher
   const inventories = useMemo<PlayerInventories | null>(() => {
-    if (!fetcher.data || "error" in fetcher.data) {
+    if (!fetcher.data || !isBitJitaInventoriesResponse(fetcher.data)) {
       return null
     }
     try {
-      return transformBitJitaInventories(fetcher.data as BitJitaInventoriesResponse)
+      return transformBitJitaInventories(fetcher.data)
     } catch {
       return null
     }
@@ -38,8 +42,8 @@ export function usePlayerInventories(playerId?: string) {
 
   // Extract error from fetcher response
   const error = useMemo<string | null>(() => {
-    if (fetcher.data && "error" in fetcher.data) {
-      const errorData = fetcher.data as StandardErrorResponse
+    if (fetcher.data && isStandardErrorResponse(fetcher.data)) {
+      const errorData = fetcher.data
       return errorData.isExternalError
         ? `${errorData.service || "External API"} Error: ${
             errorData.detail || "Service unavailable"

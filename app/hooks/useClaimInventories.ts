@@ -3,6 +3,10 @@ import { useEffect, useMemo } from "react";
 
 import type { StandardErrorResponse } from "~/types/api-responses";
 import type { ClaimInventoriesResponse } from "~/types/inventory";
+import {
+  isClaimInventoriesResponse,
+  isStandardErrorResponse,
+} from "~/utils/type-guards";
 
 export function useClaimInventories(claimId?: string) {
   const fetcher = useFetcher<ClaimInventoriesResponse | StandardErrorResponse>();
@@ -18,16 +22,16 @@ export function useClaimInventories(claimId?: string) {
 
   // Extract data from fetcher
   const inventories = useMemo<ClaimInventoriesResponse | null>(() => {
-    if (!fetcher.data || "error" in fetcher.data) {
+    if (!fetcher.data || !isClaimInventoriesResponse(fetcher.data)) {
       return null;
     }
-    return fetcher.data as ClaimInventoriesResponse;
+    return fetcher.data;
   }, [fetcher.data]);
 
   // Extract error from fetcher response
   const error = useMemo<string | null>(() => {
-    if (fetcher.data && "error" in fetcher.data) {
-      const errorData = fetcher.data as StandardErrorResponse;
+    if (fetcher.data && isStandardErrorResponse(fetcher.data)) {
+      const errorData = fetcher.data;
       return errorData.isExternalError
         ? `${errorData.service || "External API"} Error: ${
             errorData.detail || "Service unavailable"

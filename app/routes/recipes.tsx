@@ -13,6 +13,10 @@ import { useRecipeInventoryData } from "~/hooks/useRecipeInventoryData"
 import { useRecipeSelection } from "~/hooks/useRecipeSelection"
 import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server"
 import type { Item, RecipeBreakdownItem } from "~/types/recipes"
+import {
+  isPlayerSearchResponse,
+  isRecipeCalculationResponse,
+} from "~/utils/type-guards"
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url)
@@ -71,7 +75,15 @@ export default function RecipesRoute() {
     // Calculation is triggered by the effect that watches debouncedQuantity
   }
 
-  const breakdown = (calculationFetcher.data as { breakdown?: RecipeBreakdownItem[] })?.breakdown || []
+  const breakdown = useMemo(() => {
+    if (
+      calculationFetcher.data &&
+      isRecipeCalculationResponse(calculationFetcher.data)
+    ) {
+      return calculationFetcher.data.breakdown || []
+    }
+    return []
+  }, [calculationFetcher.data])
   const isLoading = calculationFetcher.state !== "idle"
   
 
@@ -92,13 +104,18 @@ export default function RecipesRoute() {
       method: "post",
       action: "/api/recipes/calculate",
     })
+    // calculationFetcher is stable from useFetcher, selectedItem?.id is sufficient
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedItem?.id, debouncedQuantity, inventoryKey])
 
   // Keep last good search results to prevent flicker during fetcher transitions
   useEffect(() => {
-    const data = (searchFetcher.data as { items?: Item[] })?.items
-    if (data) {
-      setSearchResults(data)
+    if (
+      searchFetcher.data &&
+      isPlayerSearchResponse(searchFetcher.data) &&
+      searchFetcher.data.items
+    ) {
+      setSearchResults(searchFetcher.data.items)
     } else if (debouncedSearchQuery.length <= 2) {
       setSearchResults(items)
     }
