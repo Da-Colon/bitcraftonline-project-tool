@@ -45,7 +45,6 @@ export interface RecipeBreakdownItem {
   recipeRequired: number // Total needed by recipe
   actualRequired: number // Needed after inventory adjustments
   currentInventory: number // Available in inventory
-  deficit: number // Still needed after inventory
   iconAssetName?: string
   effortPerBatch?: number // Effort per crafting batch (from recipe.actionsRequired)
   totalEffort?: number // Total effort for this item (effortPerBatch × batches)
@@ -54,7 +53,6 @@ export interface RecipeBreakdownItem {
 
 export interface TierCalculationResult {
   breakdown: RecipeBreakdownItem[]
-  totalDeficit: Map<string, number>
 }
 
 export interface Project {

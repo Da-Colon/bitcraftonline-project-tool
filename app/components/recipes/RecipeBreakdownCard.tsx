@@ -57,7 +57,7 @@ export function RecipeBreakdownCard({
   selectedItem,
 }: RecipeBreakdownCardProps) {
   // Calculate if recipe is complete
-  const isRecipeComplete = breakdown.length > 0 && breakdown.every((item) => item.deficit === 0)
+  const isRecipeComplete = breakdown.length > 0 && breakdown.every((item) => item.actualRequired === 0)
   return (
     <Card
       bg="rgba(24,35,60,0.9)"

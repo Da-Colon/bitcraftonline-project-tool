@@ -77,7 +77,7 @@ export default function RecipesRoute() {
 
   // Filter breakdown based on hideCompleted state
   const filteredBreakdown = hideCompleted
-    ? breakdown.filter((item: RecipeBreakdownItem) => item.deficit > 0)
+    ? breakdown.filter((item: RecipeBreakdownItem) => item.actualRequired > 0)
     : breakdown
 
   // Auto-calculate when inputs change (debounced) to avoid duplicate submits

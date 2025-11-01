@@ -40,20 +40,9 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     // Convert to array and sort by tier (higher tier items first for display)
     const adjustedBreakdown = Array.from(breakdown.values()).sort((a, b) => b.tier - a.tier)
 
-    const totalDeficit = new Map<string, number>()
-    adjustedBreakdown.forEach((item) => {
-      if (item.deficit > 0) {
-        totalDeficit.set(item.itemId, item.deficit)
-      }
-    })
-
-    const result = {
+    return {
       breakdown: adjustedBreakdown,
-      totalDeficit,
     }
-
-
-    return result
   }
 
   /**
@@ -124,7 +113,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         recipeRequired: quantity,
         actualRequired: quantity, // Will be updated in pass 2
         currentInventory: 0, // Will be updated in pass 2
-        deficit: quantity, // Will be updated in pass 2
         iconAssetName: enhancedItem.iconAssetName,
         effortPerBatch,
         totalEffort,
@@ -165,7 +153,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
    *
    * Key Benefits:
    * - Fixes the bug where children weren't zeroed when parent was fully satisfied
-   * - Preserves recipeRequired immutability - only modifies actualRequired and deficit
+   * - Preserves recipeRequired immutability - only modifies actualRequired
    * - Parent-first processing ensures reductions cascade correctly down the dependency tree
    * - Handles complex scenarios like multiple parents sharing children correctly
    *
@@ -229,7 +217,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       // Update item properties
       item.currentInventory = currentInventory
       item.actualRequired = remainingRequired
-      item.deficit = remainingRequired
 
       // If this item has a recipe, adjust its children based on how many batches we can skip
       const recipe = this.getRecipe(item.itemId)
@@ -277,7 +264,7 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       // Note: We don't zero children when parent is satisfied - all requirements should be calculated
     }
 
-    // Final pass to update actualRequired and deficit based on immutable recipeRequired
+    // Final pass to update actualRequired based on immutable recipeRequired
     for (const item of breakdown.values()) {
       const currentInventory = this.getInventoryQuantity(item.itemId, inventoryMap)
       item.currentInventory = currentInventory
@@ -285,7 +272,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       const parentReduction = parentReductions.get(item.itemId) || 0
       const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed - parentReduction)
       item.actualRequired = remainingRequired
-      item.deficit = remainingRequired
       
       // Update effort based on actualRequired (what we need to craft after inventory)
       // Formula: effortAfterInventory = actions_required * Math.ceil(actualRequired / outputQuantity)
@@ -371,7 +357,6 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         recipeRequired: quantity,
         actualRequired: quantity,
         currentInventory: 0,
-        deficit: quantity,
         iconAssetName: enhancedItem.iconAssetName,
       })
     }

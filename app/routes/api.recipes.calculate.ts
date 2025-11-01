@@ -41,7 +41,6 @@ type CalcResponse = {
  */
 type EnhancedCalcResponse = {
   breakdown: RecipeBreakdownItem[];
-  totalDeficit: Array<[string, number]>;
 };
 
 /**
@@ -60,7 +59,7 @@ type EnhancedCalcResponse = {
  * @example
  * POST /api/recipes/calculate
  * Form data: { itemId: "123", quantity: 10, inventory: "[...]" }
- * Returns: { breakdown: [...], totalDeficit: [...] }
+ * Returns: { breakdown: [...] }
  * 
  * @example
  * POST /api/recipes/calculate
@@ -107,7 +106,6 @@ export async function action({ request }: ActionFunctionArgs) {
       
       const response: EnhancedCalcResponse = {
         breakdown: result.breakdown,
-        totalDeficit: [],
       };
       
       return json<EnhancedCalcResponse>(response, {

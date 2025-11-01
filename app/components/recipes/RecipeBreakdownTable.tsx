@@ -97,7 +97,6 @@ export function RecipeBreakdownTable({
               <Th isNumeric>Recipe Required</Th>
               <Th isNumeric>Current Inventory</Th>
               <Th isNumeric>Actual Required</Th>
-              <Th isNumeric>Deficit</Th>
               <Th isNumeric>Effort</Th>
             </Tr>
           </Thead>
@@ -128,10 +127,9 @@ export function RecipeBreakdownTable({
                     {(item.currentInventory || 0).toLocaleString()}
                   </Text>
                 </Td>
-                <Td isNumeric>{item.actualRequired.toLocaleString()}</Td>
                 <Td isNumeric>
-                  <Text color={item.deficit > 0 ? "pink.300" : "teal.200"} fontWeight="bold">
-                    {item.deficit.toLocaleString()}
+                  <Text color={item.actualRequired > 0 ? "pink.300" : "teal.200"} fontWeight="bold">
+                    {item.actualRequired.toLocaleString()}
                   </Text>
                 </Td>
                 <Td isNumeric>

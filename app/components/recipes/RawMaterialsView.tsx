@@ -95,8 +95,8 @@ export function RawMaterialsView({
                   </HStack>
                   <HStack justify="space-between" w="full">
                     <Text color="whiteAlpha.800">Still Need:</Text>
-                    <Text color={item.deficit > 0 ? "pink.300" : "teal.200"} fontWeight="bold">
-                      {item.deficit.toLocaleString()}
+                    <Text color={item.actualRequired > 0 ? "pink.300" : "teal.200"} fontWeight="bold">
+                      {item.actualRequired.toLocaleString()}
                     </Text>
                   </HStack>
                 </VStack>

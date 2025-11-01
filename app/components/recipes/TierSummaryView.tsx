@@ -110,14 +110,14 @@ export function TierSummaryView({
                   p={2}
                   border="1px solid rgba(148, 163, 184, 0.2)"
                   borderRadius="xl"
-                  bg={item.deficit > 0 ? "rgba(190, 24, 93, 0.18)" : "rgba(45, 212, 191, 0.18)"}
+                  bg={item.actualRequired > 0 ? "rgba(190, 24, 93, 0.18)" : "rgba(45, 212, 191, 0.18)"}
                 >
                   <Text fontWeight="medium" fontSize="sm" color="white">
                     {item.name}
                   </Text>
                   <HStack justify="space-between" mt={1}>
                     <Text fontSize="xs" color="whiteAlpha.800">
-                      Need: {item.deficit.toLocaleString()}
+                      Need: {item.actualRequired.toLocaleString()}
                     </Text>
                     <Text fontSize="xs" color="whiteAlpha.800">
                       Have: {item.currentInventory.toLocaleString()}

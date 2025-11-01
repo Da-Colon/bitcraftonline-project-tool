@@ -59,7 +59,7 @@ describe("EnhancedRecipeCalculator", () => {
         // If it's in the breakdown, it should be fully satisfied
         expect(peerlessBrick.currentInventory).toBe(2)
         expect(peerlessBrick.recipeRequired).toBeLessThanOrEqual(2)
-        expect(peerlessBrick.deficit).toBe(0)
+        expect(peerlessBrick.actualRequired).toBe(0)
 
         // Only direct children should be zeroed, not all items
         // The breakdown should still contain other items that are needed
@@ -73,7 +73,7 @@ describe("EnhancedRecipeCalculator", () => {
         )
         
         // At least some items should still be needed
-        const stillNeeded = itemsWithNoInventory.filter(item => item.deficit > 0)
+        const stillNeeded = itemsWithNoInventory.filter(item => item.actualRequired > 0)
         expect(stillNeeded.length).toBeGreaterThan(0)
       } else {
         // If not in breakdown, it means it was fully satisfied and removed
@@ -95,12 +95,12 @@ describe("EnhancedRecipeCalculator", () => {
       const targetItem = result.breakdown.find((item) => item.itemId === "item_4101")
       expect(targetItem).toBeDefined()
       expect(targetItem?.recipeRequired).toBe(2)
-      expect(targetItem?.deficit).toBeGreaterThan(0) // Should need more (exact amount may vary)
+      expect(targetItem?.actualRequired).toBeGreaterThan(0) // Should need more (exact amount may vary)
 
       const peerlessBrick = result.breakdown.find((item) => item.itemId === "item_1344950671")
       if (peerlessBrick) {
         expect(peerlessBrick.currentInventory).toBe(1)
-        expect(peerlessBrick.deficit).toBeGreaterThan(0) // Should still need more
+        expect(peerlessBrick.actualRequired).toBeGreaterThan(0) // Should still need more
       }
     })
   })
@@ -115,7 +115,7 @@ describe("EnhancedRecipeCalculator", () => {
       const item = result.breakdown[0]
       expect(item.itemId).toBe("item_1010001")
       expect(item.recipeRequired).toBe(5)
-      expect(item.deficit).toBe(5)
+      expect(item.actualRequired).toBe(5)
     })
 
     it("should handle inventory with different item ID formats", () => {
@@ -140,8 +140,8 @@ describe("EnhancedRecipeCalculator", () => {
       expect(result.breakdown).toBeDefined()
       expect(result.breakdown.length).toBeGreaterThan(0)
 
-      // All items should have deficit > 0 since no inventory
-      const itemsWithDeficit = result.breakdown.filter((item) => item.deficit > 0)
+      // All items should have actualRequired > 0 since no inventory
+      const itemsWithDeficit = result.breakdown.filter((item) => item.actualRequired > 0)
       expect(itemsWithDeficit.length).toBe(result.breakdown.length)
     })
   })
@@ -168,7 +168,7 @@ describe("EnhancedRecipeCalculator", () => {
       expect(targetItem?.recipeRequired).toBe(20) // Should always be 20, never 0
       expect(targetItem?.currentInventory).toBe(5) // Should show we have 5
       expect(targetItem?.actualRequired).toBe(15) // Should need 15 more (20 - 5)
-      expect(targetItem?.deficit).toBe(15) // Should match actualRequired
+      expect(targetItem?.actualRequired).toBe(15)
 
       // Verify that recipeRequired is never 0 for any item in the breakdown
       const itemsWithZeroRecipeRequired = result.breakdown.filter((item) => item.recipeRequired === 0)
@@ -180,7 +180,6 @@ describe("EnhancedRecipeCalculator", () => {
         // The actualRequired should be at most max(0, recipeRequired - currentInventory)
         // but could be less if parent items are satisfied
         expect(item.actualRequired).toBeLessThanOrEqual(Math.max(0, item.recipeRequired - item.currentInventory))
-        expect(item.deficit).toBe(item.actualRequired)
       }
 
       console.log(`✅ RecipeRequired immutability verified for ${result.breakdown.length} items`)
@@ -260,7 +259,7 @@ describe("EnhancedRecipeCalculator", () => {
       expect(targetItem?.recipeRequired).toBe(50) // Should always be 50, never 0
       expect(targetItem?.currentInventory).toBe(10) // Should show we have 10
       expect(targetItem?.actualRequired).toBe(40) // Should need 40 more (50 - 10)
-      expect(targetItem?.deficit).toBe(40) // Should match actualRequired
+      expect(targetItem?.actualRequired).toBe(40)
 
       // Verify recipeRequired immutability across ALL items
       const itemsWithZeroRecipeRequired = result.breakdown.filter((item) => item.recipeRequired === 0)
@@ -273,7 +272,6 @@ describe("EnhancedRecipeCalculator", () => {
       for (const item of itemsWithInventory) {
         // actualRequired should never exceed max(0, recipeRequired - currentInventory)
         expect(item.actualRequired).toBeLessThanOrEqual(Math.max(0, item.recipeRequired - item.currentInventory))
-        expect(item.deficit).toBe(item.actualRequired)
       }
 
       // Verify specific cascade scenarios:
@@ -335,7 +333,7 @@ describe("EnhancedRecipeCalculator", () => {
       expect(targetItem?.recipeRequired).toBe(50)
       expect(targetItem?.currentInventory).toBe(10)
       expect(targetItem?.actualRequired).toBe(40) // 50 - 10
-      expect(targetItem?.deficit).toBe(40)
+      expect(targetItem?.actualRequired).toBe(40)
 
       // Verify ALL research items are reduced by exactly 20%
       const researchItems = [
@@ -351,7 +349,7 @@ describe("EnhancedRecipeCalculator", () => {
         if (found) {
           expect(found.recipeRequired).toBe(50) // Immutable
           expect(found.actualRequired).toBe(item.expectedRequired) // Reduced by 20%
-          expect(found.deficit).toBe(item.expectedRequired)
+          expect(found.actualRequired).toBe(item.expectedRequired)
           console.log(`✅ ${item.name}: recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
         }
       })
@@ -361,7 +359,7 @@ describe("EnhancedRecipeCalculator", () => {
       if (studyJournal) {
         expect(studyJournal.recipeRequired).toBe(250) // Immutable
         expect(studyJournal.actualRequired).toBe(200) // 250 * 0.8
-        expect(studyJournal.deficit).toBe(200)
+        expect(studyJournal.actualRequired).toBe(200)
         console.log(`✅ Flawless Study Journal: recipeRequired=${studyJournal.recipeRequired}, actualRequired=${studyJournal.actualRequired}`)
       }
 
@@ -385,14 +383,12 @@ describe("EnhancedRecipeCalculator", () => {
       const targetItem = result.breakdown.find((item) => item.itemId === "item_673045961")
       expect(targetItem?.recipeRequired).toBe(50)
       expect(targetItem?.actualRequired).toBe(50) // No inventory, no reduction
-      expect(targetItem?.deficit).toBe(50)
 
       // Verify Stone Research is reduced
       const stoneResearch = result.breakdown.find((item) => item.itemId === "item_415346424")
       expect(stoneResearch?.recipeRequired).toBe(50) // Immutable
       expect(stoneResearch?.currentInventory).toBe(5)
       expect(stoneResearch?.actualRequired).toBe(45) // 50 - 5
-      expect(stoneResearch?.deficit).toBe(45)
 
       // Verify OTHER research branches are NOT affected
       const otherResearch = [
@@ -407,7 +403,7 @@ describe("EnhancedRecipeCalculator", () => {
         if (found) {
           expect(found.recipeRequired).toBe(50) // Immutable
           expect(found.actualRequired).toBe(50) // No reduction (no inventory)
-          expect(found.deficit).toBe(50)
+          expect(found.actualRequired).toBe(50)
           console.log(`✅ ${item.name}: UNCHANGED - recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
         }
       })
@@ -417,7 +413,7 @@ describe("EnhancedRecipeCalculator", () => {
       if (brick) {
         expect(brick.recipeRequired).toBe(50) // Immutable
         expect(brick.actualRequired).toBe(45) // Should be reduced by 5 (same as Stone Research)
-        expect(brick.deficit).toBe(45)
+        expect(brick.actualRequired).toBe(45)
         console.log(`✅ Refined Flawless Brick: REDUCED - recipeRequired=${brick.recipeRequired}, actualRequired=${brick.actualRequired}`)
       }
 
@@ -437,21 +433,18 @@ describe("EnhancedRecipeCalculator", () => {
       const targetItem = result.breakdown.find((item) => item.itemId === "item_673045961")
       expect(targetItem?.recipeRequired).toBe(50)
       expect(targetItem?.actualRequired).toBe(50) // No inventory, no reduction
-      expect(targetItem?.deficit).toBe(50)
 
       // Verify Refined Flawless Brick is reduced
       const brick = result.breakdown.find((item) => item.itemId === "item_659145609")
       expect(brick?.recipeRequired).toBe(50) // Immutable
       expect(brick?.currentInventory).toBe(20)
       expect(brick?.actualRequired).toBe(30) // 50 - 20
-      expect(brick?.deficit).toBe(30)
 
       // Verify Flawless Study Journal is NOT affected (different branch)
       const studyJournal = result.breakdown.find((item) => item.itemId === "item_1726162081")
       if (studyJournal) {
         expect(studyJournal.recipeRequired).toBe(250) // Immutable
         expect(studyJournal.actualRequired).toBe(250) // No reduction (different branch)
-        expect(studyJournal.deficit).toBe(250)
         console.log(`✅ Flawless Study Journal: UNCHANGED - recipeRequired=${studyJournal.recipeRequired}, actualRequired=${studyJournal.actualRequired}`)
       }
 
@@ -460,7 +453,6 @@ describe("EnhancedRecipeCalculator", () => {
       if (stoneResearch) {
         expect(stoneResearch.recipeRequired).toBe(50) // Immutable
         expect(stoneResearch.actualRequired).toBe(50) // No direct reduction
-        expect(stoneResearch.deficit).toBe(50)
         console.log(`✅ Flawless Stone Research: UNCHANGED - recipeRequired=${stoneResearch.recipeRequired}, actualRequired=${stoneResearch.actualRequired}`)
       }
 
@@ -486,7 +478,6 @@ describe("EnhancedRecipeCalculator", () => {
       expect(targetItem?.recipeRequired).toBe(50)
       expect(targetItem?.currentInventory).toBe(5)
       expect(targetItem?.actualRequired).toBe(45) // 50 - 5
-      expect(targetItem?.deficit).toBe(45)
 
       // Verify Stone Research (reduced by both top-level AND mid-level inventory)
       const stoneResearch = result.breakdown.find((item) => item.itemId === "item_415346424")
@@ -495,7 +486,6 @@ describe("EnhancedRecipeCalculator", () => {
       // Should be reduced by top-level (45 needed) AND mid-level (10 in inventory)
       // So actualRequired should be max(0, 45 - 10) = 35
       expect(stoneResearch?.actualRequired).toBe(35)
-      expect(stoneResearch?.deficit).toBe(35)
 
       // Verify Refined Flawless Brick (reduced by all three levels)
       const brick = result.breakdown.find((item) => item.itemId === "item_659145609")
@@ -504,7 +494,6 @@ describe("EnhancedRecipeCalculator", () => {
       // Should be reduced by Stone Research (35 needed) AND Brick inventory (20)
       // So actualRequired should be max(0, 35 - 20) = 15
       expect(brick?.actualRequired).toBe(15)
-      expect(brick?.deficit).toBe(15)
 
       // Verify other research branches are only affected by top-level reduction
       const otherResearch = [
@@ -519,7 +508,7 @@ describe("EnhancedRecipeCalculator", () => {
         if (found) {
           expect(found.recipeRequired).toBe(50) // Immutable
           expect(found.actualRequired).toBe(45) // Only reduced by top-level (50 - 5)
-          expect(found.deficit).toBe(45)
+          expect(found.actualRequired).toBe(45)
           console.log(`✅ ${item.name}: TOP-LEVEL ONLY - recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
         }
       })
@@ -550,7 +539,6 @@ describe("EnhancedRecipeCalculator", () => {
       const targetItem = result.breakdown.find((item) => item.itemId === "item_673045961")
       expect(targetItem?.recipeRequired).toBe(50)
       expect(targetItem?.actualRequired).toBe(50) // No reduction from raw materials
-      expect(targetItem?.deficit).toBe(50)
 
       // Verify research items (unaffected by raw material inventory)
       const researchItems = [
@@ -566,7 +554,7 @@ describe("EnhancedRecipeCalculator", () => {
         if (found) {
           expect(found.recipeRequired).toBe(50) // Immutable
           expect(found.actualRequired).toBe(50) // No reduction from raw materials
-          expect(found.deficit).toBe(50)
+          expect(found.actualRequired).toBe(50)
           console.log(`✅ ${item.name}: UNCHANGED - recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
         }
       })
@@ -584,7 +572,6 @@ describe("EnhancedRecipeCalculator", () => {
           expect(found.recipeRequired).toBeGreaterThan(0) // Immutable
           expect(found.currentInventory).toBe(item.expectedReduction)
           expect(found.actualRequired).toBeLessThanOrEqual(Math.max(0, found.recipeRequired - item.expectedReduction))
-          expect(found.deficit).toBe(found.actualRequired)
           console.log(`✅ ${item.name}: REDUCED - recipeRequired=${found.recipeRequired}, actualRequired=${found.actualRequired}`)
         }
       })
@@ -614,7 +601,7 @@ describe("EnhancedRecipeCalculator", () => {
       expect(targetItem?.recipeRequired).toBe(5) // Should always be 5, never 0
       expect(targetItem?.currentInventory).toBe(1) // Should show we have 1
       expect(targetItem?.actualRequired).toBe(4) // Should need 4 more (5 - 1)
-      expect(targetItem?.deficit).toBe(4) // Should match actualRequired
+      expect(targetItem?.actualRequired).toBe(4)
 
       // Verify recipeRequired immutability for all items
       const itemsWithZeroRecipeRequired = result.breakdown.filter((item) => item.recipeRequired === 0)
@@ -627,7 +614,6 @@ describe("EnhancedRecipeCalculator", () => {
         expect(peerlessBrick.currentInventory).toBe(2)
         // actualRequired should be at most recipeRequired - inventory, but could be less due to parent satisfaction
         expect(peerlessBrick.actualRequired).toBeLessThanOrEqual(Math.max(0, peerlessBrick.recipeRequired - 2))
-        expect(peerlessBrick.deficit).toBe(peerlessBrick.actualRequired)
       }
 
       console.log(`✅ Complex multi-tier recipe with multiple quantities verified`)
@@ -700,7 +686,7 @@ describe("EnhancedRecipeCalculator", () => {
           // Verify effort is calculated from actualRequired (7), not recipeRequired (10)
           expect(targetItem.recipeRequired).toBe(10)
           expect(targetItem.actualRequired).toBe(7) // 10 - 3 inventory
-          expect(targetItem.deficit).toBe(7)
+          expect(targetItem.actualRequired).toBe(7)
 
           const expectedBatches = Math.ceil(targetItem.actualRequired / recipe.outputQuantity)
           const expectedEffort = recipe.actionsRequired * expectedBatches

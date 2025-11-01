@@ -38,11 +38,11 @@ export function RecipeOverview({
 
   // Calculate recipe completion stats
   const totalRequiredItems = breakdown.length
-  const completedItems = breakdown.filter((item) => item.deficit === 0).length
+  const completedItems = breakdown.filter((item) => item.actualRequired === 0).length
   const completionRate = totalRequiredItems > 0 ? (completedItems / totalRequiredItems) * 100 : 0
 
   // Calculate total deficit
-  const totalDeficit = breakdown.reduce((sum, item) => sum + item.deficit, 0)
+  const totalDeficit = breakdown.reduce((sum, item) => sum + item.actualRequired, 0)
 
   // Calculate total effort stats
   const totalEffortRequired = breakdown.reduce((sum, item) => sum + (item.totalEffort || 0), 0)
