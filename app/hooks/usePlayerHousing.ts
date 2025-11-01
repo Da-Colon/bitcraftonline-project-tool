@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react"
+import { useFetcher } from "@remix-run/react"
+import { useEffect, useMemo, useState } from "react"
 
+import type { StandardErrorResponse } from "~/types/api-responses"
 import type {
   BitJitaHousingResponse,
   BitJitaHousingDetailsResponse,
@@ -10,55 +12,81 @@ import type {
 import { normalizeItemId } from "~/utils/itemId"
 
 export function usePlayerHousing(playerId?: string) {
-  const [housingData, setHousingData] = useState<BitJitaHousingResponse | null>(null)
+  const housingFetcher = useFetcher<BitJitaHousingResponse | StandardErrorResponse>()
   const [housingInventories, setHousingInventories] = useState<PlayerInventories | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
 
+  // Load housing list when playerId changes
   useEffect(() => {
     if (!playerId) {
-      setHousingData(null)
+      return
+    }
+    housingFetcher.load(`/api/players/${playerId}/housing`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerId])
+
+  // Extract housing data from fetcher (treat 404 as empty array)
+  const housingData = useMemo<BitJitaHousingResponse | null>(() => {
+    if (!housingFetcher.data) {
+      return null
+    }
+    if ("error" in housingFetcher.data) {
+      // Check if it's a 404 (no housing) - return empty array
+      // The API route returns 404 status, but we'll check the error message
+      const errorData = housingFetcher.data as StandardErrorResponse
+      // If it's explicitly a not found error, treat as no housing
+      if (
+        errorData.error?.toLowerCase().includes("not found") ||
+        errorData.error?.toLowerCase().includes("404")
+      ) {
+        return [] as BitJitaHousingResponse
+      }
+      return null
+    }
+    return housingFetcher.data as BitJitaHousingResponse
+  }, [housingFetcher.data])
+
+  // Extract error from fetcher response (skip 404 errors as they mean no housing)
+  const error = useMemo<string | null>(() => {
+    if (housingFetcher.data && "error" in housingFetcher.data) {
+      const errorData = housingFetcher.data as StandardErrorResponse
+      // Handle 404 as no housing (not an error) - return null error
+      if (
+        errorData.error?.toLowerCase().includes("not found") ||
+        errorData.error?.toLowerCase().includes("404")
+      ) {
+        return null
+      }
+      return errorData.isExternalError
+        ? `${errorData.service || "External API"} Error: ${
+            errorData.detail || "Service unavailable"
+          }`
+        : errorData.detail || errorData.error || "Failed to fetch housing data"
+    }
+    return null
+  }, [housingFetcher.data])
+
+  // Fetch details for each housing building when housing data changes
+  useEffect(() => {
+    if (!playerId) {
       setHousingInventories(null)
-      setLoading(false)
-      setError(null)
       return
     }
 
-    const fetchHousingData = async () => {
-      setLoading(true)
-      setError(null)
+    // If no housing data yet, wait for it
+    if (housingData === null) {
+      return
+    }
 
+    // If no housing buildings, return empty inventories
+    if (housingData.length === 0) {
+      setHousingInventories({ housing: [] })
+      return
+    }
+
+    const fetchHousingDetails = async () => {
+      setDetailsLoading(true)
       try {
-        // First, get the list of housing buildings
-        const housingResponse = await fetch(`/api/players/${playerId}/housing`)
-        if (!housingResponse.ok) {
-          if (housingResponse.status === 404) {
-            // Player has no housing, this is fine
-            setHousingData([])
-            setHousingInventories({ housing: [] })
-            return
-          }
-          if (housingResponse.status === 503) {
-            const errorData = await housingResponse.json().catch(() => ({}))
-            const errorMsg = errorData.isExternalError
-              ? `${errorData.service || "External API"} Error: ${
-                  errorData.detail || "Service unavailable"
-                }`
-              : errorData.detail || "External service is currently unavailable"
-            throw new Error(errorMsg)
-          }
-          throw new Error(`Failed to fetch housing data: ${housingResponse.statusText}`)
-        }
-
-        const housingData: BitJitaHousingResponse = await housingResponse.json()
-        setHousingData(housingData)
-
-        // If no housing buildings, return empty inventories
-        if (!housingData || housingData.length === 0) {
-          setHousingInventories({ housing: [] })
-          return
-        }
-
         // Fetch details for each housing building
         const housingInventoriesPromises = housingData.map(async (housing) => {
           try {
@@ -80,19 +108,24 @@ export function usePlayerHousing(playerId?: string) {
         )
 
         // Transform housing details into our inventory format
-        const housingInventories = transformHousingToInventories(validHousingDetails)
-        setHousingInventories({ housing: housingInventories })
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error")
-        setHousingData(null)
-        setHousingInventories(null)
+        const transformedInventories = transformHousingToInventories(validHousingDetails)
+        setHousingInventories({ housing: transformedInventories })
+      } catch {
+        setHousingInventories({ housing: [] })
       } finally {
-        setLoading(false)
+        setDetailsLoading(false)
       }
     }
 
-    fetchHousingData()
-  }, [playerId])
+    fetchHousingDetails()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerId, housingData])
+
+  // Combine loading states
+  const loading =
+    housingFetcher.state === "loading" ||
+    housingFetcher.state === "submitting" ||
+    detailsLoading
 
   return { housingData, housingInventories, loading, error }
 }

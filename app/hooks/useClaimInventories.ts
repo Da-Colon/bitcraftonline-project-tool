@@ -1,49 +1,45 @@
-import { useState, useEffect } from "react";
+import { useFetcher } from "@remix-run/react";
+import { useEffect, useMemo } from "react";
 
+import type { StandardErrorResponse } from "~/types/api-responses";
 import type { ClaimInventoriesResponse } from "~/types/inventory";
 
 export function useClaimInventories(claimId?: string) {
-  const [inventories, setInventories] = useState<ClaimInventoriesResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const fetcher = useFetcher<ClaimInventoriesResponse | StandardErrorResponse>();
 
+  // Load data when claimId changes
   useEffect(() => {
     if (!claimId) {
-      setInventories(null);
-      setLoading(false);
-      setError(null);
       return;
     }
-
-    const fetchInventories = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await fetch(`/api/claims/${claimId}/inventories`);
-        if (!response.ok) {
-          if (response.status === 503) {
-            const errorData = await response.json().catch(() => ({}));
-            const errorMsg = errorData.isExternalError 
-              ? `${errorData.service || 'External API'} Error: ${errorData.detail || 'Service unavailable'}`
-              : errorData.detail || "External service is currently unavailable";
-            throw new Error(errorMsg);
-          }
-          throw new Error(`Failed to fetch claim inventories: ${response.statusText}`);
-        }
-        
-        const data: ClaimInventoriesResponse = await response.json();
-        setInventories(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-        setInventories(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInventories();
+    fetcher.load(`/api/claims/${claimId}/inventories`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claimId]);
+
+  // Extract data from fetcher
+  const inventories = useMemo<ClaimInventoriesResponse | null>(() => {
+    if (!fetcher.data || "error" in fetcher.data) {
+      return null;
+    }
+    return fetcher.data as ClaimInventoriesResponse;
+  }, [fetcher.data]);
+
+  // Extract error from fetcher response
+  const error = useMemo<string | null>(() => {
+    if (fetcher.data && "error" in fetcher.data) {
+      const errorData = fetcher.data as StandardErrorResponse;
+      return errorData.isExternalError
+        ? `${errorData.service || "External API"} Error: ${
+            errorData.detail || "Service unavailable"
+          }`
+        : errorData.detail || errorData.error || "Failed to fetch claim inventories";
+    }
+    return null;
+  }, [fetcher.data]);
+
+  // Derive loading state
+  const loading =
+    fetcher.state === "loading" || fetcher.state === "submitting";
 
   return { inventories, loading, error };
 }
