@@ -97,11 +97,16 @@ export interface PlayerSearchResponse {
 
 /**
  * Response type for player details endpoints
+ * 
+ * BitJita API returns nested structure: { player: { entityId, username, ... } }
  */
 export interface PlayerDetailsResponse {
-  entityId: string;
-  username: string;
-  [key: string]: unknown; // Allow additional fields from BitJita
+  player: {
+    entityId: string;
+    username: string;
+    [key: string]: unknown; // Allow additional fields from BitJita
+  };
+  [key: string]: unknown; // Allow additional top-level fields
 }
 
 /**

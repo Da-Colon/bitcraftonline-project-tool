@@ -176,10 +176,16 @@ export class BitJitaService {
     try {
       const data = await BitJita.getPlayerById(id);
       
-      // Cache the response
-      cacheUtils.set(cacheKey, data, cacheTTL);
+      // BitJita.getPlayerById returns Player type (flat), but API actually returns nested
+      // Transform to match PlayerDetailsResponse structure
+      const response: PlayerDetailsResponse = {
+        player: data as PlayerDetailsResponse["player"],
+      };
       
-      return data as PlayerDetailsResponse;
+      // Cache the response
+      cacheUtils.set(cacheKey, response, cacheTTL);
+      
+      return response;
     } catch (error) {
       if (error instanceof BitJitaHttpError) {
         if (error.status === 404) {

@@ -156,10 +156,14 @@ export const InventoriesResponseSchema = z.object({
 
 export type BitJitaInventoriesResponse = z.infer<typeof InventoriesResponseSchema>;
 
-// Player details schema
-export const PlayerDetailsSchema = PlayerSchema.passthrough();
+// Player details schema - API returns nested structure { player: { ... } }
+export const PlayerDetailsSchema = z.object({
+  player: PlayerSchema.passthrough(),
+}).passthrough();
 
 // Housing info schema
+// Note: API returns locationX, locationZ, locationDimension as strings, not numbers
+// and locationRegionId is not present in the response
 export const HousingInfoSchema = z
   .object({
     buildingEntityId: z.string(),
@@ -173,10 +177,10 @@ export const HousingInfoSchema = z
     claimName: z.string(),
     claimRegionId: z.number(),
     claimEntityId: z.string(),
-    locationX: z.number(),
-    locationZ: z.number(),
-    locationDimension: z.number(),
-    locationRegionId: z.number(),
+    locationX: z.union([z.number(), z.string()]), // API returns string
+    locationZ: z.union([z.number(), z.string()]), // API returns string
+    locationDimension: z.union([z.number(), z.string()]), // API returns string
+    locationRegionId: z.number().optional(), // Not always present in API response
   })
   .passthrough();
 
@@ -295,10 +299,12 @@ export const BitJita = {
    * Get player details by entity ID
    * 
    * @param id - Player entity ID
-   * @returns Promise<Player> - Player details
+   * @returns Promise<Player> - Player details (extracted from nested response)
    */
   async getPlayerById(id: string): Promise<Player> {
-    return fetchJson(`/api/players/${encodeURIComponent(id)}`, {}, PlayerDetailsSchema);
+    const response = await fetchJson(`/api/players/${encodeURIComponent(id)}`, {}, PlayerDetailsSchema);
+    // Extract player from nested response { player: { ... } }
+    return response.player;
   },
 
   /**

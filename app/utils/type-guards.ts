@@ -11,6 +11,7 @@ import type {
   ClaimInventoriesResponse,
   BitJitaHousingResponse,
 } from "~/types/inventory"
+import type { PlayerDetail } from "~/types/player"
 import type { Item, RecipeBreakdownItem } from "~/types/recipes"
 
 /**
@@ -109,5 +110,32 @@ export function isPlayerSearchResponse(data: unknown): data is { items?: Item[] 
   
   // Empty object is valid (items is optional)
   return true
+}
+
+/**
+ * Type guard for PlayerDetail
+ * Validates that data has the nested player structure with required fields
+ */
+export function isPlayerDetail(data: unknown): data is PlayerDetail {
+  if (typeof data !== "object" || data === null) {
+    return false
+  }
+  
+  if (!("player" in data)) {
+    return false
+  }
+  
+  const player = (data as { player?: unknown }).player
+  if (typeof player !== "object" || player === null) {
+    return false
+  }
+  
+  // Check for required Player fields
+  return (
+    "entityId" in player &&
+    typeof (player as { entityId?: unknown }).entityId === "string" &&
+    "username" in player &&
+    typeof (player as { username?: unknown }).username === "string"
+  )
 }
 
