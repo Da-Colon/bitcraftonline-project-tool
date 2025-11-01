@@ -51,10 +51,16 @@ function baseUrl(): string {
  * 
  * @param path - API endpoint path
  * @param init - Request options
- * @returns Promise<T> - Parsed JSON response
+ * @param schema - Optional Zod schema for runtime validation
+ * @returns Promise<T> - Parsed and validated JSON response
  * @throws {BitJitaHttpError} When request fails or times out
+ * @throws {z.ZodError} When validation fails (if schema provided)
  */
-async function fetchJson<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
+async function fetchJson<T = unknown>(
+  path: string, 
+  init: RequestInit = {},
+  schema?: z.ZodSchema<T>
+): Promise<T> {
   const url = `${baseUrl()}${path}`;
   const headers = new Headers(init.headers || {});
   
@@ -78,7 +84,16 @@ async function fetchJson<T = unknown>(path: string, init: RequestInit = {}): Pro
       });
     }
     
-    return text ? (JSON.parse(text) as T) : ({} as T);
+    // Parse JSON
+    const parsed = text ? JSON.parse(text) : {};
+    
+    // Validate with schema if provided
+    if (schema) {
+      return schema.parse(parsed);
+    }
+    
+    // Return without validation (explicit unsafe parsing)
+    return parsed as T;
   } catch (err) {
     if (err && typeof err === 'object' && 'name' in err && err.name === "AbortError") {
       throw new BitJitaHttpError("Upstream timeout", { status: 504, url });
@@ -141,6 +156,108 @@ export const InventoriesResponseSchema = z.object({
 
 export type BitJitaInventoriesResponse = z.infer<typeof InventoriesResponseSchema>;
 
+// Player details schema
+export const PlayerDetailsSchema = PlayerSchema.passthrough();
+
+// Housing info schema
+export const HousingInfoSchema = z
+  .object({
+    buildingEntityId: z.string(),
+    buildingName: z.string(),
+    playerEntityId: z.string(),
+    rank: z.number(),
+    lockedUntil: z.string(),
+    isEmpty: z.boolean(),
+    regionId: z.number(),
+    entranceDimensionId: z.number(),
+    claimName: z.string(),
+    claimRegionId: z.number(),
+    claimEntityId: z.string(),
+    locationX: z.number(),
+    locationZ: z.number(),
+    locationDimension: z.number(),
+    locationRegionId: z.number(),
+  })
+  .passthrough();
+
+// Housing response schema (array of housing info)
+export const HousingResponseSchema = z.array(HousingInfoSchema);
+
+// Housing inventory item schema
+export const HousingInventoryItemSchema = z.object({
+  locked: z.boolean(),
+  volume: z.number(),
+  contents: z.object({
+    item_id: z.number(),
+    quantity: z.number(),
+    item_type: z.string(),
+  }),
+});
+
+// Housing inventory container schema
+export const HousingInventoryContainerSchema = z.object({
+  entityId: z.string(),
+  inventory: z.array(HousingInventoryItemSchema),
+  buildingName: z.string(),
+  buildingNickname: z.string().nullable(),
+});
+
+// BitJita item schema for housing
+export const BitJitaItemSchema = z
+  .object({
+    id: z.number().optional(),
+    name: z.string(),
+    iconAssetName: z.string(),
+    tier: z.number(),
+    rarityStr: z.string(),
+    tag: z.string(),
+    toolLevel: z.number().optional(),
+    toolPower: z.number().optional(),
+    toolType: z.number().optional(),
+    toolSkillId: z.number().optional(),
+  })
+  .passthrough();
+
+// Housing details response schema
+export const HousingDetailsResponseSchema = HousingInfoSchema.extend({
+  inventories: z.array(HousingInventoryContainerSchema),
+  items: z.array(BitJitaItemSchema),
+  cargos: z.array(BitJitaItemSchema),
+});
+
+// Claim inventories response schema (flexible structure from BitJita API)
+export const ClaimInventoriesResponseSchema = z
+  .object({
+    items: z.array(BitJitaItemSchema).optional(),
+    buildings: z
+      .array(
+        z.object({
+          entityId: z.string(),
+          buildingName: z.string(),
+          buildingNickname: z.string().nullable().optional(),
+          iconAssetName: z.string(),
+          inventory: z.array(
+            z.object({
+              contents: z.object({
+                item_id: z.number(),
+                quantity: z.number(),
+              }),
+            })
+          ),
+        })
+      )
+      .optional(),
+  })
+  .passthrough();
+
+// Crafts response schema (flexible structure from BitJita API)
+export const CraftsResponseSchema = z
+  .object({
+    craftResults: z.array(z.record(z.unknown())).optional(),
+    items: z.array(z.object({ id: z.number(), name: z.string() })).optional(),
+  })
+  .passthrough();
+
 /**
  * BitJita API Client
  * 
@@ -178,10 +295,10 @@ export const BitJita = {
    * Get player details by entity ID
    * 
    * @param id - Player entity ID
-   * @returns Promise<unknown> - Player details
+   * @returns Promise<Player> - Player details
    */
-  async getPlayerById(id: string): Promise<unknown> {
-    return fetchJson(`/api/players/${encodeURIComponent(id)}`);
+  async getPlayerById(id: string): Promise<Player> {
+    return fetchJson(`/api/players/${encodeURIComponent(id)}`, {}, PlayerDetailsSchema);
   },
 
   /**
@@ -191,28 +308,27 @@ export const BitJita = {
    * @returns Promise<BitJitaInventoriesResponse> - Player inventories
    */
   async getPlayerInventories(id: string): Promise<BitJitaInventoriesResponse> {
-    const json = await fetchJson(`/api/players/${encodeURIComponent(id)}/inventories`);
-    return InventoriesResponseSchema.parse(json);
+    return fetchJson(`/api/players/${encodeURIComponent(id)}/inventories`, {}, InventoriesResponseSchema);
   },
 
   /**
    * Get claim inventories
    * 
    * @param claimId - Claim entity ID
-   * @returns Promise<any> - Claim inventories
+   * @returns Promise<unknown> - Claim inventories (flexible structure)
    */
   async getClaimInventories(claimId: string): Promise<unknown> {
-    return fetchJson(`/api/claims/${encodeURIComponent(claimId)}/inventories`);
+    return fetchJson(`/api/claims/${encodeURIComponent(claimId)}/inventories`, {}, ClaimInventoriesResponseSchema);
   },
 
   /**
    * Get player housing list
    * 
    * @param playerId - Player entity ID
-   * @returns Promise<any> - Player housing data
+   * @returns Promise<z.infer<typeof HousingResponseSchema>> - Player housing data
    */
-  async getPlayerHousing(playerId: string): Promise<unknown> {
-    return fetchJson(`/api/players/${encodeURIComponent(playerId)}/housing`);
+  async getPlayerHousing(playerId: string): Promise<z.infer<typeof HousingResponseSchema>> {
+    return fetchJson(`/api/players/${encodeURIComponent(playerId)}/housing`, {}, HousingResponseSchema);
   },
 
   /**
@@ -220,11 +336,13 @@ export const BitJita = {
    * 
    * @param playerId - Player entity ID
    * @param buildingId - Building entity ID
-   * @returns Promise<any> - Building details
+   * @returns Promise<z.infer<typeof HousingDetailsResponseSchema>> - Building details
    */
-  async getPlayerHousingDetails(playerId: string, buildingId: string): Promise<unknown> {
+  async getPlayerHousingDetails(playerId: string, buildingId: string): Promise<z.infer<typeof HousingDetailsResponseSchema>> {
     return fetchJson(
-      `/api/players/${encodeURIComponent(playerId)}/housing/${encodeURIComponent(buildingId)}`
+      `/api/players/${encodeURIComponent(playerId)}/housing/${encodeURIComponent(buildingId)}`,
+      {},
+      HousingDetailsResponseSchema
     );
   },
 
@@ -232,7 +350,7 @@ export const BitJita = {
    * Get crafts with filtering
    * 
    * @param params - Craft filtering parameters
-   * @returns Promise<any> - Crafts data
+   * @returns Promise<z.infer<typeof CraftsResponseSchema>> - Crafts data
    */
   async getCrafts(params: {
     claimEntityId?: string;
@@ -240,7 +358,7 @@ export const BitJita = {
     regionId?: number;
     completed?: boolean;
     skillId?: number;
-  }): Promise<unknown> {
+  }): Promise<z.infer<typeof CraftsResponseSchema>> {
     const queryParams = new URLSearchParams();
     if (params.claimEntityId) queryParams.set('claimEntityId', params.claimEntityId);
     if (params.playerEntityId) queryParams.set('playerEntityId', params.playerEntityId);
@@ -248,7 +366,7 @@ export const BitJita = {
     if (params.completed !== undefined) queryParams.set('completed', params.completed.toString());
     if (params.skillId) queryParams.set('skillId', params.skillId.toString());
     
-    return fetchJson(`/api/crafts?${queryParams.toString()}`);
+    return fetchJson(`/api/crafts?${queryParams.toString()}`, {}, CraftsResponseSchema);
   },
 
   // Export utility functions for advanced usage

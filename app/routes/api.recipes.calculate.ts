@@ -12,6 +12,7 @@
  */
 
 import { json, type ActionFunctionArgs } from "@remix-run/node";
+import { z } from "zod";
 
 import { getEnhancedRecipeCalculator } from "~/services/enhanced-recipe-calculator.server";
 import { RecipeCalculator } from "~/services/recipe-calculator.server";
@@ -23,6 +24,40 @@ import type {
   RecipeBreakdownItem, 
   InventoryItem 
 } from "~/types/recipes";
+
+// Zod schemas for request validation
+const InventoryItemSchema = z.object({
+  itemId: z.string(),
+  quantity: z.number(),
+  name: z.string().optional(),
+  tier: z.number().optional(),
+  category: z.string().optional(),
+  rarity: z.string().optional(),
+  iconAssetName: z.string().optional(),
+});
+
+const RecipeInputSchema = z.object({
+  itemId: z.string(),
+  quantity: z.number(),
+});
+
+const RecipeSchema = z.object({
+  id: z.string(),
+  outputItemId: z.string(),
+  outputQuantity: z.number(),
+  inputs: z.array(RecipeInputSchema),
+  actionsRequired: z.number().optional(),
+});
+
+const ProjectItemSchema = z.object({
+  itemId: z.string(),
+  quantity: z.number(),
+  recipe: RecipeSchema.optional(),
+});
+
+const ProjectRequestBodySchema = z.object({
+  items: z.array(ProjectItemSchema),
+});
 
 /**
  * Response type for basic calculator (legacy multi-item projects)
@@ -91,14 +126,8 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     try {
-      const inventory: InventoryItem[] = JSON.parse(inventoryJson);
-      
-      if (!Array.isArray(inventory)) {
-        return json<StandardErrorResponse>(
-          { error: "Inventory must be an array" },
-          { status: 400 }
-        );
-      }
+      const parsed = JSON.parse(inventoryJson);
+      const inventory = z.array(InventoryItemSchema).parse(parsed);
 
       // Use the enhanced calculator for single-item calculations with inventory
       const calculator = getEnhancedRecipeCalculator();
@@ -123,9 +152,9 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   // Handle legacy project calculation (multiple items, no inventory)
-  let body: unknown;
+  let parsedBody: unknown;
   try {
-    body = await request.json();
+    parsedBody = await request.json();
   } catch {
     return json<StandardErrorResponse>(
       { error: "Invalid JSON" },
@@ -133,12 +162,19 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  const bodyWithItems = body as { items?: ProjectItem[] };
-  const items = Array.isArray(bodyWithItems?.items) ? bodyWithItems.items : null;
-  
-  if (!items) {
+  let items: ProjectItem[];
+  try {
+    const validated = ProjectRequestBodySchema.parse(parsedBody);
+    items = validated.items;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return json<StandardErrorResponse>(
+        { error: `Invalid request body: ${error.errors.map(e => e.message).join(", ")}` },
+        { status: 400 }
+      );
+    }
     return json<StandardErrorResponse>(
-      { error: "'items' array is required" },
+      { error: "Invalid request body" },
       { status: 400 }
     );
   }
