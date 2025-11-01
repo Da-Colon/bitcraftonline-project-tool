@@ -19,9 +19,6 @@ import {
   Button,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   // Box,
   Divider,
 } from "@chakra-ui/react"
@@ -108,46 +105,43 @@ export function RecipeBreakdownCard({
                     <Text fontSize="lg" fontWeight="semibold" color="white">
                       {selectedItem.name}
                     </Text>
-                    <HStack spacing={2} align="center">
+                    <HStack spacing={3} align="center">
                       {onQuantityChange ? (
-                        <HStack spacing={2} align="center">
-                          <NumberInput
-                            value={selectedItem.quantity}
-                            onChange={(valueString, valueNumber) => {
-                              // Handle manual input: if user types a valid number >= 1, use it
-                              // If they clear the field or type invalid input, keep current value
-                              if (!isNaN(valueNumber) && valueNumber >= 1) {
-                                onQuantityChange(valueNumber)
-                              } else if (valueString === "" || valueString === "0") {
-                                // Allow temporary empty/zero state while typing
-                                onQuantityChange(1)
-                              }
-                            }}
-                            min={1}
-                            max={999999}
-                            size="sm"
-                            width="120px"
-                            allowMouseWheel
+                        <NumberInput
+                          value={selectedItem.quantity}
+                          onChange={(valueString, valueNumber) => {
+                            // Handle manual input: if user types a valid number >= 1, use it
+                            // If they clear the field or type invalid input, keep current value
+                            if (!isNaN(valueNumber) && valueNumber >= 1) {
+                              onQuantityChange(valueNumber)
+                            } else if (valueString === "" || valueString === "0") {
+                              // Allow temporary empty/zero state while typing
+                              onQuantityChange(1)
+                            }
+                          }}
+                          min={1}
+                          max={999999}
+                          size="sm"
+                          width="100px"
+                          allowMouseWheel
+                          variant="unstyled"
+                        >
+                          <NumberInputField
+                            textAlign="center"
+                            fontSize="sm"
+                            fontWeight="semibold"
                             bg="rgba(15,23,42,0.8)"
+                            border="1px solid"
                             borderColor="whiteAlpha.200"
+                            borderRadius="md"
                             color="white"
-                            _hover={{ borderColor: "whiteAlpha.300" }}
-                            _focus={{ borderColor: "teal.400", boxShadow: "0 0 0 1px rgba(56,189,248,0.45)" }}
-                          >
-                            <NumberInputField
-                              textAlign="center"
-                              fontSize="sm"
-                              fontWeight="bold"
-                              bg="transparent"
-                              color="white"
-                              _placeholder={{ color: "whiteAlpha.500" }}
-                            />
-                            <NumberInputStepper>
-                              <NumberIncrementStepper color="white" _active={{ bg: "whiteAlpha.200" }} />
-                              <NumberDecrementStepper color="white" _active={{ bg: "whiteAlpha.200" }} />
-                            </NumberInputStepper>
-                          </NumberInput>
-                        </HStack>
+                            px={3}
+                            py={1.5}
+                            _hover={{ bg: "rgba(15,23,42,0.9)" }}
+                            _focus={{ borderColor: "teal.400", bg: "rgba(15,23,42,1)", outline: "none" }}
+                            _placeholder={{ color: "whiteAlpha.600" }}
+                          />
+                        </NumberInput>
                       ) : (
                         <Badge colorScheme="teal" variant="solid">
                           x{selectedItem.quantity}
