@@ -256,12 +256,8 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
           const childReduction = input.quantity * batchesSkipped
           const existingReduction = parentReductions.get(childId) || 0
           parentReductions.set(childId, existingReduction + childReduction)
-          
-          // Note: We don't recursively zero children - all requirements should be calculated
         }
       }
-      
-      // Note: We don't zero children when parent is satisfied - all requirements should be calculated
     }
 
     // Final pass to update actualRequired based on immutable recipeRequired

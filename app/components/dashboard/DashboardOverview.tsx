@@ -7,7 +7,6 @@ import {
   StatHelpText,
   StatLabel,
   StatNumber,
-  // VStack,
 } from "@chakra-ui/react"
 
 import { sumBy } from "~/utils/aggregation"

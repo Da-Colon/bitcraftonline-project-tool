@@ -12,13 +12,11 @@ import {
   VStack,
   Text,
   Badge,
-  // Button,
   Icon,
   Progress,
   Divider,
   Tooltip,
 } from "@chakra-ui/react"
-// import { Link as RemixLink } from "@remix-run/react"
 
 import type { ClaimInventoriesResponse } from "~/types/inventory"
 import { sumBy } from "~/utils/aggregation"
@@ -34,28 +32,23 @@ export function ClaimOverview({
   trackedCount,
   totalTrackedCount,
 }: ClaimOverviewProps) {
-  // Calculate overview stats
   const totalInventories = claimData.inventories.length
   const totalItems = claimData.inventories.reduce((sum, inv) => sum + inv.items.length, 0)
   const totalUniqueItems = new Set(
     claimData.inventories.flatMap((inv) => inv.items.map((item) => item.itemId))
   ).size
 
-  // Calculate building types
   const buildingTypes = new Set(
     claimData.inventories.map((inv) => inv.buildingName).filter(Boolean)
   ).size
 
-  // Calculate tracking progress
   const trackingProgress = totalInventories > 0 ? (trackedCount / totalInventories) * 100 : 0
 
-  // Get tier distribution across all inventories
   const allItems = claimData.inventories.flatMap((inventory) => inventory.items)
   const tierCounts = sumBy(allItems, (item) => item.tier ?? -1, (item) => item.quantity)
 
   const highTierItems = (tierCounts[4] || 0) + (tierCounts[5] || 0)
 
-  // Find most valuable building (by item count)
   const mostValuableBuilding = claimData.inventories.reduce(
     (max, inv) => (inv.items.length > max.items.length ? inv : max),
     claimData.inventories[0] || { buildingName: "None", items: [] }

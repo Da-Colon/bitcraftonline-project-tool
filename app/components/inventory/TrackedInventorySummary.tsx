@@ -10,7 +10,6 @@ import {
   Card,
   CardBody,
   Icon,
-  // Link as ChakraLink,
 } from "@chakra-ui/react"
 import { Link as RemixLink } from "@remix-run/react"
 import { useState } from "react"
@@ -49,7 +48,6 @@ export function TrackedInventorySummary({
   const { snapshots, getSnapshotsByClaim } = useSharedPlayerInventoryTracking()
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Calculate summary from snapshots
   const claimSnapshots = snapshots.filter(s => s.source === 'claim' && s.claimId)
   const summary = {
     total: snapshots.length,

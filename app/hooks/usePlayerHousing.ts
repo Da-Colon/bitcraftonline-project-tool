@@ -21,7 +21,6 @@ export function usePlayerHousing(playerId?: string) {
   const [housingInventories, setHousingInventories] = useState<PlayerInventories | null>(null)
   const [detailsLoading, setDetailsLoading] = useState(false)
 
-  // Load housing list when playerId changes
   useEffect(() => {
     if (!playerId) {
       return
@@ -30,16 +29,13 @@ export function usePlayerHousing(playerId?: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerId])
 
-  // Extract housing data from fetcher (treat 404 as empty array)
+  // Treat 404 as empty array (no housing exists)
   const housingData = useMemo<BitJitaHousingResponse | null>(() => {
     if (!housingFetcher.data) {
       return null
     }
     if (isStandardErrorResponse(housingFetcher.data)) {
-      // Check if it's a 404 (no housing) - return empty array
-      // The API route returns 404 status, but we'll check the error message
       const errorData = housingFetcher.data
-      // If it's explicitly a not found error, treat as no housing
       if (
         errorData.error?.toLowerCase().includes("not found") ||
         errorData.error?.toLowerCase().includes("404")
@@ -54,26 +50,22 @@ export function usePlayerHousing(playerId?: string) {
     return null
   }, [housingFetcher.data])
 
-  // Extract error from fetcher response (skip 404 errors as they mean no housing)
   const error = useMemo<string | null>(() => {
     return extractFetcherError(housingFetcher.data, "Failed to fetch housing data", {
       treat404AsNonError: true,
     })
   }, [housingFetcher.data])
 
-  // Fetch details for each housing building when housing data changes
   useEffect(() => {
     if (!playerId) {
       setHousingInventories(null)
       return
     }
 
-    // If no housing data yet, wait for it
     if (housingData === null) {
       return
     }
 
-    // If no housing buildings, return empty inventories
     if (housingData.length === 0) {
       setHousingInventories({ housing: [] })
       return
@@ -82,7 +74,6 @@ export function usePlayerHousing(playerId?: string) {
     const fetchHousingDetails = async () => {
       setDetailsLoading(true)
       try {
-        // Fetch details for each housing building
         const housingInventoriesPromises = housingData.map(async (housing) => {
           try {
             const detailsResponse = await fetch(
@@ -102,7 +93,6 @@ export function usePlayerHousing(playerId?: string) {
           (details): details is BitJitaHousingDetailsResponse => details !== null
         )
 
-        // Transform housing details into our inventory format
         const transformedInventories = transformHousingToInventories(validHousingDetails)
         setHousingInventories({ housing: transformedInventories })
       } catch {
@@ -115,7 +105,6 @@ export function usePlayerHousing(playerId?: string) {
     fetchHousingDetails()
   }, [playerId, housingData])
 
-  // Combine loading states
   const loading =
     housingFetcher.state === "loading" ||
     housingFetcher.state === "submitting" ||
@@ -132,7 +121,6 @@ function transformHousingToInventories(
   housingDetails.forEach((housing) => {
     housing.inventories.forEach((container) => {
       const items: InventoryItem[] = container.inventory.map((item) => {
-        // The items are stored as a record with item_id as key
         const itemInfo = housing.items.find((i) => i.id === item.contents.item_id)
 
         return {

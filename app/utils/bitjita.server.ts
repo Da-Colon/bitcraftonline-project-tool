@@ -64,11 +64,9 @@ async function fetchJson<T = unknown>(
   const url = `${baseUrl()}${path}`;
   const headers = new Headers(init.headers || {});
   
-  // Set default headers for JSON API
   if (!headers.has("Accept")) headers.set("Accept", "application/json");
   if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
 
-  // Set up timeout (10 seconds)
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
   
@@ -84,15 +82,12 @@ async function fetchJson<T = unknown>(
       });
     }
     
-    // Parse JSON
     const parsed = text ? JSON.parse(text) : {};
     
-    // Validate with schema if provided
     if (schema) {
       return schema.parse(parsed);
     }
     
-    // Return without validation (explicit unsafe parsing)
     return parsed as T;
   } catch (err) {
     if (err && typeof err === 'object' && 'name' in err && err.name === "AbortError") {
@@ -291,7 +286,6 @@ export const BitJita = {
       }
     }
     
-    // Unknown shape; return empty array
     return [];
   },
 
@@ -303,7 +297,6 @@ export const BitJita = {
    */
   async getPlayerById(id: string): Promise<Player> {
     const response = await fetchJson(`/api/players/${encodeURIComponent(id)}`, {}, PlayerDetailsSchema);
-    // Extract player from nested response { player: { ... } }
     return response.player;
   },
 

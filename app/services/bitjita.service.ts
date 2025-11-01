@@ -99,7 +99,6 @@ export class BitJitaService {
     query: string, 
     cacheTTL: number = CACHE_TTL.PLAYERS
   ): Promise<PlayerSearchResponse> {
-    // Validate input
     if (!query || query.trim().length < 2) {
       throw new ServiceError(
         "Query must be at least 2 characters",
@@ -110,7 +109,6 @@ export class BitJitaService {
 
     const cacheKey = `search:${query.toLowerCase()}`;
     
-    // Check cache first
     const cached = cacheUtils.get<PlayerSearchResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -121,7 +119,6 @@ export class BitJitaService {
       
       const response: PlayerSearchResponse = { players };
       
-      // Cache the response
       cacheUtils.set(cacheKey, response, cacheTTL);
       
       return response;
@@ -167,7 +164,6 @@ export class BitJitaService {
 
     const cacheKey = `player:${id}`;
     
-    // Check cache first
     const cached = cacheUtils.get<PlayerDetailsResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -182,7 +178,6 @@ export class BitJitaService {
         player: data as PlayerDetailsResponse["player"],
       };
       
-      // Cache the response
       cacheUtils.set(cacheKey, response, cacheTTL);
       
       return response;
@@ -236,7 +231,6 @@ export class BitJitaService {
 
     const cacheKey = `inventories:${id}`;
     
-    // Check cache first
     const cached = cacheUtils.get(cacheKey);
     if (cached) {
       return cached;
@@ -259,7 +253,6 @@ export class BitJitaService {
         }
       }
 
-      // Cache the enriched response
       cacheUtils.set(cacheKey, data, cacheTTL);
       
       return data;
@@ -307,7 +300,6 @@ export class BitJitaService {
 
     const cacheKey = `housing:${id}`;
     
-    // Check cache first
     const cached = cacheUtils.get(cacheKey);
     if (cached) {
       return cached;
@@ -316,7 +308,6 @@ export class BitJitaService {
     try {
       const data = await BitJita.getPlayerHousing(id);
       
-      // Cache the response
       cacheUtils.set(cacheKey, data, cacheTTL);
       
       return data;
@@ -370,7 +361,6 @@ export class BitJitaService {
 
     const cacheKey = `housing-details:${playerId}:${buildingId}`;
     
-    // Check cache first
     const cached = cacheUtils.get(cacheKey);
     if (cached) {
       return cached;
@@ -379,7 +369,6 @@ export class BitJitaService {
     try {
       const data = await BitJita.getPlayerHousingDetails(playerId, buildingId);
       
-      // Cache the response
       cacheUtils.set(cacheKey, data, cacheTTL);
       
       return data;
@@ -427,7 +416,6 @@ export class BitJitaService {
 
     const cacheKey = `claim-inventories:${claimId}`;
     
-    // Check cache first
     const cached = cacheUtils.get(cacheKey);
     if (cached) {
       return cached;
@@ -436,13 +424,11 @@ export class BitJitaService {
     try {
       const bitjitaData = await BitJita.getClaimInventories(claimId);
 
-      // Transform BitJita response to our expected format
       const transformedData = this.transformClaimInventories(claimId, bitjitaData as { 
         items?: { id: number; name: string; tier: number; tag: string; rarityStr: string; iconAssetName?: string }[]; 
         buildings?: { entityId: string; buildingName: string; buildingNickname?: string; iconAssetName: string; inventory: { contents: { item_id: number; quantity: number; }; }[] }[] 
       });
 
-      // Cache the transformed response
       cacheUtils.set(cacheKey, transformedData, cacheTTL);
       
       return transformedData;
@@ -490,10 +476,8 @@ export class BitJitaService {
     },
     cacheTTL: number = CACHE_TTL.CRAFTS
   ): Promise<CraftsResponse> {
-    // Create cache key from params
     const cacheKey = `crafts:${JSON.stringify(params)}`;
     
-    // Check cache first
     const cached = cacheUtils.get<CraftsResponse>(cacheKey);
     if (cached) {
       return cached;
@@ -507,11 +491,9 @@ export class BitJitaService {
         items?: { id: number; name: string }[]
       };
       
-      // Transform the crafts to include proper item names
       const transformedCrafts = (craftsData.craftResults || []).map((craft: Record<string, unknown>) => {
         const items = craftsData.items || [];
         
-        // Transform craftedItem to include proper names
         const craftedItem = ((craft.craftedItem as Array<{ item_id: number; quantity: number }>) || []).map((item) => {
           const itemData = items.find(i => i.id === item.item_id);
           return {
@@ -533,7 +515,6 @@ export class BitJitaService {
         totalCount: transformedCrafts.length,
       };
 
-      // Cache the response
       cacheUtils.set(cacheKey, response, cacheTTL);
       
       return response;
@@ -561,13 +542,11 @@ export class BitJitaService {
    * @private
    */
   private static transformClaimInventories(claimId: string, bitjitaData: { items?: Array<{ id: number; name: string; tier: number; tag: string; rarityStr: string; iconAssetName?: string }>; buildings?: Array<{ entityId: string; buildingName: string; buildingNickname?: string; iconAssetName: string; inventory: Array<{ contents: { item_id: number; quantity: number } }> }> }) {
-    // Create a lookup map for items by ID
     const itemsMap = new Map<number, { id: number; name: string; tier: number; tag: string; rarityStr: string; iconAssetName?: string }>();
     bitjitaData.items?.forEach((item) => {
       itemsMap.set(item.id, item);
     });
 
-    // Transform BitJita response to our expected format
     return {
       claimId,
       claimName: `Claim ${claimId}`, // We'll need to get the actual name from somewhere else

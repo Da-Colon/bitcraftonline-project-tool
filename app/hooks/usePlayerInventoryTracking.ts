@@ -20,7 +20,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load snapshots for the current player
   const loadSnapshots = useCallback(async () => {
     if (!playerId) {
       setSnapshots([])
@@ -35,7 +34,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       const playerSnapshots = await inventoryStorageService.getPlayerTrackedInventories(playerId)
       setSnapshots(playerSnapshots)
 
-      // Calculate metadata for each snapshot
       const newMetadata = new Map<string, InventorySnapshotMetadata>()
       playerSnapshots.forEach((snapshot) => {
         newMetadata.set(snapshot.id, getSnapshotMetadata(snapshot))
@@ -48,7 +46,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     }
   }, [playerId])
 
-  // Load snapshots on mount and when player changes
   useEffect(() => {
     loadSnapshots()
   }, [loadSnapshots])
@@ -61,12 +58,11 @@ export function usePlayerInventoryTracking(playerId: string | null) {
 
     const interval = setInterval(() => {
       loadSnapshots()
-    }, 30000) // 30 seconds
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [playerId, snapshots.length, loadSnapshots])
 
-  // Track an inventory by creating a snapshot
   const trackInventory = useCallback(
     async (
       inventory: Inventory | ClaimInventory,
@@ -80,7 +76,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
         const snapshot = createInventorySnapshot(inventory, source)
         await inventoryStorageService.saveTrackedInventory(playerId, snapshot)
         
-        // Direct state update instead of re-fetching
         setSnapshots(prev => [...prev, snapshot])
         setMetadata(prev => {
           const newMetadata = new Map(prev)
@@ -95,7 +90,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [playerId]
   )
 
-  // Untrack an inventory
   const untrackInventory = useCallback(
     async (inventoryId: string) => {
       if (!playerId) {
@@ -105,7 +99,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       try {
         await inventoryStorageService.removeTrackedInventory(playerId, inventoryId)
         
-        // Direct state update instead of re-fetching
         setSnapshots(prev => prev.filter(s => s.id !== inventoryId))
         setMetadata(prev => {
           const newMetadata = new Map(prev)
@@ -120,7 +113,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [playerId]
   )
 
-  // Track multiple inventories
   const trackInventories = useCallback(
     async (
       inventories: (Inventory | ClaimInventory)[],
@@ -133,12 +125,10 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       try {
         const snapshots = inventories.map((inventory) => createInventorySnapshot(inventory, source))
 
-        // Save all snapshots
         for (const snapshot of snapshots) {
           await inventoryStorageService.saveTrackedInventory(playerId, snapshot)
         }
 
-        // Direct state update instead of re-fetching
         setSnapshots(prev => [...prev, ...snapshots])
         setMetadata(prev => {
           const newMetadata = new Map(prev)
@@ -154,8 +144,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     },
     [playerId]
   )
-
-  // Untrack all inventories for the current player
   const untrackAll = useCallback(async () => {
     if (!playerId) {
       throw new Error("No player selected")
@@ -163,14 +151,13 @@ export function usePlayerInventoryTracking(playerId: string | null) {
 
     try {
       await inventoryStorageService.clearPlayerTracking(playerId)
-      await loadSnapshots() // Refresh the list
+      await loadSnapshots()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to clear tracking")
       throw err
     }
   }, [playerId, loadSnapshots])
 
-  // Check if an inventory is tracked
   const isTracked = useCallback(
     (inventoryId: string) => {
       return snapshots.some((snapshot) => snapshot.id === inventoryId)
@@ -178,7 +165,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [snapshots]
   )
 
-  // Get snapshot for a specific inventory
   const getSnapshot = useCallback(
     (inventoryId: string) => {
       return snapshots.find((snapshot) => snapshot.id === inventoryId)
@@ -186,7 +172,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [snapshots]
   )
 
-  // Refresh a specific snapshot with fresh data
   const refreshSnapshot = useCallback(
     async (
       inventoryId: string,
@@ -201,7 +186,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
         const snapshot = createInventorySnapshot(freshInventory, source)
         await inventoryStorageService.saveTrackedInventory(playerId, snapshot)
         
-        // Direct state update instead of re-fetching
         setSnapshots(prev => prev.map(s => s.id === inventoryId ? snapshot : s))
         setMetadata(prev => {
           const newMetadata = new Map(prev)
@@ -216,7 +200,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [playerId]
   )
 
-  // Get snapshots that need refresh
   const getStaleSnapshots = useCallback(() => {
     return snapshots.filter((snapshot) => {
       const meta = metadata.get(snapshot.id)
@@ -224,7 +207,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     })
   }, [snapshots, metadata])
 
-  // Get snapshots by claim ID
   const getSnapshotsByClaim = useCallback(
     (claimId: string) => {
       return snapshots.filter((snapshot) => snapshot.claimId === claimId)
@@ -232,7 +214,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [snapshots]
   )
 
-  // Get snapshots by source
   const getSnapshotsBySource = useCallback(
     (source: InventorySource) => {
       return snapshots.filter((snapshot) => snapshot.source === source)
@@ -240,7 +221,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [snapshots]
   )
 
-  // Untrack all inventories from a specific claim
   const untrackByClaim = useCallback(
     async (claimId: string) => {
       if (!playerId) {
@@ -250,7 +230,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
       try {
         await inventoryStorageService.clearClaimTracking(playerId, claimId)
         
-        // Direct state update instead of re-fetching
         setSnapshots(prev => prev.filter(s => s.claimId !== claimId))
         setMetadata(prev => {
           const newMetadata = new Map(prev)
@@ -270,7 +249,6 @@ export function usePlayerInventoryTracking(playerId: string | null) {
     [playerId, snapshots]
   )
 
-  // Get tracking summary with breakdown by source and claim
   const getTrackingSummary = useCallback(async () => {
     if (!playerId) {
       return {

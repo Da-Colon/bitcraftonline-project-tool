@@ -12,12 +12,9 @@ import {
   VStack,
   Text,
   Badge,
-  // Button,
   Icon,
-  // Progress,
   Divider,
 } from "@chakra-ui/react"
-// import { Link as RemixLink } from "@remix-run/react"
 
 import type { PlayerInventories } from "~/types/inventory"
 import { sumBy } from "~/utils/aggregation"
@@ -31,7 +28,6 @@ export function InventoryOverview({
   inventories,
   trackedCount,
 }: InventoryOverviewProps) {
-  // Calculate overview stats
   const allInventories = [
     ...(inventories.personal || []),
     ...(inventories.banks || []),
@@ -46,16 +42,11 @@ export function InventoryOverview({
     allInventories.flatMap((inv) => inv.items.map((item) => item.itemId))
   ).size
 
-  // Find most valuable inventory (by item count)
   const mostValuableInventory = allInventories.reduce(
     (max, inv) => (inv.items.length > max.items.length ? inv : max),
     allInventories[0] || { name: "None", items: [] }
   )
 
-  // Calculate tracking progress
-  // const trackingProgress = totalInventories > 0 ? (trackedCount / totalInventories) * 100 : 0
-
-  // Get tier distribution across all inventories
   const allItems = allInventories.flatMap((inventory) => inventory.items)
   const tierCounts = sumBy(allItems, (item) => item.tier ?? -1, (item) => item.quantity)
 

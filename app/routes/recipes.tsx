@@ -41,21 +41,16 @@ export default function RecipesRoute() {
   const [hideCompleted, setHideCompleted] = useState(false)
   const [searchResults, setSearchResults] = useState<Item[]>(items)
 
-  // Use persistent recipe selection
   const { selectedItem, targetQuantity, updateSelectedItem, updateTargetQuantity, clearSelection } =
     useRecipeSelection()
 
-  // Get combined inventory data
   const { combinedInventory } = useRecipeInventoryData()
 
-  // Debounce search query to prevent excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300)
   const debouncedQuantity = useDebounce(targetQuantity, 200)
 
-  // Create a stable key for inventory to avoid triggering recalcs on referential changes
   const inventoryKey = useMemo(() => JSON.stringify(combinedInventory), [combinedInventory])
 
-  // Fetch search results when debounced query changes
   useEffect(() => {
     if (debouncedSearchQuery.length > 2) {
       const params = new URLSearchParams({ q: debouncedSearchQuery })
@@ -67,12 +62,10 @@ export default function RecipesRoute() {
   const handleItemSelect = (item: Item) => {
     updateSelectedItem(item)
     setSearchQuery(item.name)
-    // Calculation is triggered by the effect that watches selectedItem/id, debouncedQuantity, and inventoryKey
   }
 
   const handleQuantityChange = (newQuantity: number) => {
     updateTargetQuantity(newQuantity)
-    // Calculation is triggered by the effect that watches debouncedQuantity
   }
 
   const breakdown = useMemo(() => {
@@ -87,12 +80,10 @@ export default function RecipesRoute() {
   const isLoading = calculationFetcher.state !== "idle"
   
 
-  // Filter breakdown based on hideCompleted state
   const filteredBreakdown = hideCompleted
     ? breakdown.filter((item: RecipeBreakdownItem) => item.actualRequired > 0)
     : breakdown
 
-  // Auto-calculate when inputs change (debounced) to avoid duplicate submits
   useEffect(() => {
     if (!selectedItem || debouncedQuantity <= 0) return
     
