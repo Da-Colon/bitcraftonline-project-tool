@@ -44,6 +44,11 @@ export function RecipeOverview({
   // Calculate total deficit
   const totalDeficit = breakdown.reduce((sum, item) => sum + item.deficit, 0)
 
+  // Calculate total effort stats
+  const totalEffortRequired = breakdown.reduce((sum, item) => sum + (item.totalEffort || 0), 0)
+  const totalEffortRemaining = breakdown.reduce((sum, item) => sum + (item.effortAfterInventory || 0), 0)
+  const effortSaved = totalEffortRequired - totalEffortRemaining
+
   const hasInventoryData = combinedInventory.length > 0
   const hasRecipeData = selectedItem !== null
 
@@ -96,6 +101,22 @@ export function RecipeOverview({
                 {totalDeficit.toLocaleString()}
               </StatNumber>
               <StatHelpText color="whiteAlpha.600">{totalRequiredItems} recipe components</StatHelpText>
+            </Stat>
+          </CardBody>
+        </Card>
+
+        <Card {...glassCardStyles}>
+          <CardBody>
+            <Stat>
+              <StatLabel color="whiteAlpha.700">Total Effort Required</StatLabel>
+              <StatNumber color="teal.300">
+                🔥 {totalEffortRemaining.toLocaleString()}
+              </StatNumber>
+              <StatHelpText color="whiteAlpha.600">
+                {effortSaved > 0
+                  ? `${effortSaved.toLocaleString()} saved by inventory`
+                  : "No effort savings"}
+              </StatHelpText>
             </Stat>
           </CardBody>
         </Card>

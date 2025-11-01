@@ -94,6 +94,7 @@ export function parseRecipe(bitCraftRecipe: BitCraftRecipe): ParsedRecipe | null
       outputItemId: output.itemId,
       outputQuantity: output.quantity,
       inputs: inputs,
+      actionsRequired: bitCraftRecipe.actions_required ?? undefined,
     }
   }
 

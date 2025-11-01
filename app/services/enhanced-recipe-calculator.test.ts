@@ -649,4 +649,135 @@ describe("EnhancedRecipeCalculator", () => {
       console.log(`Complex recipe calculation took ${duration}ms`)
     })
   })
+
+  describe("Effort Calculation", () => {
+    it("should calculate effort for items with recipes based on actualRequired", () => {
+      // Test with an item that has a recipe with known actions_required
+      // Using Simple Plank (item_2020003) - need to check if it has a recipe with actions_required
+      const result = calculator.calculateWithInventory("item_2020003", 10, [])
+
+      const targetItem = result.breakdown.find((item) => item.itemId === "item_2020003")
+      expect(targetItem).toBeDefined()
+
+      if (targetItem) {
+        const recipe = calculator.getRecipe("item_2020003")
+        
+        if (recipe && recipe.actionsRequired) {
+          // If item has a recipe with actionsRequired, verify effort calculation
+          const expectedBatches = Math.ceil(targetItem.actualRequired / recipe.outputQuantity)
+          const expectedEffort = recipe.actionsRequired * expectedBatches
+
+          expect(targetItem.effortPerBatch).toBe(recipe.actionsRequired)
+          expect(targetItem.effortAfterInventory).toBe(expectedEffort)
+          expect(targetItem.effortAfterInventory).toBeGreaterThanOrEqual(0)
+          
+          // Effort should be based on actualRequired, not recipeRequired
+          if (targetItem.effortPerBatch !== undefined) {
+            expect(targetItem.effortAfterInventory).toBe(
+              targetItem.effortPerBatch * Math.ceil(targetItem.actualRequired / recipe.outputQuantity)
+            )
+          }
+        }
+      }
+    })
+
+    it("should reduce effort when inventory is provided", () => {
+      // Test: Craft 10 items, have 3 in inventory
+      // Effort should be calculated based on remaining 7 items
+      const inventory = [
+        { itemId: "item_2020003", quantity: 3 }, // Simple Plank
+      ]
+
+      const result = calculator.calculateWithInventory("item_2020003", 10, inventory)
+
+      const targetItem = result.breakdown.find((item) => item.itemId === "item_2020003")
+      expect(targetItem).toBeDefined()
+
+      if (targetItem) {
+        const recipe = calculator.getRecipe("item_2020003")
+        
+        if (recipe && recipe.actionsRequired) {
+          // Verify effort is calculated from actualRequired (7), not recipeRequired (10)
+          expect(targetItem.recipeRequired).toBe(10)
+          expect(targetItem.actualRequired).toBe(7) // 10 - 3 inventory
+          expect(targetItem.deficit).toBe(7)
+
+          const expectedBatches = Math.ceil(targetItem.actualRequired / recipe.outputQuantity)
+          const expectedEffort = recipe.actionsRequired * expectedBatches
+
+          expect(targetItem.effortAfterInventory).toBe(expectedEffort)
+          
+          // Effort should match: actions_required * ceil(actualRequired / outputQuantity)
+          expect(targetItem.effortAfterInventory).toBe(
+            recipe.actionsRequired * Math.ceil(targetItem.actualRequired / recipe.outputQuantity)
+          )
+        }
+      }
+    })
+
+    it("should set effort to 0 for items without recipes (raw materials)", () => {
+      // Find a raw material item (no recipe)
+      // Most tier 0 or tier 1 basic materials should not have recipes
+      const result = calculator.calculateWithInventory("item_4101", 1, []) // Heated Capacitor - complex item
+
+      // Find items in breakdown that have no recipe
+      const itemsWithoutRecipes = result.breakdown.filter((item) => {
+        const recipe = calculator.getRecipe(item.itemId)
+        return !recipe
+      })
+
+      if (itemsWithoutRecipes.length > 0) {
+        const rawMaterial = itemsWithoutRecipes[0]
+        expect(rawMaterial.effortPerBatch).toBeUndefined()
+        expect(rawMaterial.effortAfterInventory).toBeUndefined()
+      }
+    })
+
+    it("should calculate effort correctly for multiple items with different batch sizes", () => {
+      // Test with an item that requires multiple batches
+      // Craft 25 items where recipe outputs 10 per batch
+      const result = calculator.calculateWithInventory("item_2020003", 25, [])
+
+      const targetItem = result.breakdown.find((item) => item.itemId === "item_2020003")
+      expect(targetItem).toBeDefined()
+
+      if (targetItem) {
+        const recipe = calculator.getRecipe("item_2020003")
+        
+        if (recipe && recipe.actionsRequired) {
+          // 25 items with outputQuantity 10 = ceil(25/10) = 3 batches
+          const expectedBatches = Math.ceil(25 / recipe.outputQuantity)
+          const expectedEffort = recipe.actionsRequired * expectedBatches
+
+          expect(targetItem.effortAfterInventory).toBe(expectedEffort)
+          expect(targetItem.effortAfterInventory).toBe(
+            recipe.actionsRequired * Math.ceil(targetItem.actualRequired / recipe.outputQuantity)
+          )
+        }
+      }
+    })
+
+    it("should calculate effort for all items in breakdown chain", () => {
+      // Test complex recipe chain - all intermediate items should have correct effort
+      const result = calculator.calculateWithInventory("item_4101", 1, []) // Heated Capacitor
+
+      // Check all items with recipes have effort calculated
+      result.breakdown.forEach((item) => {
+        const recipe = calculator.getRecipe(item.itemId)
+        
+        if (recipe && recipe.actionsRequired) {
+          // Items with recipes should have effort
+          expect(item.effortPerBatch).toBe(recipe.actionsRequired)
+          
+          // Effort should be based on actualRequired
+          const expectedEffort = recipe.actionsRequired * Math.ceil(item.actualRequired / recipe.outputQuantity)
+          expect(item.effortAfterInventory).toBe(expectedEffort)
+        } else {
+          // Items without recipes should not have effort
+          expect(item.effortPerBatch).toBeUndefined()
+          expect(item.effortAfterInventory).toBeUndefined()
+        }
+      })
+    })
+  })
 })

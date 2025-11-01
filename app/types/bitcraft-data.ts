@@ -69,4 +69,5 @@ export interface ParsedRecipe {
   outputItemId: string // Output item ID
   outputQuantity: number // Output quantity
   inputs: ParsedRecipeInput[] // Input items
+  actionsRequired?: number // Number of actions required per batch
 }

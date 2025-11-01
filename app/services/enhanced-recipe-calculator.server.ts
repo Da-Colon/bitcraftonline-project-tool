@@ -92,10 +92,28 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
 
     stack.add(itemId)
 
+    // Get recipe for effort calculation
+    const recipe = this.getRecipe(itemId)
+    const effortPerBatch = recipe?.actionsRequired ?? undefined
+    const batches = recipe ? Math.ceil(quantity / recipe.outputQuantity) : 0
+    const totalEffort = effortPerBatch !== undefined ? effortPerBatch * batches : undefined
+
     // Update or create breakdown item
     const existing = breakdown.get(itemId)
     if (existing) {
       existing.recipeRequired += quantity
+      // Recalculate effort for existing item
+      if (effortPerBatch !== undefined) {
+        const existingBatches = recipe ? Math.ceil(existing.recipeRequired / recipe.outputQuantity) : 0
+        existing.effortPerBatch = effortPerBatch
+        existing.totalEffort = effortPerBatch * existingBatches
+        existing.effortAfterInventory = existing.totalEffort
+      } else {
+        // Only set effortPerBatch if we have a recipe with actionsRequired
+        existing.effortPerBatch = undefined
+        existing.totalEffort = undefined
+        existing.effortAfterInventory = undefined
+      }
     } else {
       const enhancedItem = enhanceItemWithIcon(item)
       breakdown.set(itemId, {
@@ -108,11 +126,13 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
         currentInventory: 0, // Will be updated in pass 2
         deficit: quantity, // Will be updated in pass 2
         iconAssetName: enhancedItem.iconAssetName,
+        effortPerBatch,
+        totalEffort,
+        effortAfterInventory: totalEffort, // Will be updated in pass 2
       })
     }
 
     // If this item has a recipe, process inputs
-    const recipe = this.getRecipe(itemId)
     if (recipe) {
       const craftingBatches = Math.ceil(quantity / recipe.outputQuantity)
 
@@ -226,6 +246,14 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
       const remainingBatches = Math.ceil(remainingRequired / recipe.outputQuantity)
       const batchesSkipped = Math.max(0, originalBatches - remainingBatches)
 
+      // Update effort based on remainingRequired (will be recalculated in final pass based on actualRequired)
+      // This is a preliminary calculation; final pass will set it correctly based on actualRequired
+      if (item.effortPerBatch !== undefined && item.effortPerBatch > 0) {
+        item.effortAfterInventory = item.effortPerBatch * remainingBatches
+      } else {
+        item.effortAfterInventory = undefined
+      }
+
       // If we can skip batches, reduce children accordingly
       if (batchesSkipped > 0) {
         const children = dependencies.get(item.itemId)
@@ -252,12 +280,28 @@ export class EnhancedRecipeCalculator extends RecipeCalculator {
     // Final pass to update actualRequired and deficit based on immutable recipeRequired
     for (const item of breakdown.values()) {
       const currentInventory = this.getInventoryQuantity(item.itemId, inventoryMap)
-      item.currentInventory = currentInventory  // ← ADD THIS LINE
+      item.currentInventory = currentInventory
       const inventoryUsed = Math.min(item.recipeRequired, currentInventory)
       const parentReduction = parentReductions.get(item.itemId) || 0
       const remainingRequired = Math.max(0, item.recipeRequired - inventoryUsed - parentReduction)
       item.actualRequired = remainingRequired
       item.deficit = remainingRequired
+      
+      // Update effort based on actualRequired (what we need to craft after inventory)
+      // Formula: effortAfterInventory = actions_required * Math.ceil(actualRequired / outputQuantity)
+      if (item.effortPerBatch !== undefined && item.effortPerBatch > 0) {
+        const recipe = this.getRecipe(item.itemId)
+        if (recipe && recipe.outputQuantity > 0) {
+          // Use actualRequired directly for clarity
+          const batchesNeeded = Math.ceil(item.actualRequired / recipe.outputQuantity)
+          item.effortAfterInventory = item.effortPerBatch * batchesNeeded
+        } else {
+          item.effortAfterInventory = undefined
+        }
+      } else {
+        // Items without recipes should have undefined effort
+        item.effortAfterInventory = undefined
+      }
     }
   }
 

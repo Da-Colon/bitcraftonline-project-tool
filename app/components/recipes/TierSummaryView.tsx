@@ -35,6 +35,13 @@ export function TierSummaryView({
     return acc
   }, {} as Record<number, RecipeBreakdownItem[]>)
 
+  // Calculate effort per tier
+  const tierEffort = breakdown.reduce((acc, item) => {
+    if (!acc[item.tier]) acc[item.tier] = 0
+    acc[item.tier] += item.effortAfterInventory || 0
+    return acc
+  }, {} as Record<number, number>)
+
   const sortedTiers = Object.keys(tierGroups)
     .map(Number)
     .sort((a, b) => b - a) // Highest tier first
@@ -83,9 +90,16 @@ export function TierSummaryView({
               <Heading size="sm" color="white">
                 Tier {tier}
               </Heading>
-              <Badge colorScheme="teal" size="sm" borderRadius="full" px={2}>
-                {tierGroups[tier].length} items
-              </Badge>
+              <HStack spacing={2}>
+                <Badge colorScheme="teal" size="sm" borderRadius="full" px={2}>
+                  {tierGroups[tier].length} items
+                </Badge>
+                {(tierEffort[tier] || 0) > 0 && (
+                  <Badge colorScheme="pink" size="sm" borderRadius="full" px={2}>
+                    🔥 {(tierEffort[tier] || 0).toLocaleString()}
+                  </Badge>
+                )}
+              </HStack>
             </HStack>
           </CardHeader>
           <CardBody pt={0}>
@@ -109,6 +123,11 @@ export function TierSummaryView({
                       Have: {item.currentInventory.toLocaleString()}
                     </Text>
                   </HStack>
+                  {(item.effortAfterInventory || 0) > 0 && (
+                    <Text fontSize="xs" color="teal.200" mt={1}>
+                      🔥 {(item.effortAfterInventory || 0).toLocaleString()} effort
+                    </Text>
+                  )}
                 </Box>
               ))}
             </SimpleGrid>

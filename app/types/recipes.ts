@@ -17,6 +17,7 @@ export interface Recipe {
   outputItemId: string
   outputQuantity: number
   inputs: RecipeInput[]
+  actionsRequired?: number // Number of actions required per batch
 }
 
 export interface ProjectItem {
@@ -46,6 +47,9 @@ export interface RecipeBreakdownItem {
   currentInventory: number // Available in inventory
   deficit: number // Still needed after inventory
   iconAssetName?: string
+  effortPerBatch?: number // Effort per crafting batch (from recipe.actionsRequired)
+  totalEffort?: number // Total effort for this item (effortPerBatch × batches)
+  effortAfterInventory?: number // Effort remaining after inventory adjustments
 }
 
 export interface TierCalculationResult {
