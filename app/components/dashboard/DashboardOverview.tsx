@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react"
 
 import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
+import { sumBy } from "~/utils/aggregation"
 
 interface DashboardOverviewProps {
   trackedInventoriesCount: number
@@ -24,11 +25,7 @@ export function DashboardOverview({
   combinedItems,
 }: DashboardOverviewProps) {
   const uniqueItemTypes = combinedItems.length
-  const tierCounts = combinedItems.reduce((acc, item) => {
-    const tier = item.tier ?? -1
-    acc[tier] = (acc[tier] || 0) + item.totalQuantity
-    return acc
-  }, {} as Record<number, number>)
+  const tierCounts = sumBy(combinedItems, item => item.tier ?? -1, item => item.totalQuantity)
 
   const highestTierItems = combinedItems.filter((item) => (item.tier ?? -1) === 5)
 

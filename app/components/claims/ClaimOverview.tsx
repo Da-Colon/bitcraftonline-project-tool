@@ -21,6 +21,7 @@ import {
 // import { Link as RemixLink } from "@remix-run/react"
 
 import type { ClaimInventoriesResponse } from "~/types/inventory"
+import { sumBy } from "~/utils/aggregation"
 
 interface ClaimOverviewProps {
   claimData: ClaimInventoriesResponse
@@ -49,13 +50,8 @@ export function ClaimOverview({
   const trackingProgress = totalInventories > 0 ? (trackedCount / totalInventories) * 100 : 0
 
   // Get tier distribution across all inventories
-  const tierCounts = claimData.inventories.reduce((acc, inventory) => {
-    inventory.items.forEach((item) => {
-      const tier = item.tier ?? -1
-      acc[tier] = (acc[tier] || 0) + item.quantity
-    })
-    return acc
-  }, {} as Record<number, number>)
+  const allItems = claimData.inventories.flatMap((inventory) => inventory.items)
+  const tierCounts = sumBy(allItems, (item) => item.tier ?? -1, (item) => item.quantity)
 
   const highTierItems = (tierCounts[4] || 0) + (tierCounts[5] || 0)
 

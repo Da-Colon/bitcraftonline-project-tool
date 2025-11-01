@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react"
 
 import type { RecipeBreakdownItem } from "~/types/recipes"
+import { groupBy, sumBy } from "~/utils/aggregation"
 
 interface TierSummaryViewProps {
   breakdown: RecipeBreakdownItem[]
@@ -29,18 +30,10 @@ export function TierSummaryView({
   isRecipeComplete,
   onClearSelection,
 }: TierSummaryViewProps) {
-  const tierGroups = breakdown.reduce((acc, item) => {
-    if (!acc[item.tier]) acc[item.tier] = []
-    acc[item.tier].push(item)
-    return acc
-  }, {} as Record<number, RecipeBreakdownItem[]>)
+  const tierGroups = groupBy(breakdown, item => item.tier)
 
   // Calculate effort per tier
-  const tierEffort = breakdown.reduce((acc, item) => {
-    if (!acc[item.tier]) acc[item.tier] = 0
-    acc[item.tier] += item.effortAfterInventory || 0
-    return acc
-  }, {} as Record<number, number>)
+  const tierEffort = sumBy(breakdown, item => item.tier, item => item.effortAfterInventory || 0)
 
   const sortedTiers = Object.keys(tierGroups)
     .map(Number)
