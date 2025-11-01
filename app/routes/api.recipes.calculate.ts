@@ -21,8 +21,7 @@ import type {
   ProjectItem, 
   Item, 
   Recipe, 
-  RecipeBreakdownItem, 
-  InventoryItem 
+  RecipeBreakdownItem
 } from "~/types/recipes";
 
 // Zod schemas for request validation

@@ -10,8 +10,8 @@ import {
   // VStack,
 } from "@chakra-ui/react"
 
-import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 import { sumBy } from "~/utils/aggregation"
+import type { CombinedInventoryItem } from "~/utils/combineAllTrackedInventories"
 
 interface DashboardOverviewProps {
   trackedInventoriesCount: number

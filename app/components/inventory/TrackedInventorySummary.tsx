@@ -13,11 +13,11 @@ import {
   // Link as ChakraLink,
 } from "@chakra-ui/react"
 import { Link as RemixLink } from "@remix-run/react"
-import { countBy } from "~/utils/aggregation"
 import { useState } from "react"
 
 import { useSharedPlayerInventoryTracking } from "~/contexts/PlayerInventoryTrackingContext"
 import type { InventorySource } from "~/types/inventory-tracking"
+import { countBy } from "~/utils/aggregation"
 
 interface TrackedInventorySummaryProps {
   currentClaimId?: string
@@ -54,7 +54,7 @@ export function TrackedInventorySummary({
   const summary = {
     total: snapshots.length,
     bySource: countBy(snapshots, s => s.source),
-    byClaim: countBy(claimSnapshots, s => s.claimId!)
+    byClaim: countBy(claimSnapshots, s => s.claimId ?? "")
   }
 
   const currentClaimCount = currentClaimId ? getSnapshotsByClaim(currentClaimId).length : 0
